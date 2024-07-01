@@ -1,11 +1,13 @@
 {
-	"required": true,
-	"package": "com.github.brainage04.brainagehud.mixin",
-	"compatibilityLevel": "JAVA_21",
-	"mixins": [
+  "required": true,
+  "package": "com.github.brainage04.brainagehud.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "mixins": [
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  },
+  "client": [
 
-	],
-	"injectors": {
-		"defaultRequire": 1
-	}
+  ]
 }
