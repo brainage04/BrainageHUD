@@ -7,4 +7,12 @@ public class ConfigUtils {
     public static BrainageHUDConfig getConfig() {
         return AutoConfig.getConfigHolder(BrainageHUDConfig.class).getConfig();
     }
+
+    public static void saveConfig() {
+        AutoConfig.getConfigHolder(BrainageHUDConfig.class).save();
+    }
+
+    public static void loadConfig() {
+        AutoConfig.getConfigHolder(BrainageHUDConfig.class).load();
+    }
 }
