@@ -57,6 +57,7 @@ public class BrainageHUDElementEditor extends Screen {
 
     private void undoChanges() {
         loadConfig();
+
         //this.elementList = loadElementSettings();
     }
 
@@ -176,7 +177,12 @@ public class BrainageHUDElementEditor extends Screen {
 
         highlightedElementIndex = mouseInElement(mouseX, mouseY);
 
-        if (highlightedElementIndex != -1) {
+        List<String> lines = new ArrayList<>(List.of());
+
+        // render backdrops
+        // if both indices are the same, use highlighted
+        // otherwise, render separately
+        if (highlightedElementIndex != -1 && highlightedElementIndex == selectedElementIndex) {
             context.fill(
                     RenderUtils.elementCorners.get(highlightedElementIndex)[0],
                     RenderUtils.elementCorners.get(highlightedElementIndex)[1],
@@ -184,8 +190,31 @@ public class BrainageHUDElementEditor extends Screen {
                     RenderUtils.elementCorners.get(highlightedElementIndex)[3],
                     getConfig().highlightedElementColour
             );
+        } else {
+            if (highlightedElementIndex != -1) {
+                context.fill(
+                        RenderUtils.elementCorners.get(highlightedElementIndex)[0],
+                        RenderUtils.elementCorners.get(highlightedElementIndex)[1],
+                        RenderUtils.elementCorners.get(highlightedElementIndex)[2],
+                        RenderUtils.elementCorners.get(highlightedElementIndex)[3],
+                        getConfig().highlightedElementColour
+                );
+            }
 
-            List<String> lines = new ArrayList<>(Arrays.asList(
+            if (selectedElementIndex != -1) {
+                context.fill(
+                        RenderUtils.elementCorners.get(selectedElementIndex)[0],
+                        RenderUtils.elementCorners.get(selectedElementIndex)[1],
+                        RenderUtils.elementCorners.get(selectedElementIndex)[2],
+                        RenderUtils.elementCorners.get(selectedElementIndex)[3],
+                        getConfig().highlightedElementColour
+                );
+            }
+        }
+
+        // render element information
+        if (highlightedElementIndex != -1) {
+            lines = new ArrayList<>(Arrays.asList(
                     elementList.get(highlightedElementIndex).elementName,
                     String.format(
                             Locale.ROOT,
@@ -201,27 +230,12 @@ public class BrainageHUDElementEditor extends Screen {
             ));
 
             if (highlightedElementIndex == selectedElementIndex) {
-                lines.add("Selected");
+                lines.add("Highlighted & Selected");
+            } else {
+                lines.add("Highlighted");
             }
-
-            HUDRenderer.renderElement(
-                    MinecraftClient.getInstance().textRenderer,
-                    context,
-                    lines,
-                    0,
-                    (textRenderer.fontHeight + getConfig().elementPadding) * 2,
-                    BrainageHUDConfig.ElementAnchor.TOP
-            );
         } else if (selectedElementIndex != -1) {
-            context.fill(
-                    RenderUtils.elementCorners.get(selectedElementIndex)[0],
-                    RenderUtils.elementCorners.get(selectedElementIndex)[1],
-                    RenderUtils.elementCorners.get(selectedElementIndex)[2],
-                    RenderUtils.elementCorners.get(selectedElementIndex)[3],
-                    getConfig().highlightedElementColour
-            );
-
-            List<String> lines = new ArrayList<>(Arrays.asList(
+            lines = new ArrayList<>(Arrays.asList(
                     elementList.get(selectedElementIndex).elementName,
                     String.format(
                             Locale.ROOT,
@@ -236,16 +250,16 @@ public class BrainageHUDElementEditor extends Screen {
                     ),
                     "Selected"
             ));
-
-            HUDRenderer.renderElement(
-                    MinecraftClient.getInstance().textRenderer,
-                    context,
-                    lines,
-                    0,
-                    (textRenderer.fontHeight + getConfig().elementPadding) * 2,
-                    BrainageHUDConfig.ElementAnchor.TOP
-            );
         }
+
+        HUDRenderer.renderElement(
+                MinecraftClient.getInstance().textRenderer,
+                context,
+                lines,
+                0,
+                (textRenderer.fontHeight + getConfig().elementPadding) * 2,
+                BrainageHUDConfig.ElementAnchor.TOP
+        );
 
         super.render(context, mouseX, mouseY, delta);
     }
