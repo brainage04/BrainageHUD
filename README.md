@@ -1,4 +1,7 @@
 # Todo
-add undo/save and quit buttons to GUI editor
-replace highlight/select feature with JUST select
-allow arrow keys to move selected HUD elements (and allow modifier keys to increase the amount they move per arrow key press)
+fix element anchor system
+- remove changes to screen coordinates with bottom/right alignments (+X should always be down and +Z should always be right)
+
+add keystrokes
+add kdr
+add inventory trackers (mainly armor + held item)
