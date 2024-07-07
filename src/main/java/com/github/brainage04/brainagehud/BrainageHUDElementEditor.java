@@ -157,7 +157,11 @@ public class BrainageHUDElementEditor extends Screen {
                 yDirection *= 5;
             }
 
-            // update position
+            // update selected element position
+            selectedElementX = elementList.get(selectedElementIndex).x;
+            selectedElementY = elementList.get(selectedElementIndex).y;
+
+            // update position in config
             updateElementPosition(xDirection, yDirection);
         }
 
