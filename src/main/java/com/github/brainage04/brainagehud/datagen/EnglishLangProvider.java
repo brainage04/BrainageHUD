@@ -46,6 +46,7 @@ public class EnglishLangProvider extends FabricLanguageProvider {
                 "textShadows",
                 "backdrop",
                 "backdropColour",
+                "qualityOfLifeImprovementsConfig",
                 "positionHudConfig",
                 "dateTimeHudConfig",
                 "toggleSprintHudConfig",
@@ -62,6 +63,7 @@ public class EnglishLangProvider extends FabricLanguageProvider {
                 "Text Shadows",
                 "Backdrop",
                 "Backdrop Colour",
+                "QOL Improvements Config",
                 "Position HUD Config",
                 "Date and Time HUD Config",
                 "Toggle Sprint HUD Config",
@@ -103,7 +105,28 @@ public class EnglishLangProvider extends FabricLanguageProvider {
             }
         }
 
-        // position hud config settings
+        // quality of live improvement config
+        suffixes = new String[]{
+                "gamma",
+                "gamma.@Tooltip[0]",
+                "gamma.@Tooltip[1]",
+                "gamma.@Tooltip[2]",
+                "gamma.@Tooltip[3]",
+
+        };
+        values = new String[]{
+                "Gamma",
+                "1: Maximum vanilla brightness.",
+                "2: Very bright but lighting is still in effect.",
+                "3: Fullbright.",
+                "Update in-game with /updategamma (until I figure out how to update it automatically)",
+        };
+
+        for (int i = 0; i < suffixes.length; i++) {
+            translationBuilder.add(String.format("%s.%s.%s", prefix, keys[0], suffixes[i]), values[i]);
+        }
+
+        // position hud config
         suffixes = new String[]{
                 "showPosition",
                 "positionDecimalPlaces",
@@ -124,10 +147,10 @@ public class EnglishLangProvider extends FabricLanguageProvider {
         };
 
         for (int i = 0; i < suffixes.length; i++) {
-            translationBuilder.add(String.format("%s.%s.%s", prefix, keys[0], suffixes[i]), values[i]);
+            translationBuilder.add(String.format("%s.%s.%s", prefix, keys[1], suffixes[i]), values[i]);
         }
 
-        // date time hud config settings
+        // date time hud config
         suffixes = new String[]{
                 "showDate",
                 "showTime",
@@ -142,10 +165,10 @@ public class EnglishLangProvider extends FabricLanguageProvider {
         };
 
         for (int i = 0; i < suffixes.length; i++) {
-            translationBuilder.add(String.format("%s.%s.%s", prefix, keys[1], suffixes[i]), values[i]);
+            translationBuilder.add(String.format("%s.%s.%s", prefix, keys[2], suffixes[i]), values[i]);
         }
 
-        // performance hud config settings
+        // performance hud config
         suffixes = new String[]{
                 "showFps",
                 "showRamUsage",
@@ -169,7 +192,7 @@ public class EnglishLangProvider extends FabricLanguageProvider {
             translationBuilder.add(String.format("%s.%s.%s", prefix, keys[3], suffixes[i]), values[i]);
         }
 
-        // network hud config settings
+        // network hud config
         suffixes = new String[]{
                 "showPing",
                 "showTps",

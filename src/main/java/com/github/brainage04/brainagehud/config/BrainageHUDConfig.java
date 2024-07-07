@@ -18,6 +18,18 @@ public class BrainageHUDConfig implements ConfigData {
     public int backdropColour = 0x7f000000;
 
     @ConfigEntry.Gui.CollapsibleObject
+    public QualityOfLifeImprovements qualityOfLifeImprovementsConfig = new QualityOfLifeImprovements();
+
+    public static class QualityOfLifeImprovements {
+        @ConfigEntry.Gui.Tooltip(count = 4)
+        public int gamma;
+
+        public QualityOfLifeImprovements() {
+            this.gamma = 3;
+        }
+    }
+
+    @ConfigEntry.Gui.CollapsibleObject
     public PositionHUDConfig positionHudConfig = new PositionHUDConfig();
 
     public static class PositionHUDConfig {
