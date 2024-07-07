@@ -55,14 +55,6 @@ public class BrainageHUDElementEditor extends Screen {
         ));
     }
 
-    private void undoChanges() {
-        loadConfig();
-    }
-
-    private void saveChanges() {
-        saveConfig();
-    }
-
     public int mouseInElement(double mouseX, double mouseY) {
         for (int i = 0; i < elementList.size(); i++) {
             int[] corners = RenderUtils.elementCorners.get(i);
@@ -83,7 +75,7 @@ public class BrainageHUDElementEditor extends Screen {
     }
 
     public ButtonWidget button1 = ButtonWidget.builder(Text.literal("Undo & Close"), button -> {
-                undoChanges();
+                loadConfig();
                 super.close();
             })
                 .dimensions(MinecraftClient.getInstance().getWindow().getScaledWidth() / 2 - 210, MinecraftClient.getInstance().getWindow().getScaledHeight() - 40, 200, 20)
@@ -107,7 +99,7 @@ public class BrainageHUDElementEditor extends Screen {
 
     @Override
     public void close() {
-        saveChanges();
+        saveConfig();
         super.close();
     }
 
