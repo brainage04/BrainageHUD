@@ -57,17 +57,9 @@ public class BrainageHUDElementEditor extends Screen {
 
     private void undoChanges() {
         loadConfig();
-
-        //this.elementList = loadElementSettings();
     }
 
     private void saveChanges() {
-        //getConfig().positionHudConfig.coreSettings = elementList.get(0);
-        //getConfig().dateTimeHudConfig.coreSettings = elementList.get(1);
-        //getConfig().toggleSprintHudConfig.coreSettings = elementList.get(2);
-        //getConfig().performanceHudConfig.coreSettings = elementList.get(3);
-        //getConfig().networkHudConfig.coreSettings = elementList.get(4);
-
         saveConfig();
     }
 

@@ -17,10 +17,6 @@ public class BrainageHUDConfig implements ConfigData {
     public boolean backdrop = false;
     public int backdropColour = 0x7f000000;
 
-    // add keystrokes
-    // add kdr
-    // add inventory trackers
-
     @ConfigEntry.Gui.CollapsibleObject
     public PositionHUDConfig positionHudConfig = new PositionHUDConfig();
 
