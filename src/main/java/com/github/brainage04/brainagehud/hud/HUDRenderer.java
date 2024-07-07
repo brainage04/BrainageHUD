@@ -25,8 +25,8 @@ public class HUDRenderer implements HudRenderCallback {
     public static void renderElement(TextRenderer renderer, DrawContext drawContext, List<String> lines, BrainageHUDConfig.CoreSettings coreSettings) {
         int elementWidth = 0;
 
-        int lineHeight = renderer.fontHeight + getConfig().padding;
-        int elementHeight = lineHeight * lines.size() + getConfig().padding;
+        int lineHeight = renderer.fontHeight + getConfig().elementPadding;
+        int elementHeight = lineHeight * lines.size() + getConfig().elementPadding;
 
         int scaledWidth = MinecraftClient.getInstance().getWindow().getScaledWidth();
         int scaledHeight = MinecraftClient.getInstance().getWindow().getScaledHeight();
@@ -93,8 +93,8 @@ public class HUDRenderer implements HudRenderCallback {
     public static void renderElement(TextRenderer renderer, DrawContext drawContext, List<String> lines, int x, int y, BrainageHUDConfig.ElementAnchor elementAnchor) {
         int elementWidth = 0;
 
-        int lineHeight = renderer.fontHeight + getConfig().padding;
-        int elementHeight = lineHeight * lines.size() + getConfig().padding;
+        int lineHeight = renderer.fontHeight + getConfig().elementPadding;
+        int elementHeight = lineHeight * lines.size() + getConfig().elementPadding;
 
         int scaledWidth = MinecraftClient.getInstance().getWindow().getScaledWidth();
         int scaledHeight = MinecraftClient.getInstance().getWindow().getScaledHeight();

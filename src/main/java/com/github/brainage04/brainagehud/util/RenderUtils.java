@@ -17,9 +17,9 @@ public class RenderUtils {
 
     public static int[] getCornersWithPadding(int x1, int y1, int x2, int y2) {
         return new int[]{
-                x1 - getConfig().padding * 2,
-                y1 - getConfig().padding * 2,
-                x2 + getConfig().padding * 2,
+                x1 - getConfig().elementPadding * 2,
+                y1 - getConfig().elementPadding * 2,
+                x2 + getConfig().elementPadding * 2,
                 y2,
         };
     }

@@ -14,6 +14,8 @@
   "text.autoconfig.brainagehud.option.dateTimeHudConfig.showTimezone": "Show Timezone",
   "text.autoconfig.brainagehud.option.dateTimeHudConfig.twelveHourFormat": "Twelve Hour Format",
   "text.autoconfig.brainagehud.option.disabledTextColour": "Disabled Text Colour",
+  "text.autoconfig.brainagehud.option.elementPadding": "Padding",
+  "text.autoconfig.brainagehud.option.highlightedElementColour": "Highlighted Element Colour",
   "text.autoconfig.brainagehud.option.networkHudConfig": "Network HUD Config",
   "text.autoconfig.brainagehud.option.networkHudConfig.coreSettings": "Core Settings",
   "text.autoconfig.brainagehud.option.networkHudConfig.coreSettings.elementAnchor": "Anchor",
@@ -24,7 +26,6 @@
   "text.autoconfig.brainagehud.option.networkHudConfig.showPing": "Show Ping",
   "text.autoconfig.brainagehud.option.networkHudConfig.showTps": "Show TPS",
   "text.autoconfig.brainagehud.option.networkHudConfig.tpsDecimalPlaces": "Decimal Places (TPS)",
-  "text.autoconfig.brainagehud.option.padding": "Padding",
   "text.autoconfig.brainagehud.option.performanceHudConfig": "Performance HUD Config",
   "text.autoconfig.brainagehud.option.performanceHudConfig.coreSettings": "Core Settings",
   "text.autoconfig.brainagehud.option.performanceHudConfig.coreSettings.elementAnchor": "Anchor",
@@ -52,6 +53,7 @@
   "text.autoconfig.brainagehud.option.positionHudConfig.showPosition": "Show Position",
   "text.autoconfig.brainagehud.option.positionHudConfig.showRotation": "Show Rotation",
   "text.autoconfig.brainagehud.option.primaryTextColour": "Primary Text Colour",
+  "text.autoconfig.brainagehud.option.screenMargin": "Screen Margin",
   "text.autoconfig.brainagehud.option.secondaryTextColour": "Secondary Text Colour",
   "text.autoconfig.brainagehud.option.textShadows": "Text Shadows",
   "text.autoconfig.brainagehud.option.toggleSprintHudConfig": "Toggle Sprint HUD Config",
@@ -59,5 +61,6 @@
   "text.autoconfig.brainagehud.option.toggleSprintHudConfig.coreSettings.elementAnchor": "Anchor",
   "text.autoconfig.brainagehud.option.toggleSprintHudConfig.coreSettings.enabled": "Enabled",
   "text.autoconfig.brainagehud.option.toggleSprintHudConfig.coreSettings.x": "X",
-  "text.autoconfig.brainagehud.option.toggleSprintHudConfig.coreSettings.y": "Y"
+  "text.autoconfig.brainagehud.option.toggleSprintHudConfig.coreSettings.y": "Y",
+  "text.autoconfig.brainagehud.title": "BrainageHUD Config Editor"
 }

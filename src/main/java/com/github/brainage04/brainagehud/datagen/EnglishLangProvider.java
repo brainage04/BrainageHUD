@@ -18,6 +18,12 @@ public class EnglishLangProvider extends FabricLanguageProvider {
 
     @Override
     public void generateTranslations(RegistryWrapper.WrapperLookup registryLookup, TranslationBuilder translationBuilder) {
+        // element editor
+        translationBuilder.add(
+                String.format("text.autoconfig.%s.title", BrainageHUD.MOD_ID),
+                "BrainageHUD Config Editor"
+        );
+
         // keybinds
         translationBuilder.add(
                 LangUtils.CONFIG_KEYBIND_KEY,
@@ -34,7 +40,9 @@ public class EnglishLangProvider extends FabricLanguageProvider {
                 "primaryTextColour",
                 "secondaryTextColour",
                 "disabledTextColour",
-                "padding",
+                "highlightedElementColour",
+                "elementPadding",
+                "screenMargin",
                 "textShadows",
                 "backdrop",
                 "backdropColour",
@@ -48,7 +56,9 @@ public class EnglishLangProvider extends FabricLanguageProvider {
                 "Primary Text Colour",
                 "Secondary Text Colour",
                 "Disabled Text Colour",
+                "Highlighted Element Colour",
                 "Padding",
+                "Screen Margin",
                 "Text Shadows",
                 "Backdrop",
                 "Backdrop Colour",
