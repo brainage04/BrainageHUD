@@ -3,13 +3,14 @@ package com.github.brainage04.brainagehud.command;
 import com.github.brainage04.brainagehud.BrainageHUD;
 import com.github.brainage04.brainagehud.BrainageHUDElementEditor;
 import com.github.brainage04.brainagehud.config.BrainageHUDConfig;
+import com.mojang.brigadier.arguments.DoubleArgumentType;
 import me.shedaniel.autoconfig.AutoConfig;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.text.Text;
 
-import static com.github.brainage04.brainagehud.util.ConfigUtils.getConfig;
+import static com.github.brainage04.brainagehud.util.ConfigUtils.setGamma;
 
 public class CommandRegistration {
     public static void registerCommands() {
@@ -36,12 +37,15 @@ public class CommandRegistration {
         ));
 
         ClientCommandRegistrationCallback.EVENT.register(((dispatcher, registryAccess) ->
-                dispatcher.register(ClientCommandManager.literal("updategamma")
-                        .executes(context -> {
-                            MinecraftClient.getInstance().options.getGamma().setValue(((double) getConfig().qualityOfLifeImprovementsConfig.gamma));
-                            MinecraftClient.getInstance().player.sendMessage(Text.literal("Gamma updated."));
-                            return 1;
-                        })
+                dispatcher.register(ClientCommandManager.literal("setgamma")
+                        .then(ClientCommandManager.argument("value", DoubleArgumentType.doubleArg(0.0, 3.0))
+                                .executes(context -> {
+                                    final double value = DoubleArgumentType.getDouble(context, "value");
+                                    setGamma(value);
+                                    context.getSource().sendFeedback(Text.literal("Gamma set to %f.".formatted(value)));
+                                    return 1;
+                                })
+                        )
                 )
         ));
     }

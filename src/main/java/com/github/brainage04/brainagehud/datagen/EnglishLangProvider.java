@@ -116,14 +116,14 @@ public class EnglishLangProvider extends FabricLanguageProvider {
         };
         values = new String[]{
                 "Gamma",
-                "1: Maximum vanilla brightness.",
-                "2: Very bright but lighting is still in effect.",
-                "3: Fullbright.",
-                "Update in-game with /updategamma (until I figure out how to update it automatically)",
+                "1.0: Maximum vanilla brightness.",
+                "2.0: Very bright but lighting is still in effect.",
+                "3.0: Fullbright.",
+                "Update in-game with /setgamma <value> (until I figure out how to update it automatically)",
         };
 
         for (int i = 0; i < suffixes.length; i++) {
-            translationBuilder.add(String.format("%s.%s.%s", prefix, keys[0], suffixes[i]), values[i]);
+            translationBuilder.add(String.format("%s.%s.%s.%s", prefix, "qualityOfLifeImprovementsConfig", keys[0], suffixes[i]), values[i]);
         }
 
         // position hud config

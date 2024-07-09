@@ -22,7 +22,7 @@ public class BrainageHUDConfig implements ConfigData {
 
     public static class QualityOfLifeImprovements {
         @ConfigEntry.Gui.Tooltip(count = 4)
-        public int gamma;
+        public double gamma;
 
         public QualityOfLifeImprovements() {
             this.gamma = 3;
