@@ -75,6 +75,26 @@ public class EnglishLangProvider extends FabricLanguageProvider {
             translationBuilder.add(String.format("%s.%s", prefix, keys[i]), values[i]);
         }
 
+        // quality of live improvement config
+        String[] suffixes = new String[]{
+                "gamma",
+                "gamma.@Tooltip[0]",
+                "gamma.@Tooltip[1]",
+                "gamma.@Tooltip[2]",
+                "gamma.@Tooltip[3]",
+        };
+        values = new String[]{
+                "Gamma",
+                "1.0: Maximum vanilla brightness.",
+                "2.0: Very bright but lighting is still in effect.",
+                "3.0: Fullbright.",
+                "Update in-game with /setgamma <value> (until I figure out how to update it automatically)",
+        };
+
+        for (int i = 0; i < suffixes.length; i++) {
+            translationBuilder.add(String.format("%s.%s.%s", prefix, "qualityOfLifeImprovementsConfig", suffixes[i]), values[i]);
+        }
+
         // core settings
         keys = new String[]{
                 "positionHudConfig",
@@ -83,7 +103,7 @@ public class EnglishLangProvider extends FabricLanguageProvider {
                 "performanceHudConfig",
                 "networkHudConfig",
         };
-        String[] suffixes = new String[]{
+        suffixes = new String[]{
                 "enabled",
                 "x",
                 "y",
@@ -103,27 +123,6 @@ public class EnglishLangProvider extends FabricLanguageProvider {
             for (int j = 0; j < suffixes.length; j++) {
                 translationBuilder.add(String.format("%s.%s", key, suffixes[j]), values[j]);
             }
-        }
-
-        // quality of live improvement config
-        suffixes = new String[]{
-                "gamma",
-                "gamma.@Tooltip[0]",
-                "gamma.@Tooltip[1]",
-                "gamma.@Tooltip[2]",
-                "gamma.@Tooltip[3]",
-
-        };
-        values = new String[]{
-                "Gamma",
-                "1.0: Maximum vanilla brightness.",
-                "2.0: Very bright but lighting is still in effect.",
-                "3.0: Fullbright.",
-                "Update in-game with /setgamma <value> (until I figure out how to update it automatically)",
-        };
-
-        for (int i = 0; i < suffixes.length; i++) {
-            translationBuilder.add(String.format("%s.%s.%s.%s", prefix, "qualityOfLifeImprovementsConfig", keys[0], suffixes[i]), values[i]);
         }
 
         // position hud config
@@ -147,7 +146,7 @@ public class EnglishLangProvider extends FabricLanguageProvider {
         };
 
         for (int i = 0; i < suffixes.length; i++) {
-            translationBuilder.add(String.format("%s.%s.%s", prefix, keys[1], suffixes[i]), values[i]);
+            translationBuilder.add(String.format("%s.%s.%s", prefix, keys[0], suffixes[i]), values[i]);
         }
 
         // date time hud config
@@ -165,7 +164,7 @@ public class EnglishLangProvider extends FabricLanguageProvider {
         };
 
         for (int i = 0; i < suffixes.length; i++) {
-            translationBuilder.add(String.format("%s.%s.%s", prefix, keys[2], suffixes[i]), values[i]);
+            translationBuilder.add(String.format("%s.%s.%s", prefix, keys[1], suffixes[i]), values[i]);
         }
 
         // performance hud config

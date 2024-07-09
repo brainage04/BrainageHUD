@@ -67,7 +67,7 @@ public class BrainageHUDConfig implements ConfigData {
         public boolean showTimezone;
 
         public DateTimeHUDConfig() {
-            this.coreSettings = new CoreSettings(true, 10, 10, ElementAnchor.TOPRIGHT, 1, "Date and Time HUD");
+            this.coreSettings = new CoreSettings(true, -10, 10, ElementAnchor.TOPRIGHT, 1, "Date and Time HUD");
             this.showDate = true;
             this.showTime = true;
             this.twelveHourFormat = true;
@@ -83,7 +83,7 @@ public class BrainageHUDConfig implements ConfigData {
         public CoreSettings coreSettings;
 
         public ToggleSprintHUDConfig() {
-            this.coreSettings = new CoreSettings(true, 10, 10, ElementAnchor.BOTTOMLEFT, 2, "Toggle Sprint HUD");
+            this.coreSettings = new CoreSettings(true, 10, -10, ElementAnchor.BOTTOMLEFT, 2, "Toggle Sprint HUD");
         }
     }
 

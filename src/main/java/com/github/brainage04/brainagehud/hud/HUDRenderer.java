@@ -28,14 +28,11 @@ public class HUDRenderer implements HudRenderCallback {
         int lineHeight = renderer.fontHeight + getConfig().elementPadding;
         int elementHeight = lineHeight * lines.size() + getConfig().elementPadding;
 
-        int scaledWidth = MinecraftClient.getInstance().getWindow().getScaledWidth();
-        int scaledHeight = MinecraftClient.getInstance().getWindow().getScaledHeight();
-
         // vertical adjustments
         int posY = switch (coreSettings.elementAnchor) {
-            case BOTTOMLEFT, BOTTOM, BOTTOMRIGHT -> scaledHeight - coreSettings.y - renderer.fontHeight;
-            case LEFT, CENTER, RIGHT -> (scaledHeight - coreSettings.y - renderer.fontHeight) / 2;
-            default -> coreSettings.y;
+            case BOTTOMLEFT, BOTTOM, BOTTOMRIGHT -> coreSettings.y + (RenderUtils.scaledHeight - elementHeight);
+            case LEFT, CENTER, RIGHT -> coreSettings.y + (RenderUtils.scaledHeight - elementHeight) / 2 + getConfig().elementPadding;
+            default -> coreSettings.y + getConfig().elementPadding * 2;
         };
 
         for (int i = 0; i < lines.size(); i++) {
@@ -45,9 +42,9 @@ public class HUDRenderer implements HudRenderCallback {
 
             // horizontal adjustments (for line)
             int posX = switch (coreSettings.elementAnchor) {
-                case TOPRIGHT, RIGHT, BOTTOMRIGHT -> scaledWidth - coreSettings.x - lineWidth;
-                case TOP, CENTER, BOTTOM -> (scaledWidth - coreSettings.x - lineWidth) / 2;
-                default -> coreSettings.x;
+                case TOPRIGHT, RIGHT, BOTTOMRIGHT -> coreSettings.x + (RenderUtils.scaledWidth - lineWidth) - getConfig().elementPadding * 2;
+                case TOP, CENTER, BOTTOM -> coreSettings.x + (RenderUtils.scaledWidth - lineWidth) / 2;
+                default -> coreSettings.x + getConfig().elementPadding * 2;
             };
 
             drawContext.drawText(
@@ -62,9 +59,9 @@ public class HUDRenderer implements HudRenderCallback {
 
         // horizontal adjustments (for element)
         int posX = switch (coreSettings.elementAnchor) {
-            case TOPRIGHT, RIGHT, BOTTOMRIGHT -> scaledWidth - coreSettings.x - elementWidth;
-            case TOP, CENTER, BOTTOM -> (scaledWidth - coreSettings.x - elementWidth) / 2;
-            default -> coreSettings.x;
+            case TOPRIGHT, RIGHT, BOTTOMRIGHT -> coreSettings.x + (RenderUtils.scaledWidth - elementWidth) - getConfig().elementPadding * 2;
+            case TOP, CENTER, BOTTOM -> coreSettings.x + (RenderUtils.scaledWidth - elementWidth) / 2;
+            default -> coreSettings.x + getConfig().elementPadding * 2;
         };
 
         // adjust for padding
@@ -96,14 +93,11 @@ public class HUDRenderer implements HudRenderCallback {
         int lineHeight = renderer.fontHeight + getConfig().elementPadding;
         int elementHeight = lineHeight * lines.size() + getConfig().elementPadding;
 
-        int scaledWidth = MinecraftClient.getInstance().getWindow().getScaledWidth();
-        int scaledHeight = MinecraftClient.getInstance().getWindow().getScaledHeight();
-
         // vertical adjustments
         int posY = switch (elementAnchor) {
-            case BOTTOMLEFT, BOTTOM, BOTTOMRIGHT -> scaledHeight - y - renderer.fontHeight;
-            case LEFT, CENTER, RIGHT -> (scaledHeight - y - renderer.fontHeight) / 2;
-            default -> y;
+            case BOTTOMLEFT, BOTTOM, BOTTOMRIGHT -> y + (RenderUtils.scaledHeight - elementHeight);
+            case LEFT, CENTER, RIGHT -> y + (RenderUtils.scaledHeight - elementHeight) / 2 + getConfig().elementPadding;
+            default -> y + getConfig().elementPadding * 2;
         };
 
         for (int i = 0; i < lines.size(); i++) {
@@ -113,9 +107,9 @@ public class HUDRenderer implements HudRenderCallback {
 
             // horizontal adjustments (for line)
             int posX = switch (elementAnchor) {
-                case TOPRIGHT, RIGHT, BOTTOMRIGHT -> scaledWidth - x - lineWidth;
-                case TOP, CENTER, BOTTOM -> (scaledWidth - x - lineWidth) / 2;
-                default -> x;
+                case TOPRIGHT, RIGHT, BOTTOMRIGHT -> x + (RenderUtils.scaledWidth - lineWidth) - getConfig().elementPadding * 2;
+                case TOP, CENTER, BOTTOM -> x + (RenderUtils.scaledWidth - lineWidth) / 2;
+                default -> x + getConfig().elementPadding * 2;
             };
 
             drawContext.drawText(

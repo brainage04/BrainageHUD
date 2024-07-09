@@ -1,5 +1,7 @@
 package com.github.brainage04.brainagehud.util;
 
+import net.minecraft.client.MinecraftClient;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -27,4 +29,7 @@ public class RenderUtils {
     public static boolean mouseInRect(int x1, int y1, int x2, int y2, double mouseX, double mouseY) {
         return (x1 <= mouseX && mouseX <= x2 && y1 <= mouseY && mouseY <= y2);
     }
+
+    public static int scaledWidth = MinecraftClient.getInstance().getWindow().getScaledWidth();
+    public static int scaledHeight = MinecraftClient.getInstance().getWindow().getScaledHeight();
 }

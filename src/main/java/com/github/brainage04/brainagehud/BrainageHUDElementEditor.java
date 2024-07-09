@@ -40,7 +40,7 @@ public class BrainageHUDElementEditor extends Screen {
 
         // refresh element corners
         RenderUtils.elementCorners.clear();
-        while (RenderUtils.elementCorners.size() < loadElementSettings().size()) {
+        while (RenderUtils.elementCorners.size() < elementList.size()) {
             RenderUtils.elementCorners.add(new int[]{-1, -1, -1, -1});
         }
     }
@@ -87,8 +87,31 @@ public class BrainageHUDElementEditor extends Screen {
                 .build();
 
     public void updateElementPosition(int deltaX, int deltaY) {
-        elementList.get(selectedElementIndex).x = (int) (MathHelper.clamp(selectedElementX - deltaX, getConfig().screenMargin, MinecraftClient.getInstance().getWindow().getScaledWidth() - getConfig().screenMargin));
-        elementList.get(selectedElementIndex).y = (int) (MathHelper.clamp(selectedElementY - deltaY, getConfig().screenMargin, MinecraftClient.getInstance().getWindow().getScaledHeight() - getConfig().screenMargin));
+        int[] selectedElementCorners = RenderUtils.elementCorners.get(selectedElementIndex);
+        int elementWidth = selectedElementCorners[2] - selectedElementCorners[0];
+        int elementHeight = selectedElementCorners[3] - selectedElementCorners[1];
+
+        int minX = switch (elementList.get(selectedElementIndex).elementAnchor) {
+            case TOPRIGHT, RIGHT, BOTTOMRIGHT -> getConfig().screenMargin - RenderUtils.scaledWidth + elementWidth;
+            case TOP, CENTER, BOTTOM -> getConfig().screenMargin - (RenderUtils.scaledWidth + elementWidth) / 2;
+            default -> getConfig().screenMargin;
+        };
+        int minY = switch (elementList.get(selectedElementIndex).elementAnchor) {
+            case BOTTOMLEFT, BOTTOM, BOTTOMRIGHT -> getConfig().screenMargin - RenderUtils.scaledHeight + elementHeight;
+            case LEFT, CENTER, RIGHT -> getConfig().screenMargin - (RenderUtils.scaledHeight + elementHeight) / 2;
+            default -> getConfig().screenMargin;
+        };
+
+        elementList.get(selectedElementIndex).x = (int) (MathHelper.clamp(
+                selectedElementX - deltaX,
+                minX,
+                minX + RenderUtils.scaledWidth - elementWidth - getConfig().screenMargin - getConfig().elementPadding
+        ));
+        elementList.get(selectedElementIndex).y = (int) (MathHelper.clamp(
+                selectedElementY - deltaY,
+                minY,
+                minY + RenderUtils.scaledHeight - elementHeight - getConfig().screenMargin - getConfig().elementPadding
+        ));
     }
 
     @Override
@@ -99,6 +122,13 @@ public class BrainageHUDElementEditor extends Screen {
 
     @Override
     public void close() {
+        // update config values
+        getConfig().positionHudConfig.coreSettings = elementList.get(0);
+        getConfig().dateTimeHudConfig.coreSettings = elementList.get(1);
+        getConfig().toggleSprintHudConfig.coreSettings = elementList.get(2);
+        getConfig().performanceHudConfig.coreSettings = elementList.get(3);
+        getConfig().networkHudConfig.coreSettings = elementList.get(4);
+
         saveConfig();
         super.close();
     }
@@ -266,18 +296,7 @@ public class BrainageHUDElementEditor extends Screen {
     @Override
     public boolean mouseDragged(double mouseX, double mouseY, int button, double deltaX, double deltaY) {
         if (selectedElementIndex != -1) {
-            double diffX = switch (elementList.get(selectedElementIndex).elementAnchor) {
-                case TOPRIGHT, RIGHT, BOTTOMRIGHT -> -(selectedMouseX - mouseX);
-                case TOP, CENTER, BOTTOM -> -(selectedMouseX - mouseX) / 2;
-                default -> selectedMouseX - mouseX;
-            };
-            double diffY = switch (elementList.get(selectedElementIndex).elementAnchor) {
-                case BOTTOMLEFT, BOTTOM, BOTTOMRIGHT -> -(selectedMouseY - mouseY);
-                case LEFT, CENTER, RIGHT -> -(selectedMouseY - mouseY) / 2;
-                default -> selectedMouseY - mouseY;
-            };
-
-            updateElementPosition((int) diffX, (int) diffY);
+            updateElementPosition((int) (selectedMouseX - mouseX), (int) (selectedMouseY - mouseY));
         }
 
         return super.mouseDragged(mouseX, mouseY, button, deltaX, deltaY);
