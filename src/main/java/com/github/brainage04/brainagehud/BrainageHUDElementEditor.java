@@ -105,12 +105,12 @@ public class BrainageHUDElementEditor extends Screen {
         elementList.get(selectedElementIndex).x = (int) (MathHelper.clamp(
                 selectedElementX - deltaX,
                 minX,
-                minX + RenderUtils.scaledWidth - elementWidth - getConfig().screenMargin - getConfig().elementPadding
+                minX + RenderUtils.scaledWidth - elementWidth - getConfig().screenMargin * 2
         ));
         elementList.get(selectedElementIndex).y = (int) (MathHelper.clamp(
                 selectedElementY - deltaY,
                 minY,
-                minY + RenderUtils.scaledHeight - elementHeight - getConfig().screenMargin - getConfig().elementPadding
+                minY + RenderUtils.scaledHeight - elementHeight - getConfig().screenMargin * 2
         ));
     }
 
