@@ -1,7 +1,7 @@
-package com.github.brainage04.brainagehud;
+package com.github.brainage04.brainagehud.hud.core;
 
+import com.github.brainage04.brainagehud.BrainageHUD;
 import com.github.brainage04.brainagehud.config.BrainageHUDConfig;
-import com.github.brainage04.brainagehud.hud.HUDRenderer;
 import com.github.brainage04.brainagehud.util.MathUtils;
 import com.github.brainage04.brainagehud.util.RenderUtils;
 import net.minecraft.client.MinecraftClient;
@@ -20,7 +20,7 @@ import java.util.Locale;
 
 import static com.github.brainage04.brainagehud.util.ConfigUtils.*;
 
-public class BrainageHUDElementEditor extends Screen {
+public class HUDElementEditor extends Screen {
     public List<BrainageHUDConfig.CoreSettings> elementList;
 
     public int selectedElementIndex = -1;
@@ -33,7 +33,7 @@ public class BrainageHUDElementEditor extends Screen {
 
     public int highlightedElementIndex = -1;
 
-    public BrainageHUDElementEditor() {
+    public HUDElementEditor() {
         super(Text.of(BrainageHUD.MOD_NAME + " Element Editor"));
 
         this.elementList = loadElementSettings();

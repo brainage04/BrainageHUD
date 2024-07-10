@@ -2,7 +2,7 @@ package com.github.brainage04.brainagehud;
 
 import com.github.brainage04.brainagehud.command.CommandRegistration;
 import com.github.brainage04.brainagehud.config.BrainageHUDConfig;
-import com.github.brainage04.brainagehud.hud.HUDRenderer;
+import com.github.brainage04.brainagehud.hud.core.HUDRenderer;
 import com.github.brainage04.brainagehud.keybind.KeybindRegistration;
 import me.shedaniel.autoconfig.AutoConfig;
 import me.shedaniel.autoconfig.serializer.GsonConfigSerializer;
@@ -18,14 +18,11 @@ public class BrainageHUD implements ClientModInitializer {
 	public static final String MOD_AUTHOR = "brainage04";
 	public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
 
-	public static boolean CONFIG_REGISTERED = false;
-
 	@Override
 	public void onInitializeClient() {
 		LOGGER.info(MOD_NAME + " initialising...");
 
 		AutoConfig.register(BrainageHUDConfig.class, GsonConfigSerializer::new);
-		CONFIG_REGISTERED = true;
 
 		HudRenderCallback.EVENT.register(new HUDRenderer());
 

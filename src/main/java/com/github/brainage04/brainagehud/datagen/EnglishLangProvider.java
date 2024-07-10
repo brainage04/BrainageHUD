@@ -38,8 +38,6 @@ public class EnglishLangProvider extends FabricLanguageProvider {
         // top-level settings
         String[] keys = new String[]{
                 "primaryTextColour",
-                "secondaryTextColour",
-                "disabledTextColour",
                 "highlightedElementColour",
                 "elementPadding",
                 "screenMargin",
@@ -55,10 +53,8 @@ public class EnglishLangProvider extends FabricLanguageProvider {
         };
         String[] values = new String[]{
                 "Primary Text Colour",
-                "Secondary Text Colour",
-                "Disabled Text Colour",
                 "Highlighted Element Colour",
-                "Padding",
+                "Element Padding",
                 "Screen Margin",
                 "Text Shadows",
                 "Backdrop",

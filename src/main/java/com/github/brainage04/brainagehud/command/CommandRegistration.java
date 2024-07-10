@@ -1,7 +1,7 @@
 package com.github.brainage04.brainagehud.command;
 
 import com.github.brainage04.brainagehud.BrainageHUD;
-import com.github.brainage04.brainagehud.BrainageHUDElementEditor;
+import com.github.brainage04.brainagehud.hud.core.HUDElementEditor;
 import com.github.brainage04.brainagehud.config.BrainageHUDConfig;
 import com.mojang.brigadier.arguments.DoubleArgumentType;
 import me.shedaniel.autoconfig.AutoConfig;
@@ -29,7 +29,7 @@ public class CommandRegistration {
                 dispatcher.register(ClientCommandManager.literal(BrainageHUD.MOD_ID + "gui")
                         .executes(context -> {
                             MinecraftClient.getInstance().send(() -> context.getSource().getClient().setScreen(
-                                    new BrainageHUDElementEditor()
+                                    new HUDElementEditor()
                             ));
                             return 1;
                         })

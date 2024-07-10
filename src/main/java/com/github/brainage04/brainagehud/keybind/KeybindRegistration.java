@@ -1,7 +1,7 @@
 package com.github.brainage04.brainagehud.keybind;
 
 import com.github.brainage04.brainagehud.BrainageHUD;
-import com.github.brainage04.brainagehud.BrainageHUDElementEditor;
+import com.github.brainage04.brainagehud.hud.core.HUDElementEditor;
 import com.github.brainage04.brainagehud.config.BrainageHUDConfig;
 import com.github.brainage04.brainagehud.util.LangUtils;
 import me.shedaniel.autoconfig.AutoConfig;
@@ -37,7 +37,7 @@ public class KeybindRegistration {
 
             if (guiKeybind.isPressed()) {
                 MinecraftClient.getInstance().setScreen(
-                        new BrainageHUDElementEditor()
+                        new HUDElementEditor()
                 );
             }
         });

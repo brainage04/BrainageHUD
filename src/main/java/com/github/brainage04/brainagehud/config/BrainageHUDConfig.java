@@ -8,8 +8,6 @@ import me.shedaniel.autoconfig.annotation.ConfigEntry;
 @Config(name = BrainageHUD.MOD_ID)
 public class BrainageHUDConfig implements ConfigData {
     public int primaryTextColour = 0xffffff;
-    public int secondaryTextColour = 0x7f7fff;
-    public int disabledTextColour = 0x7f7f7f;
     public int highlightedElementColour = 0x7fffffff;
     public int elementPadding = 2;
     public int screenMargin = 10;
