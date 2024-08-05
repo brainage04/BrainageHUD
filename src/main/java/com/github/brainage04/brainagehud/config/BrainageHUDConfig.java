@@ -43,16 +43,18 @@ public class BrainageHUDConfig implements ConfigData {
         public boolean showMainHand;
         public boolean showOffHand;
         public boolean showItemNames;
+        public boolean showDurabilityBar;
         public DurabilityFormat durabilityFormat;
         public int durabilityDecimalPlaces;
 
         public ArmourInfoHUDConfig() {
-            this.coreSettings = new CoreSettings(0, "Armor Info HUD", true, 5, -25, ElementAnchor.BOTTOMLEFT, false, 100);
+            this.coreSettings = new CoreSettings(0, "Armor Info HUD", true, -135, 5, ElementAnchor.BOTTOMRIGHT, false, 100);
             this.showArmour = true;
-            this.showMainHand = true;
-            this.showOffHand = true;
-            this.showItemNames = true;
-            this.durabilityFormat = DurabilityFormat.BOTH_NUMBERS;
+            this.showMainHand = false;
+            this.showOffHand = false;
+            this.showItemNames = false;
+            this.showDurabilityBar = true;
+            this.durabilityFormat = DurabilityFormat.ONE_NUMBER;
             this.durabilityDecimalPlaces = 1;
         }
     }
@@ -66,7 +68,7 @@ public class BrainageHUDConfig implements ConfigData {
         public boolean showTimezone;
 
         public DateTimeHUDConfig() {
-            this.coreSettings = new CoreSettings(1, "Date Time HUD", true, -5, 5, ElementAnchor.TOPRIGHT, false, 100);
+            this.coreSettings = new CoreSettings(1, "Date Time HUD", true, -85, 5, ElementAnchor.TOPRIGHT, false, 100);
             this.showDate = true;
             this.showTime = true;
             this.twelveHourFormat = true;
@@ -84,7 +86,7 @@ public class BrainageHUDConfig implements ConfigData {
         public ClicksPerSecondFormat clicksPerSecondFormat;
 
         public KeystrokesHUDConfig() {
-            this.coreSettings = new CoreSettings(2, "Keystrokes HUD", true, -5, -85, ElementAnchor.BOTTOMRIGHT, true, 0);
+            this.coreSettings = new CoreSettings(2, "Keystrokes HUD", true, -5, 5, ElementAnchor.TOPRIGHT, true, 0);
             this.keyBackdropOpacity = 100;
             this.showWasd = true;
             this.showSpace = true;

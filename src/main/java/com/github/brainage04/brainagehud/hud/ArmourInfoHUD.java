@@ -6,7 +6,9 @@ import com.github.brainage04.brainagehud.util.RenderUtils;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.DrawContext;
+import net.minecraft.client.render.RenderLayer;
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.Colors;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -18,7 +20,11 @@ public class ArmourInfoHUD {
         String itemString = "";
 
         if (settings.showItemNames) {
-            itemString += itemStack.getName().getString();
+            itemString += "%s".formatted(itemStack.getName().getString());
+
+            if (settings.durabilityFormat != BrainageHUDConfig.DurabilityFormat.NONE) {
+                itemString += ": ";
+            }
         }
 
         if (itemStack.getMaxDamage() > 0) {
@@ -26,9 +32,9 @@ public class ArmourInfoHUD {
 
             itemString += switch (settings.durabilityFormat) {
                 case NONE -> "";
-                case ONE_NUMBER -> ": %d".formatted(currentDurability);
-                case BOTH_NUMBERS -> ": %d / %d".formatted(currentDurability, itemStack.getMaxDamage());
-                case PERCENTAGE -> ": %s%%".formatted(MathUtils.roundDecimalPlaces(((float) currentDurability) / itemStack.getMaxDamage() * 100, settings.durabilityDecimalPlaces));
+                case ONE_NUMBER -> "%d".formatted(currentDurability);
+                case BOTH_NUMBERS -> "%d / %d".formatted(currentDurability, itemStack.getMaxDamage());
+                case PERCENTAGE -> "%s%%".formatted(MathUtils.roundDecimalPlaces(((float) currentDurability) / itemStack.getMaxDamage() * 100, settings.durabilityDecimalPlaces));
             };
         }
 
@@ -68,7 +74,7 @@ public class ArmourInfoHUD {
         // custom rendering logic
         // determine bounds of HUD element
         // determine longest line of text (for element width)
-        int elementWidth = 16 + getConfig().elementPadding;
+        int elementWidth = 16 + getConfig().elementPadding * 2;
         int maxLineWidth = 0;
         for (String line : lines) {
             int currentLineWidth = renderer.getWidth(line);
@@ -127,9 +133,19 @@ public class ArmourInfoHUD {
                 case TOP, CENTER, BOTTOM -> posX - (lineWidth - elementWidth + 16 + getConfig().elementPadding) / 2;
                 default -> posX;
             };
+            int linePosY = posY + 5 + i * (16 + getConfig().elementPadding);
 
             drawContext.drawItem(itemStack, linePosX, posY + i * (16 + getConfig().elementPadding));
-            drawContext.drawText(renderer, lines.get(i), linePosX + (16 + getConfig().elementPadding), posY + 5 + i * (16 + getConfig().elementPadding), getConfig().primaryTextColour, getConfig().textShadows);
+            if (settings.showDurabilityBar && itemStack.getMaxDamage() > 0 && itemStack.getDamage() > 0) {
+                // taken from package net.minecraft.client.gui.InGameHud; line 615
+                int a = itemStack.getItemBarStep();
+                int b = itemStack.getItemBarColor();
+                int c = linePosX + 2;
+                int d = linePosY + 9;
+                drawContext.fill(RenderLayer.getGuiOverlay(), c, d, c + 13, d + 2, Colors.BLACK);
+                drawContext.fill(RenderLayer.getGuiOverlay(), c, d, c + a, d + 1, b | Colors.BLACK);
+            }
+            drawContext.drawText(renderer, lines.get(i), linePosX + (16 + getConfig().elementPadding * 2), linePosY, getConfig().primaryTextColour, getConfig().textShadows);
         }
     }
 }
