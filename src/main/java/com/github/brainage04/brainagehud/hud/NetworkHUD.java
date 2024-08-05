@@ -1,10 +1,9 @@
 package com.github.brainage04.brainagehud.hud;
 
 import com.github.brainage04.brainagehud.config.BrainageHUDConfig;
-import net.minecraft.client.MinecraftClient;
+import com.github.brainage04.brainagehud.util.TimerUtils;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.network.PlayerListEntry;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -15,6 +14,7 @@ import static com.github.brainage04.brainagehud.util.MathUtils.roundDecimalPlace
 public class NetworkHUD {
     // Credits:
     // https://github.com/vladmarica/better-ping-display-fabric
+    // todo: separate ping and tps into individual HUD elements?
     public static void networkHud(TextRenderer renderer, DrawContext drawContext, BrainageHUDConfig.NetworkHUDConfig settings) {
         if (!settings.coreSettings.enabled) {
             return;
@@ -22,63 +22,28 @@ public class NetworkHUD {
 
         List<String> lines = new ArrayList<>(List.of());
 
+        // works well enough (for now)
         if (settings.showPing) {
-            if (MinecraftClient.getInstance().getNetworkHandler() == null) { // singleplayer
-                long ping =  0;
-
-                for (int i = 0; i < MinecraftClient.getInstance().getDebugHud().getPingLog().getLength(); i++) {
-                    ping += MinecraftClient.getInstance().getDebugHud().getPingLog().get(i);
-                }
-
-                ping /= MinecraftClient.getInstance().getDebugHud().getPingLog().getLength();
-
-                lines.add(
-                        String.format(
-                                "Ping: %sms",
-                                ping
-                        )
-                );
-            } else { // multiplayer
-                List<PlayerListEntry> playerList = MinecraftClient.getInstance().getNetworkHandler().getPlayerList().stream().toList();
-                PlayerListEntry player = null;
-
-                for (PlayerListEntry playerListEntry : playerList) {
-                    if (playerListEntry.getProfile() == MinecraftClient.getInstance().getGameProfile()) {
-                        player = playerListEntry;
-                    }
-                }
-
-                if (player == null) {
-                    return;
-                }
-
-                lines.add(
-                        String.format(
-                                "Ping: %sms",
-                                player.getLatency()
-                        )
-                );
-            }
-        }
-
-        if (settings.showTps) {
-            if (MinecraftClient.getInstance().getServer() == null) {
-                return;
-            }
-
-            float averageTps = 1000f / MinecraftClient.getInstance().getServer().getAverageTickTime();
-            float maxTps = MinecraftClient.getInstance().getServer().getTickManager().getTickRate();
+            TimerUtils.updatePing(500);
 
             lines.add(
                     String.format(
-                            "TPS: %s",
-                            roundDecimalPlaces(Math.min(averageTps, maxTps), settings.tpsDecimalPlaces)
+                            "Ping: %sms",
+                            TimerUtils.AVERAGE_PING
                     )
             );
         }
 
-        if (settings.showNetworkActivity) {
-            // todo
+        // only works on singleplayer? may switch to measuring how many packets have been received from server in last N seconds
+        if (settings.showTps) {
+            TimerUtils.updateTps(500);
+
+            lines.add(
+                    String.format(
+                            "TPS: %s",
+                            roundDecimalPlaces(TimerUtils.AVERAGE_TPS, settings.tpsDecimalPlaces)
+                    )
+            );
         }
 
         renderElement(renderer, drawContext, lines, settings.coreSettings);

@@ -47,11 +47,14 @@ public class HUDElementEditor extends Screen {
 
     private List<BrainageHUDConfig.CoreSettings> loadElementSettings() {
         return new ArrayList<>(Arrays.asList(
-                getConfig().positionHudConfig.coreSettings,
+                getConfig().armourInfoHudConfig.coreSettings,
                 getConfig().dateTimeHudConfig.coreSettings,
-                getConfig().toggleSprintHudConfig.coreSettings,
+                getConfig().keystrokesHudConfig.coreSettings,
+                getConfig().killDeathRatioHudConfig.coreSettings,
+                getConfig().networkHudConfig.coreSettings,
                 getConfig().performanceHudConfig.coreSettings,
-                getConfig().networkHudConfig.coreSettings
+                getConfig().positionHudConfig.coreSettings,
+                getConfig().toggleSprintHudConfig.coreSettings
         ));
     }
 
@@ -74,14 +77,14 @@ public class HUDElementEditor extends Screen {
         return -1;
     }
 
-    public ButtonWidget button1 = ButtonWidget.builder(Text.literal("Undo & Close"), button -> {
+    public final ButtonWidget button1 = ButtonWidget.builder(Text.literal("Undo & Close"), button -> {
                 loadConfig();
                 super.close();
             })
                 .dimensions(MinecraftClient.getInstance().getWindow().getScaledWidth() / 2 - 210, MinecraftClient.getInstance().getWindow().getScaledHeight() - 40, 200, 20)
                 .tooltip(Tooltip.of(Text.literal("Reverts the current positions to what they were before and closes the screen.")))
                 .build();
-    public ButtonWidget button2 = ButtonWidget.builder(Text.literal("Save & Close"), button -> this.close())
+    public final ButtonWidget button2 = ButtonWidget.builder(Text.literal("Save & Close"), button -> this.close())
                 .dimensions(MinecraftClient.getInstance().getWindow().getScaledWidth() / 2 + 10, MinecraftClient.getInstance().getWindow().getScaledHeight() - 40, 200, 20)
                 .tooltip(Tooltip.of(Text.literal("Saves the current positions and closes the screen.")))
                 .build();
@@ -92,25 +95,25 @@ public class HUDElementEditor extends Screen {
         int elementHeight = selectedElementCorners[3] - selectedElementCorners[1];
 
         int minX = switch (elementList.get(selectedElementIndex).elementAnchor) {
-            case TOPRIGHT, RIGHT, BOTTOMRIGHT -> getConfig().screenMargin - RenderUtils.scaledWidth + elementWidth;
-            case TOP, CENTER, BOTTOM -> getConfig().screenMargin - (RenderUtils.scaledWidth + elementWidth) / 2;
+            case TOPRIGHT, RIGHT, BOTTOMRIGHT -> getConfig().screenMargin - (RenderUtils.getScaledWidth() - elementWidth);
+            case TOP, CENTER, BOTTOM -> getConfig().screenMargin - (RenderUtils.getScaledWidth() - elementWidth) / 2;
             default -> getConfig().screenMargin;
         };
         int minY = switch (elementList.get(selectedElementIndex).elementAnchor) {
-            case BOTTOMLEFT, BOTTOM, BOTTOMRIGHT -> getConfig().screenMargin - RenderUtils.scaledHeight + elementHeight;
-            case LEFT, CENTER, RIGHT -> getConfig().screenMargin - (RenderUtils.scaledHeight + elementHeight) / 2;
+            case BOTTOMLEFT, BOTTOM, BOTTOMRIGHT -> getConfig().screenMargin - (RenderUtils.getScaledHeight() - elementHeight);
+            case LEFT, CENTER, RIGHT -> getConfig().screenMargin - (RenderUtils.getScaledHeight() - elementHeight) / 2;
             default -> getConfig().screenMargin;
         };
 
         elementList.get(selectedElementIndex).x = (int) (MathHelper.clamp(
                 selectedElementX - deltaX,
                 minX,
-                minX + RenderUtils.scaledWidth - elementWidth - getConfig().screenMargin * 2
+                minX + RenderUtils.getScaledWidth() - elementWidth - getConfig().screenMargin * 2
         ));
         elementList.get(selectedElementIndex).y = (int) (MathHelper.clamp(
                 selectedElementY - deltaY,
                 minY,
-                minY + RenderUtils.scaledHeight - elementHeight - getConfig().screenMargin * 2
+                minY + RenderUtils.getScaledHeight() - elementHeight - getConfig().screenMargin * 2
         ));
     }
 
@@ -123,11 +126,14 @@ public class HUDElementEditor extends Screen {
     @Override
     public void close() {
         // update config values
-        getConfig().positionHudConfig.coreSettings = elementList.get(0);
+        getConfig().armourInfoHudConfig.coreSettings = elementList.get(0);
         getConfig().dateTimeHudConfig.coreSettings = elementList.get(1);
-        getConfig().toggleSprintHudConfig.coreSettings = elementList.get(2);
-        getConfig().performanceHudConfig.coreSettings = elementList.get(3);
+        getConfig().keystrokesHudConfig.coreSettings = elementList.get(2);
+        getConfig().killDeathRatioHudConfig.coreSettings = elementList.get(3);
         getConfig().networkHudConfig.coreSettings = elementList.get(4);
+        getConfig().performanceHudConfig.coreSettings = elementList.get(5);
+        getConfig().positionHudConfig.coreSettings = elementList.get(6);
+        getConfig().toggleSprintHudConfig.coreSettings = elementList.get(7);
 
         saveConfig();
         super.close();
@@ -202,7 +208,7 @@ public class HUDElementEditor extends Screen {
                     RenderUtils.elementCorners.get(highlightedElementIndex)[1],
                     RenderUtils.elementCorners.get(highlightedElementIndex)[2],
                     RenderUtils.elementCorners.get(highlightedElementIndex)[3],
-                    getConfig().highlightedElementColour
+                    0x7fffffff
             );
         } else {
             if (highlightedElementIndex != -1) {
@@ -211,7 +217,7 @@ public class HUDElementEditor extends Screen {
                         RenderUtils.elementCorners.get(highlightedElementIndex)[1],
                         RenderUtils.elementCorners.get(highlightedElementIndex)[2],
                         RenderUtils.elementCorners.get(highlightedElementIndex)[3],
-                        getConfig().highlightedElementColour
+                        0x7fffffff
                 );
             }
 
@@ -221,7 +227,7 @@ public class HUDElementEditor extends Screen {
                         RenderUtils.elementCorners.get(selectedElementIndex)[1],
                         RenderUtils.elementCorners.get(selectedElementIndex)[2],
                         RenderUtils.elementCorners.get(selectedElementIndex)[3],
-                        getConfig().highlightedElementColour
+                        0x7fffffff
                 );
             }
         }

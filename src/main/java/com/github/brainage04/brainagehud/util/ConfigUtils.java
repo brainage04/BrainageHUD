@@ -26,4 +26,12 @@ public class ConfigUtils {
         getConfig().qualityOfLifeImprovementsConfig.gamma = value;
         saveConfig();
     }
+
+    public static boolean isLeftClickShown() {
+        return getConfig().keystrokesHudConfig.clicksPerSecondFormat == BrainageHUDConfig.ClicksPerSecondFormat.LEFT_CLICK || getConfig().keystrokesHudConfig.clicksPerSecondFormat == BrainageHUDConfig.ClicksPerSecondFormat.BOTH;
+    }
+
+    public static boolean isRightClickShown() {
+        return getConfig().keystrokesHudConfig.clicksPerSecondFormat == BrainageHUDConfig.ClicksPerSecondFormat.RIGHT_CLICK || getConfig().keystrokesHudConfig.clicksPerSecondFormat == BrainageHUDConfig.ClicksPerSecondFormat.BOTH;
+    }
 }

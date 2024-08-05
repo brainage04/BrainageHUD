@@ -13,14 +13,14 @@ import net.minecraft.client.util.InputUtil;
 import org.lwjgl.glfw.GLFW;
 
 public class KeybindRegistration {
-    public static KeyBinding configKeybind = KeyBindingHelper.registerKeyBinding(new KeyBinding(
+    public static final KeyBinding configKeybind = KeyBindingHelper.registerKeyBinding(new KeyBinding(
             LangUtils.CONFIG_KEYBIND_KEY,
             InputUtil.Type.KEYSYM,
             GLFW.GLFW_KEY_KP_ENTER,
             BrainageHUD.MOD_NAME
     ));
 
-    public static KeyBinding guiKeybind = KeyBindingHelper.registerKeyBinding(new KeyBinding(
+    public static final KeyBinding guiKeybind = KeyBindingHelper.registerKeyBinding(new KeyBinding(
             LangUtils.GUI_KEYBIND_KEY,
             InputUtil.Type.KEYSYM,
             GLFW.GLFW_KEY_KP_ADD,

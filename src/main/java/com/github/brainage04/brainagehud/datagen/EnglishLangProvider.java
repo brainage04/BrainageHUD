@@ -42,14 +42,16 @@ public class EnglishLangProvider extends FabricLanguageProvider {
                 "elementPadding",
                 "screenMargin",
                 "textShadows",
-                "backdrop",
-                "backdropColour",
+                "backdropOpacity",
                 "qualityOfLifeImprovementsConfig",
-                "positionHudConfig",
+                "armourInfoHudConfig",
                 "dateTimeHudConfig",
-                "toggleSprintHudConfig",
-                "performanceHudConfig",
+                "keystrokesHudConfig",
+                "killDeathRatioHudConfig",
                 "networkHudConfig",
+                "performanceHudConfig",
+                "positionHudConfig",
+                "toggleSprintHudConfig",
         };
         String[] values = new String[]{
                 "Primary Text Colour",
@@ -57,14 +59,16 @@ public class EnglishLangProvider extends FabricLanguageProvider {
                 "Element Padding",
                 "Screen Margin",
                 "Text Shadows",
-                "Backdrop",
-                "Backdrop Colour",
+                "Backdrop Opacity",
                 "QOL Improvements Config",
-                "Position HUD Config",
+                "Armour Info HUD Config",
                 "Date and Time HUD Config",
-                "Toggle Sprint HUD Config",
-                "Performance HUD Config",
+                "Keystrokes HUD Config",
+                "Kill Death Ratio HUD Config",
                 "Network HUD Config",
+                "Performance HUD Config",
+                "Position HUD Config",
+                "Toggle Sprint HUD Config",
         };
 
         for (int i = 0; i < keys.length; i++) {
@@ -93,23 +97,30 @@ public class EnglishLangProvider extends FabricLanguageProvider {
 
         // core settings
         keys = new String[]{
-                "positionHudConfig",
+                "armourInfoHudConfig",
                 "dateTimeHudConfig",
-                "toggleSprintHudConfig",
-                "performanceHudConfig",
+                "keystrokesHudConfig",
+                "killDeathRatioHudConfig",
                 "networkHudConfig",
+                "performanceHudConfig",
+                "positionHudConfig",
+                "toggleSprintHudConfig",
         };
         suffixes = new String[]{
                 "enabled",
                 "x",
                 "y",
                 "elementAnchor",
+                "overrideGlobalBackdropOpacity",
+                "backdropOpacity",
         };
         values = new String[]{
                 "Enabled",
                 "X",
                 "Y",
                 "Anchor",
+                "Override Global Backdrop Opacity",
+                "Backdrop Opacity",
         };
 
         for (String s : keys) {
@@ -121,28 +132,26 @@ public class EnglishLangProvider extends FabricLanguageProvider {
             }
         }
 
-        // position hud config
+        // armour info hud config
         suffixes = new String[]{
-                "showPosition",
-                "positionDecimalPlaces",
-                "cCounter",
-                "eCounter",
-                "showDirection",
-                "showRotation",
-                "rotationDecimalPlaces",
+                "showArmour",
+                "showMainHand",
+                "showOffHand",
+                "showItemNames",
+                "durabilityFormat",
+                "durabilityDecimalPlaces"
         };
         values = new String[]{
-                "Show Position",
-                "Decimal Places (Position)",
-                "C Counter",
-                "E Counter",
-                "Show Direction",
-                "Show Rotation",
-                "Decimal Places (Rotation)",
+                "Show Armour",
+                "Show Main Hand",
+                "Show Off Hand",
+                "Show Item Names",
+                "Durability Format",
+                "Durability Decimal Places",
         };
 
         for (int i = 0; i < suffixes.length; i++) {
-            translationBuilder.add(String.format("%s.%s.%s", prefix, keys[0], suffixes[i]), values[i]);
+            translationBuilder.add(String.format("%s.%s.%s", prefix, "armourInfoHudConfig", suffixes[i]), values[i]);
         }
 
         // date time hud config
@@ -160,7 +169,55 @@ public class EnglishLangProvider extends FabricLanguageProvider {
         };
 
         for (int i = 0; i < suffixes.length; i++) {
-            translationBuilder.add(String.format("%s.%s.%s", prefix, keys[1], suffixes[i]), values[i]);
+            translationBuilder.add(String.format("%s.%s.%s", prefix, "dateTimeHudConfig", suffixes[i]), values[i]);
+        }
+
+        // keystrokes hud config
+        suffixes = new String[]{
+                "keyBackdropOpacity",
+                "showWasd",
+                "showSpace",
+                "showMouseButtons",
+                "clicksPerSecondFormat",
+        };
+        values = new String[]{
+                "Key Backdrop Opacity",
+                "Show WASD",
+                "Show Space",
+                "Show Mouse Buttons",
+                "CPS Format",
+        };
+
+        for (int i = 0; i < suffixes.length; i++) {
+            translationBuilder.add(String.format("%s.%s.%s", prefix, "keystrokesHudConfig", suffixes[i]), values[i]);
+        }
+
+        // kill death ratio hud config
+        suffixes = new String[]{
+                "killDeathRatioFormat",
+        };
+        values = new String[]{
+                "KDR Format",
+        };
+
+        for (int i = 0; i < suffixes.length; i++) {
+            translationBuilder.add(String.format("%s.%s.%s", prefix, "killDeathRatioHudConfig", suffixes[i]), values[i]);
+        }
+
+        // network hud config
+        suffixes = new String[]{
+                "showPing",
+                "showTps",
+                "tpsDecimalPlaces",
+        };
+        values = new String[]{
+                "Show Ping",
+                "Show TPS",
+                "Decimal Places (TPS)",
+        };
+
+        for (int i = 0; i < suffixes.length; i++) {
+            translationBuilder.add(String.format("%s.%s.%s", prefix, "networkHudConfig", suffixes[i]), values[i]);
         }
 
         // performance hud config
@@ -184,25 +241,31 @@ public class EnglishLangProvider extends FabricLanguageProvider {
         };
 
         for (int i = 0; i < suffixes.length; i++) {
-            translationBuilder.add(String.format("%s.%s.%s", prefix, keys[3], suffixes[i]), values[i]);
+            translationBuilder.add(String.format("%s.%s.%s", prefix, "performanceHudConfig", suffixes[i]), values[i]);
         }
 
-        // network hud config
+        // position hud config
         suffixes = new String[]{
-                "showPing",
-                "showTps",
-                "tpsDecimalPlaces",
-                "showNetworkActivity",
+                "showPosition",
+                "positionDecimalPlaces",
+                "cCounter",
+                "eCounter",
+                "showDirection",
+                "showRotation",
+                "rotationDecimalPlaces",
         };
         values = new String[]{
-                "Show Ping",
-                "Show TPS",
-                "Decimal Places (TPS)",
-                "Show Network Activity",
+                "Show Position",
+                "Decimal Places (Position)",
+                "C Counter",
+                "E Counter",
+                "Show Direction",
+                "Show Rotation",
+                "Decimal Places (Rotation)",
         };
 
         for (int i = 0; i < suffixes.length; i++) {
-            translationBuilder.add(String.format("%s.%s.%s", prefix, keys[4], suffixes[i]), values[i]);
+            translationBuilder.add(String.format("%s.%s.%s", prefix, "positionHudConfig", suffixes[i]), values[i]);
         }
     }
 }
