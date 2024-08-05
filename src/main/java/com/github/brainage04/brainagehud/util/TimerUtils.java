@@ -60,8 +60,16 @@ public class TimerUtils {
 
     public static void updateTps(int millisecondsBetweenUpdates) {
         if (System.currentTimeMillis() - TPS_LAST_UPDATED > millisecondsBetweenUpdates) {
-            float averageTps = 1000f / Objects.requireNonNull(MinecraftClient.getInstance().getServer()).getAverageTickTime();
-            float maxTps = MinecraftClient.getInstance().getServer().getTickManager().getTickRate();
+            float averageTps;
+            float maxTps;
+            if (MinecraftClient.getInstance().getServer() != null) {
+                averageTps = 1000.0f / MinecraftClient.getInstance().getServer().getAverageTickTime();
+                maxTps = MinecraftClient.getInstance().getServer().getTickManager().getTickRate();
+            } else {
+                // testing something
+                averageTps = 2.5f;
+                maxTps = 2.5f;
+            }
             AVERAGE_TPS = Math.min(averageTps, maxTps);
 
             TPS_LAST_UPDATED = System.currentTimeMillis();
