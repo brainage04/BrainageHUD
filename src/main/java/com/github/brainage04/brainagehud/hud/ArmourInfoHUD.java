@@ -44,6 +44,8 @@ public class ArmourInfoHUD {
         List<String> lines = new ArrayList<>(List.of());
         List<Integer> lineWidths = new ArrayList<>(List.of());
 
+        assert MinecraftClient.getInstance().player != null;
+
         if (settings.showOffHand) {
             itemStacks.add(MinecraftClient.getInstance().player.getOffHandStack());
         }
@@ -92,27 +94,6 @@ public class ArmourInfoHUD {
             case LEFT, CENTER, RIGHT -> settings.coreSettings.y + (RenderUtils.getScaledHeight() - elementHeight) / 2;
             default -> settings.coreSettings.y + getConfig().elementPadding * 2;
         };
-
-        // debug
-        /*
-        RenderUtils.drawRectangleBorder(
-                drawContext,
-                posX,
-                posX + elementWidth,
-                posY,
-                posY + elementHeight,
-                0x7f00ff00 // transparent green
-        );
-
-        RenderUtils.drawRectangleBorder(
-                drawContext,
-                posX - getConfig().elementPadding,
-                posX + elementWidth + getConfig().elementPadding,
-                posY - getConfig().elementPadding,
-                posY + elementHeight + getConfig().elementPadding,
-                0x7f0000ff // transparent blue
-        );
-         */
 
         // adjust for padding
         int[] corners = RenderUtils.getCornersWithPadding(posX, posY, posX + elementWidth, posY + elementHeight);

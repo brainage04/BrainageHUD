@@ -6,6 +6,7 @@ import net.minecraft.client.network.PlayerListEntry;
 
 import java.lang.management.ManagementFactory;
 import java.util.List;
+import java.util.Objects;
 
 public class TimerUtils {
     private static final OperatingSystemMXBean osBean = ManagementFactory.getPlatformMXBean(OperatingSystemMXBean.class);
@@ -37,8 +38,8 @@ public class TimerUtils {
     }
 
     public static void updatePing(int millisecondsBetweenUpdates) {
-        if (System.currentTimeMillis() - CPU_LAST_UPDATED > millisecondsBetweenUpdates) {
-            List<PlayerListEntry> playerList = MinecraftClient.getInstance().getNetworkHandler().getPlayerList().stream().toList();
+        if (System.currentTimeMillis() - PING_LAST_UPDATED > millisecondsBetweenUpdates) {
+            List<PlayerListEntry> playerList = Objects.requireNonNull(MinecraftClient.getInstance().getNetworkHandler()).getPlayerList().stream().toList();
             PlayerListEntry player = null;
 
             for (PlayerListEntry playerListEntry : playerList) {
@@ -59,7 +60,7 @@ public class TimerUtils {
 
     public static void updateTps(int millisecondsBetweenUpdates) {
         if (System.currentTimeMillis() - TPS_LAST_UPDATED > millisecondsBetweenUpdates) {
-            float averageTps = 1000f / MinecraftClient.getInstance().getServer().getAverageTickTime();
+            float averageTps = 1000f / Objects.requireNonNull(MinecraftClient.getInstance().getServer()).getAverageTickTime();
             float maxTps = MinecraftClient.getInstance().getServer().getTickManager().getTickRate();
             AVERAGE_TPS = Math.min(averageTps, maxTps);
 

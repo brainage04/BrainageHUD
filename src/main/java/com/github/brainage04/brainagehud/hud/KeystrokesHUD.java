@@ -251,7 +251,7 @@ public class KeystrokesHUD {
                     } else {
                         // cps times are in chronological order
                         // once the first time under 1000ms ago is found,
-                        // all times afterwards will also be under 1000ms
+                        // all times afterward will also be under 1000ms
                         break;
                     }
                 }
@@ -269,7 +269,7 @@ public class KeystrokesHUD {
                     } else {
                         // cps times are in chronological order
                         // once the first time under 1000ms ago is found,
-                        // all times afterwards will also be under 1000ms
+                        // all times afterward will also be under 1000ms
                         break;
                     }
                 }

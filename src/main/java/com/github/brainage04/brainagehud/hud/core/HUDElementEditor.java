@@ -16,7 +16,6 @@ import org.lwjgl.glfw.GLFW;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Locale;
 
 import static com.github.brainage04.brainagehud.util.ConfigUtils.*;
 
@@ -33,6 +32,8 @@ public class HUDElementEditor extends Screen {
 
     public int highlightedElementIndex = -1;
 
+    private Integer previousMenuBackgroundBlurriness;
+
     public HUDElementEditor() {
         super(Text.of(BrainageHUD.MOD_NAME + " Element Editor"));
 
@@ -43,6 +44,18 @@ public class HUDElementEditor extends Screen {
         while (RenderUtils.elementCorners.size() < elementList.size()) {
             RenderUtils.elementCorners.add(new int[]{-1, -1, -1, -1});
         }
+
+        // disable blur while editing elements
+        disableBlur();
+    }
+
+    public void disableBlur() {
+        previousMenuBackgroundBlurriness = MinecraftClient.getInstance().options.getMenuBackgroundBlurriness().getValue();
+        MinecraftClient.getInstance().options.getMenuBackgroundBlurriness().setValue(0);
+    }
+
+    public void revertBlur() {
+        MinecraftClient.getInstance().options.getMenuBackgroundBlurriness().setValue(previousMenuBackgroundBlurriness);
     }
 
     private List<BrainageHUDConfig.CoreSettings> loadElementSettings() {
@@ -77,17 +90,14 @@ public class HUDElementEditor extends Screen {
         return -1;
     }
 
-    public final ButtonWidget button1 = ButtonWidget.builder(Text.literal("Undo & Close"), button -> {
-                loadConfig();
-                super.close();
-            })
-                .dimensions(MinecraftClient.getInstance().getWindow().getScaledWidth() / 2 - 210, MinecraftClient.getInstance().getWindow().getScaledHeight() - 40, 200, 20)
-                .tooltip(Tooltip.of(Text.literal("Reverts the current positions to what they were before and closes the screen.")))
-                .build();
+    public final ButtonWidget button1 = ButtonWidget.builder(Text.literal("Undo & Close"), button -> closeWithoutSaving())
+            .dimensions(MinecraftClient.getInstance().getWindow().getScaledWidth() / 2 - 210, MinecraftClient.getInstance().getWindow().getScaledHeight() - 40, 200, 20)
+            .tooltip(Tooltip.of(Text.literal("Reverts the current positions to what they were before and closes the screen.")))
+            .build();
     public final ButtonWidget button2 = ButtonWidget.builder(Text.literal("Save & Close"), button -> this.close())
-                .dimensions(MinecraftClient.getInstance().getWindow().getScaledWidth() / 2 + 10, MinecraftClient.getInstance().getWindow().getScaledHeight() - 40, 200, 20)
-                .tooltip(Tooltip.of(Text.literal("Saves the current positions and closes the screen.")))
-                .build();
+            .dimensions(MinecraftClient.getInstance().getWindow().getScaledWidth() / 2 + 10, MinecraftClient.getInstance().getWindow().getScaledHeight() - 40, 200, 20)
+            .tooltip(Tooltip.of(Text.literal("Saves the current positions and closes the screen.")))
+            .build();
 
     public void updateElementPosition(int deltaX, int deltaY) {
         int[] selectedElementCorners = RenderUtils.elementCorners.get(selectedElementIndex);
@@ -136,11 +146,30 @@ public class HUDElementEditor extends Screen {
         getConfig().toggleSprintHudConfig.coreSettings = elementList.get(7);
 
         saveConfig();
+
+        // return blur to previous value
+        revertBlur();
+
+        super.close();
+    }
+
+    public void closeWithoutSaving() {
+        loadConfig();
+
+        // return blur to previous value
+        revertBlur();
+
         super.close();
     }
 
     @Override
     public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
+        // from package net.minecraft.client.gui.screen.Screen;
+        if (keyCode == GLFW.GLFW_KEY_ESCAPE && this.shouldCloseOnEsc()) {
+            closeWithoutSaving();
+            return true;
+        }
+
         if (selectedElementIndex != -1) {
             int xDirection = 0;
             int yDirection = 0;
@@ -192,12 +221,9 @@ public class HUDElementEditor extends Screen {
 
     @Override
     public void render(DrawContext context, int mouseX, int mouseY, float delta) {
-        // render title
-        context.drawCenteredTextWithShadow(textRenderer, title, width / 2, 10, 0xffffff);
-
         highlightedElementIndex = mouseInElement(mouseX, mouseY);
 
-        List<String> lines = new ArrayList<>(List.of());
+        List<Text> lines = new ArrayList<>(List.of(title));
 
         // render backdrops
         // if both indices are the same, use highlighted
@@ -234,52 +260,25 @@ public class HUDElementEditor extends Screen {
 
         // render element information
         if (highlightedElementIndex != -1) {
-            lines = new ArrayList<>(Arrays.asList(
-                    elementList.get(highlightedElementIndex).elementName,
-                    String.format(
-                            Locale.ROOT,
-                            "X: %d Y: %d",
-                            elementList.get(highlightedElementIndex).x,
-                            elementList.get(highlightedElementIndex).y
-                    ),
-                    String.format(
-                            Locale.ROOT,
-                            "Anchor: %s",
-                            elementList.get(highlightedElementIndex).elementAnchor.name()
-                    )
-            ));
+            lines.add(Text.of(elementList.get(highlightedElementIndex).elementName));
+            lines.add(Text.of("X: %d Y: %d".formatted(elementList.get(highlightedElementIndex).x, elementList.get(highlightedElementIndex).y)));
+            lines.add(Text.of("Anchor: %s".formatted(elementList.get(highlightedElementIndex).elementAnchor.name())));
 
             if (highlightedElementIndex == selectedElementIndex) {
-                lines.add("Highlighted & Selected");
+                lines.add(Text.of("Highlighted & Selected"));
             } else {
-                lines.add("Highlighted");
+                lines.add(Text.of("Highlighted"));
             }
         } else if (selectedElementIndex != -1) {
-            lines = new ArrayList<>(Arrays.asList(
-                    elementList.get(selectedElementIndex).elementName,
-                    String.format(
-                            Locale.ROOT,
-                            "X: %d Y: %d",
-                            elementList.get(selectedElementIndex).x,
-                            elementList.get(selectedElementIndex).y
-                    ),
-                    String.format(
-                            Locale.ROOT,
-                            "Anchor: %s",
-                            elementList.get(selectedElementIndex).elementAnchor.name()
-                    ),
-                    "Selected"
-            ));
+            lines.add(Text.of(elementList.get(selectedElementIndex).elementName));
+            lines.add(Text.of("X: %d Y: %d".formatted(elementList.get(selectedElementIndex).x, elementList.get(selectedElementIndex).y)));
+            lines.add(Text.of("Anchor: %s".formatted(elementList.get(selectedElementIndex).elementAnchor.name())));
+            lines.add(Text.of("Selected"));
         }
 
-        HUDRenderer.renderElement(
-                MinecraftClient.getInstance().textRenderer,
-                context,
-                lines,
-                0,
-                (textRenderer.fontHeight + getConfig().elementPadding) * 2,
-                BrainageHUDConfig.ElementAnchor.TOP
-        );
+        for (int i = 0; i < lines.size(); i++) {
+            context.drawCenteredTextWithShadow(textRenderer, lines.get(i), width / 2, 10 + (textRenderer.fontHeight + 2) * i, 0xffffff);
+        }
 
         super.render(context, mouseX, mouseY, delta);
     }

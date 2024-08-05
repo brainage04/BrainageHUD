@@ -94,44 +94,6 @@ public class HUDRenderer implements HudRenderCallback {
         }
     }
 
-    // for bare bones rendering
-    // todo: get rid of this - so much repeated code
-    public static void renderElement(TextRenderer renderer, DrawContext drawContext, List<String> lines, int x, int y, BrainageHUDConfig.ElementAnchor elementAnchor) {
-        int elementWidth = 0;
-
-        int lineHeight = renderer.fontHeight + getConfig().elementPadding;
-        int elementHeight = lineHeight * lines.size() + getConfig().elementPadding;
-
-        // vertical adjustments
-        int posY = switch (elementAnchor) {
-            case BOTTOMLEFT, BOTTOM, BOTTOMRIGHT -> y + (RenderUtils.getScaledHeight() - elementHeight);
-            case LEFT, CENTER, RIGHT -> y + (RenderUtils.getScaledHeight() - elementHeight) / 2 + getConfig().elementPadding;
-            default -> y + getConfig().elementPadding * 2;
-        };
-
-        for (int i = 0; i < lines.size(); i++) {
-            int lineWidth = renderer.getWidth(lines.get(i));
-
-            elementWidth = Math.max(elementWidth, lineWidth);
-
-            // horizontal adjustments (for line)
-            int posX = switch (elementAnchor) {
-                case TOPRIGHT, RIGHT, BOTTOMRIGHT -> x + (RenderUtils.getScaledWidth() - lineWidth) - getConfig().elementPadding * 2;
-                case TOP, CENTER, BOTTOM -> x + (RenderUtils.getScaledWidth() - lineWidth) / 2;
-                default -> x + getConfig().elementPadding * 2;
-            };
-
-            drawContext.drawText(
-                    renderer,
-                    lines.get(i),
-                    posX,
-                    posY + (lineHeight * i),
-                    getConfig().primaryTextColour,
-                    getConfig().textShadows
-            );
-        }
-    }
-
     @Override
     public void onHudRender(DrawContext drawContext, RenderTickCounter tickCounter) {
         TextRenderer renderer = MinecraftClient.getInstance().textRenderer;

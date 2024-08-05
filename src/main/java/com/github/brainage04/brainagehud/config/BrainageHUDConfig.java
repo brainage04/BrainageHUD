@@ -5,7 +5,7 @@ import me.shedaniel.autoconfig.ConfigData;
 import me.shedaniel.autoconfig.annotation.Config;
 import me.shedaniel.autoconfig.annotation.ConfigEntry;
 
-@SuppressWarnings({"unused", "FieldMayBeFinal"})
+@SuppressWarnings({"unused"})
 @Config(name = BrainageHUD.MOD_ID)
 public class BrainageHUDConfig implements ConfigData {
     public boolean textShadows = true;
