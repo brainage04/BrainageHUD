@@ -66,9 +66,9 @@ public class TimerUtils {
                 averageTps = 1000.0f / MinecraftClient.getInstance().getServer().getAverageTickTime();
                 maxTps = MinecraftClient.getInstance().getServer().getTickManager().getTickRate();
             } else {
-                // testing something
-                averageTps = 2.5f;
-                maxTps = 2.5f;
+                // todo: implement TPS tracking on non-integrated servers
+                averageTps = 20.0f;
+                maxTps = 20.0f;
             }
             AVERAGE_TPS = Math.min(averageTps, maxTps);
 

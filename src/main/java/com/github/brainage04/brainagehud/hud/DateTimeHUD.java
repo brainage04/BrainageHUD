@@ -20,12 +20,16 @@ public class DateTimeHUD {
         List<String> lines = new ArrayList<>(List.of());
 
         if (settings.showDate) {
-            lines.add(new SimpleDateFormat("E d/M/y").format(new Date()));
+            lines.add(new SimpleDateFormat("E dd MMM yyyy").format(new Date()));
         }
 
         if (settings.showTime) {
             if (settings.twelveHourFormat) {
-                lines.add(new SimpleDateFormat("h:mm:ss a").format(new Date()));
+                lines.add(
+                        new SimpleDateFormat("hh:mm:ss a").format(new Date())
+                        .replace("am", "AM")
+                        .replace("pm", "PM")
+                );
             } else {
                 lines.add(new SimpleDateFormat("HH:mm:ss").format(new Date()));
             }

@@ -8,6 +8,7 @@ import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.render.RenderLayer;
 import net.minecraft.item.ItemStack;
+import net.minecraft.item.Items;
 import net.minecraft.util.Colors;
 
 import java.util.ArrayList;
@@ -21,13 +22,13 @@ public class ArmourInfoHUD {
 
         if (settings.showItemNames) {
             itemString += "%s".formatted(itemStack.getName().getString());
-
-            if (settings.durabilityFormat != BrainageHUDConfig.DurabilityFormat.NONE) {
-                itemString += ": ";
-            }
         }
 
         if (itemStack.getMaxDamage() > 0) {
+            if (settings.showItemNames && settings.durabilityFormat != BrainageHUDConfig.DurabilityFormat.NONE) {
+                itemString += ": ";
+            }
+
             int currentDurability = itemStack.getMaxDamage() - itemStack.getDamage();
 
             itemString += switch (settings.durabilityFormat) {
@@ -46,6 +47,7 @@ public class ArmourInfoHUD {
             return;
         }
 
+        List<ItemStack> itemStacksTemp = new ArrayList<>(List.of());
         List<ItemStack> itemStacks = new ArrayList<>(List.of());
         List<String> lines = new ArrayList<>(List.of());
         List<Integer> lineWidths = new ArrayList<>(List.of());
@@ -53,18 +55,24 @@ public class ArmourInfoHUD {
         assert MinecraftClient.getInstance().player != null;
 
         if (settings.showOffHand) {
-            itemStacks.add(MinecraftClient.getInstance().player.getOffHandStack());
+            itemStacksTemp.add(MinecraftClient.getInstance().player.getOffHandStack());
         }
 
         if (settings.showMainHand) {
-            itemStacks.add(MinecraftClient.getInstance().player.getMainHandStack());
+            itemStacksTemp.add(MinecraftClient.getInstance().player.getMainHandStack());
         }
 
         if (settings.showArmour) {
-            itemStacks.add(MinecraftClient.getInstance().player.getInventory().getArmorStack(3));
-            itemStacks.add(MinecraftClient.getInstance().player.getInventory().getArmorStack(2));
-            itemStacks.add(MinecraftClient.getInstance().player.getInventory().getArmorStack(1));
-            itemStacks.add(MinecraftClient.getInstance().player.getInventory().getArmorStack(0));
+            itemStacksTemp.add(MinecraftClient.getInstance().player.getInventory().getArmorStack(3));
+            itemStacksTemp.add(MinecraftClient.getInstance().player.getInventory().getArmorStack(2));
+            itemStacksTemp.add(MinecraftClient.getInstance().player.getInventory().getArmorStack(1));
+            itemStacksTemp.add(MinecraftClient.getInstance().player.getInventory().getArmorStack(0));
+        }
+
+        for (ItemStack itemStack : itemStacksTemp) {
+            if (itemStack.getItem() != Items.AIR) {
+                itemStacks.add(itemStack);
+            }
         }
 
         for (ItemStack itemStack : itemStacks) {
@@ -129,8 +137,8 @@ public class ArmourInfoHUD {
             // horizontal adjustments (for line)
             int lineWidth = lineWidths.get(i);
             int linePosX = switch (settings.coreSettings.elementAnchor) { // do not ask how I figured this out SERIOUSLY
-                case TOPRIGHT, RIGHT, BOTTOMRIGHT -> posX - (lineWidth - elementWidth + 16 + getConfig().elementPadding);
-                case TOP, CENTER, BOTTOM -> posX - (lineWidth - elementWidth + 16 + getConfig().elementPadding) / 2;
+                case TOPRIGHT, RIGHT, BOTTOMRIGHT -> posX - (lineWidth - elementWidth + 16 + getConfig().elementPadding * 2);
+                case TOP, CENTER, BOTTOM -> posX - (lineWidth - elementWidth + 16 + getConfig().elementPadding * 2) / 2;
                 default -> posX;
             };
             int linePosY = posY + 5 + i * (16 + getConfig().elementPadding);
@@ -141,7 +149,7 @@ public class ArmourInfoHUD {
                 int a = itemStack.getItemBarStep();
                 int b = itemStack.getItemBarColor();
                 int c = linePosX + 2;
-                int d = linePosY + 9;
+                int d = linePosY + 8;
                 drawContext.fill(RenderLayer.getGuiOverlay(), c, d, c + 13, d + 2, Colors.BLACK);
                 drawContext.fill(RenderLayer.getGuiOverlay(), c, d, c + a, d + 1, b | Colors.BLACK);
             }
