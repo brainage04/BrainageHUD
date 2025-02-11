@@ -37,6 +37,7 @@ public class TimerUtils {
         }
     }
 
+    // using stream.filter would be MUCH more efficient in terms of LOC
     public static void updatePing(int millisecondsBetweenUpdates) {
         if (System.currentTimeMillis() - PING_LAST_UPDATED > millisecondsBetweenUpdates) {
             List<PlayerListEntry> playerList = Objects.requireNonNull(MinecraftClient.getInstance().getNetworkHandler()).getPlayerList().stream().toList();
