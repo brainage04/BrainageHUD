@@ -1,6 +1,6 @@
 package com.github.brainage04.brainagehud.hud;
 
-import com.github.brainage04.brainagehud.config.BrainageHUDConfig;
+import com.github.brainage04.brainagehud.config.ModConfig;
 import com.github.brainage04.brainagehud.util.MathUtils;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
@@ -16,7 +16,7 @@ import static com.github.brainage04.brainagehud.hud.core.HUDRenderer.renderEleme
 import static com.github.brainage04.brainagehud.util.MathUtils.roundDecimalPlaces;
 
 public class PositionHUD {
-    public static void positionHud(TextRenderer renderer, DrawContext drawContext, BrainageHUDConfig.PositionHUDConfig settings) {
+    public static void positionHud(TextRenderer renderer, DrawContext drawContext, ModConfig.PositionHUDConfig settings) {
         if (!settings.coreSettings.enabled) {
             return;
         }

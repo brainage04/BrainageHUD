@@ -1,6 +1,6 @@
 package com.github.brainage04.brainagehud.hud;
 
-import com.github.brainage04.brainagehud.config.BrainageHUDConfig;
+import com.github.brainage04.brainagehud.config.ModConfig;
 import com.github.brainage04.brainagehud.util.TimerUtils;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
@@ -13,7 +13,7 @@ import java.util.Locale;
 import static com.github.brainage04.brainagehud.hud.core.HUDRenderer.renderElement;
 
 public class PerformanceHUD {
-    public static void performanceHud(TextRenderer renderer, DrawContext drawContext, BrainageHUDConfig.PerformanceHUDConfig settings) {
+    public static void performanceHud(TextRenderer renderer, DrawContext drawContext, ModConfig.PerformanceHUDConfig settings) {
         if (!settings.coreSettings.enabled) {
             return;
         }

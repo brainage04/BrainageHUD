@@ -1,6 +1,6 @@
 package com.github.brainage04.brainagehud.hud;
 
-import com.github.brainage04.brainagehud.config.BrainageHUDConfig;
+import com.github.brainage04.brainagehud.config.ModConfig;
 import com.github.brainage04.brainagehud.util.TimerUtils;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.DrawContext;
@@ -15,7 +15,7 @@ public class NetworkHUD {
     // Credits:
     // https://github.com/vladmarica/better-ping-display-fabric
     // todo: separate ping and tps into individual HUD elements?
-    public static void networkHud(TextRenderer renderer, DrawContext drawContext, BrainageHUDConfig.NetworkHUDConfig settings) {
+    public static void networkHud(TextRenderer renderer, DrawContext drawContext, ModConfig.NetworkHUDConfig settings) {
         if (!settings.coreSettings.enabled) {
             return;
         }

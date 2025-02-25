@@ -2,8 +2,7 @@ package com.github.brainage04.brainagehud.keybind;
 
 import com.github.brainage04.brainagehud.BrainageHUD;
 import com.github.brainage04.brainagehud.hud.core.HUDElementEditor;
-import com.github.brainage04.brainagehud.config.BrainageHUDConfig;
-import com.github.brainage04.brainagehud.util.LangUtils;
+import com.github.brainage04.brainagehud.config.ModConfig;
 import me.shedaniel.autoconfig.AutoConfig;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
@@ -12,30 +11,30 @@ import net.minecraft.client.option.KeyBinding;
 import net.minecraft.client.util.InputUtil;
 import org.lwjgl.glfw.GLFW;
 
-public class KeybindRegistration {
-    public static final KeyBinding configKeybind = KeyBindingHelper.registerKeyBinding(new KeyBinding(
-            LangUtils.CONFIG_KEYBIND_KEY,
+public class ModKeys {
+    public static final KeyBinding openConfig = KeyBindingHelper.registerKeyBinding(new KeyBinding(
+            "%s.openConfig".formatted(ModKeys.class.getPackageName()),
             InputUtil.Type.KEYSYM,
             GLFW.GLFW_KEY_KP_ENTER,
             BrainageHUD.MOD_NAME
     ));
 
-    public static final KeyBinding guiKeybind = KeyBindingHelper.registerKeyBinding(new KeyBinding(
-            LangUtils.GUI_KEYBIND_KEY,
+    public static final KeyBinding openElementEditor = KeyBindingHelper.registerKeyBinding(new KeyBinding(
+            "%s.openElementEditor".formatted(ModKeys.class.getPackageName()),
             InputUtil.Type.KEYSYM,
             GLFW.GLFW_KEY_KP_ADD,
             BrainageHUD.MOD_NAME
     ));
 
-    public static void registerKeybinds() {
+    public static void registerKeys() {
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
-            if (configKeybind.isPressed()) {
+            if (openConfig.isPressed()) {
                 MinecraftClient.getInstance().setScreen(
-                        AutoConfig.getConfigScreen(BrainageHUDConfig.class, MinecraftClient.getInstance().currentScreen).get()
+                        AutoConfig.getConfigScreen(ModConfig.class, MinecraftClient.getInstance().currentScreen).get()
                 );
             }
 
-            if (guiKeybind.isPressed()) {
+            if (openElementEditor.isPressed()) {
                 MinecraftClient.getInstance().setScreen(
                         new HUDElementEditor()
                 );

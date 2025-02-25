@@ -1,21 +1,21 @@
 package com.github.brainage04.brainagehud.util;
 
-import com.github.brainage04.brainagehud.config.BrainageHUDConfig;
+import com.github.brainage04.brainagehud.config.ModConfig;
 import me.shedaniel.autoconfig.AutoConfig;
 import net.minecraft.client.MinecraftClient;
 
 public class ConfigUtils {
-    public static BrainageHUDConfig getConfig() {
-        return AutoConfig.getConfigHolder(BrainageHUDConfig.class).getConfig();
+    public static ModConfig getConfig() {
+        return AutoConfig.getConfigHolder(ModConfig.class).getConfig();
     }
 
     public static void saveConfig() {
-        AutoConfig.getConfigHolder(BrainageHUDConfig.class).save();
+        AutoConfig.getConfigHolder(ModConfig.class).save();
         updateGamma();
     }
 
     public static void loadConfig() {
-        AutoConfig.getConfigHolder(BrainageHUDConfig.class).load();
+        AutoConfig.getConfigHolder(ModConfig.class).load();
     }
 
     public static void updateGamma() {
@@ -28,10 +28,10 @@ public class ConfigUtils {
     }
 
     public static boolean isLeftClickShown() {
-        return getConfig().keystrokesHudConfig.clicksPerSecondFormat == BrainageHUDConfig.ClicksPerSecondFormat.LEFT_CLICK || getConfig().keystrokesHudConfig.clicksPerSecondFormat == BrainageHUDConfig.ClicksPerSecondFormat.BOTH;
+        return getConfig().keystrokesHudConfig.clicksPerSecondFormat == ModConfig.ClicksPerSecondFormat.LEFT_CLICK || getConfig().keystrokesHudConfig.clicksPerSecondFormat == ModConfig.ClicksPerSecondFormat.BOTH;
     }
 
     public static boolean isRightClickShown() {
-        return getConfig().keystrokesHudConfig.clicksPerSecondFormat == BrainageHUDConfig.ClicksPerSecondFormat.RIGHT_CLICK || getConfig().keystrokesHudConfig.clicksPerSecondFormat == BrainageHUDConfig.ClicksPerSecondFormat.BOTH;
+        return getConfig().keystrokesHudConfig.clicksPerSecondFormat == ModConfig.ClicksPerSecondFormat.RIGHT_CLICK || getConfig().keystrokesHudConfig.clicksPerSecondFormat == ModConfig.ClicksPerSecondFormat.BOTH;
     }
 }

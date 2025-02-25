@@ -1,7 +1,7 @@
 package com.github.brainage04.brainagehud.hud.core;
 
 import com.github.brainage04.brainagehud.BrainageHUD;
-import com.github.brainage04.brainagehud.config.BrainageHUDConfig;
+import com.github.brainage04.brainagehud.config.ModConfig;
 import com.github.brainage04.brainagehud.util.MathUtils;
 import com.github.brainage04.brainagehud.util.RenderUtils;
 import net.minecraft.client.MinecraftClient;
@@ -20,7 +20,7 @@ import java.util.List;
 import static com.github.brainage04.brainagehud.util.ConfigUtils.*;
 
 public class HUDElementEditor extends Screen {
-    public List<BrainageHUDConfig.CoreSettings> elementList;
+    public final List<ModConfig.CoreSettings> elementList;
 
     public int selectedElementIndex = -1;
 
@@ -58,7 +58,7 @@ public class HUDElementEditor extends Screen {
         MinecraftClient.getInstance().options.getMenuBackgroundBlurriness().setValue(previousMenuBackgroundBlurriness);
     }
 
-    private List<BrainageHUDConfig.CoreSettings> loadElementSettings() {
+    private List<ModConfig.CoreSettings> loadElementSettings() {
         return new ArrayList<>(Arrays.asList(
                 getConfig().armourInfoHudConfig.coreSettings,
                 getConfig().dateTimeHudConfig.coreSettings,

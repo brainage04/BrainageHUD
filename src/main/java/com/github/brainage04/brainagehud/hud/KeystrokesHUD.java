@@ -1,6 +1,6 @@
 package com.github.brainage04.brainagehud.hud;
 
-import com.github.brainage04.brainagehud.config.BrainageHUDConfig;
+import com.github.brainage04.brainagehud.config.ModConfig;
 import com.github.brainage04.brainagehud.util.RenderUtils;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
@@ -15,31 +15,16 @@ import java.util.Objects;
 import static com.github.brainage04.brainagehud.util.ConfigUtils.*;
 
 public class KeystrokesHUD {
-    private static class KeyStrokesItem {
-        @Nullable final KeyBinding key;
-        final String name;
-        final int x;
-        final int y;
-        final int width;
-        final int height;
-
-        KeyStrokesItem(@Nullable KeyBinding key, String name, int x, int y, int width, int height) {
-            this.key = key;
-            this.name = name;
-            this.x = x;
-            this.y = y;
-            this.width = width;
-            this.height = height;
-        }
-    }
+    // todo: why is the key nullable? surely there is a better approach
+    private record KeyStrokesItem(@Nullable KeyBinding key, String name, int x, int y, int width, int height) {}
 
     public static boolean leftLastFrame = false;
     public static boolean rightLastFrame = false;
 
-    public static List<Long> leftCpsTimes = new ArrayList<>(List.of());
-    public static List<Long> rightCpsTimes = new ArrayList<>(List.of());
+    public static final List<Long> leftCpsTimes = new ArrayList<>(List.of());
+    public static final List<Long> rightCpsTimes = new ArrayList<>(List.of());
 
-    public static void keystrokesHud(TextRenderer renderer, DrawContext drawContext, BrainageHUDConfig.KeystrokesHUDConfig settings) {
+    public static void keystrokesHud(TextRenderer renderer, DrawContext drawContext, ModConfig.KeystrokesHUDConfig settings) {
         if (!settings.coreSettings.enabled) {
             return;
         }
@@ -140,7 +125,7 @@ public class KeystrokesHUD {
             y1 += keySize + getConfig().elementPadding;
         }
 
-        if (settings.clicksPerSecondFormat != BrainageHUDConfig.ClicksPerSecondFormat.NONE) {
+        if (settings.clicksPerSecondFormat != ModConfig.ClicksPerSecondFormat.NONE) {
             String cpsString = switch (settings.clicksPerSecondFormat) {
                 case LEFT_CLICK -> "%d CPS".formatted(leftCpsTimes.size());
                 case RIGHT_CLICK -> "%d CPS (R)".formatted(rightCpsTimes.size());

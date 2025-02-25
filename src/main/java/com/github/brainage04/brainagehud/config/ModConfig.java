@@ -7,7 +7,7 @@ import me.shedaniel.autoconfig.annotation.ConfigEntry;
 
 @SuppressWarnings({"unused"})
 @Config(name = BrainageHUD.MOD_ID)
-public class BrainageHUDConfig implements ConfigData {
+public class ModConfig implements ConfigData {
     public boolean textShadows = true;
     @ConfigEntry.ColorPicker public int primaryTextColour = 0xffffff;
 

@@ -8,10 +8,10 @@
 		"brainage04"
 	],
 	"contact": {
-		"homepage": "https://github.com/brainage04",
+		"homepage": "https://github.com/brainage04/BrainageHUD",
 		"sources": "https://github.com/brainage04/BrainageHUD"
 	},
-	"license": "CC0-1.0",
+	"license": "MIT",
 	"icon": "assets/brainagehud/icon.png",
 	"environment": "*",
 	"entrypoints": {
@@ -29,8 +29,8 @@
 		"brainagehud.mixins.json"
 	],
 	"depends": {
-		"fabricloader": ">=0.15.11",
-		"minecraft": "~1.21",
+		"fabricloader": ">=0.16.10",
+		"minecraft": "~1.21.4",
 		"java": ">=21",
 		"fabric-api": "*"
 	},

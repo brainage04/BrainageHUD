@@ -1,6 +1,6 @@
 package com.github.brainage04.brainagehud.hud.core;
 
-import com.github.brainage04.brainagehud.config.BrainageHUDConfig;
+import com.github.brainage04.brainagehud.config.ModConfig;
 import com.github.brainage04.brainagehud.util.RenderUtils;
 import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
 import net.minecraft.client.MinecraftClient;
@@ -22,7 +22,7 @@ import static com.github.brainage04.brainagehud.util.ConfigUtils.getConfig;
 
 public class HUDRenderer implements HudRenderCallback {
     // for rendering HUD elements
-    public static void renderElement(TextRenderer renderer, DrawContext drawContext, List<String> lines, BrainageHUDConfig.CoreSettings coreSettings) {
+    public static void renderElement(TextRenderer renderer, DrawContext drawContext, List<String> lines, ModConfig.CoreSettings coreSettings) {
         int elementWidth = 0;
 
         int lineHeight = renderer.fontHeight + getConfig().elementPadding;

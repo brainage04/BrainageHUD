@@ -2,7 +2,7 @@ package com.github.brainage04.brainagehud.command;
 
 import com.github.brainage04.brainagehud.BrainageHUD;
 import com.github.brainage04.brainagehud.hud.core.HUDElementEditor;
-import com.github.brainage04.brainagehud.config.BrainageHUDConfig;
+import com.github.brainage04.brainagehud.config.ModConfig;
 import com.mojang.brigadier.arguments.DoubleArgumentType;
 import me.shedaniel.autoconfig.AutoConfig;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
@@ -18,7 +18,7 @@ public class CommandRegistration {
                 dispatcher.register(ClientCommandManager.literal(BrainageHUD.MOD_ID + "config")
                         .executes(context -> {
                             MinecraftClient.getInstance().send(() -> context.getSource().getClient().setScreen(
-                                    AutoConfig.getConfigScreen(BrainageHUDConfig.class, context.getSource().getClient().currentScreen).get()
+                                    AutoConfig.getConfigScreen(ModConfig.class, context.getSource().getClient().currentScreen).get()
                             ));
                             return 1;
                         })

@@ -1,6 +1,6 @@
 package com.github.brainage04.brainagehud.hud;
 
-import com.github.brainage04.brainagehud.config.BrainageHUDConfig;
+import com.github.brainage04.brainagehud.config.ModConfig;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.DrawContext;
 
@@ -12,7 +12,7 @@ import java.util.List;
 import static com.github.brainage04.brainagehud.hud.core.HUDRenderer.renderElement;
 
 public class DateTimeHUD {
-    public static void dateTimeHud(TextRenderer renderer, DrawContext drawContext, BrainageHUDConfig.DateTimeHUDConfig settings) {
+    public static void dateTimeHud(TextRenderer renderer, DrawContext drawContext, ModConfig.DateTimeHUDConfig settings) {
         if (!settings.coreSettings.enabled) {
             return;
         }

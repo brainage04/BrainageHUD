@@ -1,6 +1,6 @@
 package com.github.brainage04.brainagehud.hud;
 
-import com.github.brainage04.brainagehud.config.BrainageHUDConfig;
+import com.github.brainage04.brainagehud.config.ModConfig;
 import com.github.brainage04.brainagehud.util.MathUtils;
 import com.github.brainage04.brainagehud.util.RenderUtils;
 import net.minecraft.client.MinecraftClient;
@@ -17,7 +17,7 @@ import java.util.List;
 import static com.github.brainage04.brainagehud.util.ConfigUtils.getConfig;
 
 public class ArmourInfoHUD {
-    public static String generateItemInfo(ItemStack itemStack, BrainageHUDConfig.ArmourInfoHUDConfig settings) {
+    public static String generateItemInfo(ItemStack itemStack, ModConfig.ArmourInfoHUDConfig settings) {
         String itemString = "";
 
         if (settings.showItemNames) {
@@ -25,7 +25,7 @@ public class ArmourInfoHUD {
         }
 
         if (itemStack.getMaxDamage() > 0) {
-            if (settings.showItemNames && settings.durabilityFormat != BrainageHUDConfig.DurabilityFormat.NONE) {
+            if (settings.showItemNames && settings.durabilityFormat != ModConfig.DurabilityFormat.NONE) {
                 itemString += ": ";
             }
 
@@ -42,7 +42,7 @@ public class ArmourInfoHUD {
         return itemString;
     }
 
-    public static void armourInfoHud(TextRenderer renderer, DrawContext drawContext, BrainageHUDConfig.ArmourInfoHUDConfig settings) {
+    public static void armourInfoHud(TextRenderer renderer, DrawContext drawContext, ModConfig.ArmourInfoHUDConfig settings) {
         if (!settings.coreSettings.enabled) {
             return;
         }
