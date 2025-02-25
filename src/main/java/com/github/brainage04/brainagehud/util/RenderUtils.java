@@ -10,7 +10,7 @@ import static com.github.brainage04.brainagehud.util.ConfigUtils.getConfig;
 
 public class RenderUtils {
     // todo: fix this init with static block that checks number of hud elements (using reflection is probably the best bet)
-    public static List<int[]> elementCorners = new ArrayList<>(Arrays.asList(
+    public static final List<int[]> elementCorners = new ArrayList<>(Arrays.asList(
             new int[]{-1, -1, -1, -1},
             new int[]{-1, -1, -1, -1},
             new int[]{-1, -1, -1, -1},
