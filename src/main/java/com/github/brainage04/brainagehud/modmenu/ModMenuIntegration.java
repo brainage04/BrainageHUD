@@ -1,6 +1,6 @@
 package com.github.brainage04.brainagehud.modmenu;
 
-import com.github.brainage04.brainagehud.config.ModConfig;
+import com.github.brainage04.brainagehud.config.core.ModConfig;
 import com.terraformersmc.modmenu.api.ConfigScreenFactory;
 import com.terraformersmc.modmenu.api.ModMenuApi;
 import me.shedaniel.autoconfig.AutoConfig;

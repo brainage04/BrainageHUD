@@ -1,6 +1,8 @@
-package com.github.brainage04.brainagehud.hud;
+package com.github.brainage04.brainagehud.hud.custom;
 
-import com.github.brainage04.brainagehud.config.ModConfig;
+import com.github.brainage04.brainagehud.config.hud.custom.ClicksPerSecondFormat;
+import com.github.brainage04.brainagehud.config.hud.custom.KeystrokesHUDConfig;
+import com.github.brainage04.brainagehud.util.ElementCorners;
 import com.github.brainage04.brainagehud.util.RenderUtils;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
@@ -24,168 +26,40 @@ public class KeystrokesHUD {
     public static final List<Long> leftCpsTimes = new ArrayList<>(List.of());
     public static final List<Long> rightCpsTimes = new ArrayList<>(List.of());
 
-    public static void keystrokesHud(TextRenderer renderer, DrawContext drawContext, ModConfig.KeystrokesHUDConfig settings) {
-        if (!settings.coreSettings.enabled) {
-            return;
-        }
+    public static void render(TextRenderer renderer, DrawContext drawContext, KeystrokesHUDConfig settings) {
+        if (!settings.coreSettings.enabled) return;
 
-        int keySize = 20;
-
-        // custom rendering logic
-        int x1 = 0;
-        int y1 = 0;
-
-        List<KeyStrokesItem> keystrokesList = new ArrayList<>(List.of());
-
-        if (settings.showWasd) {
-            keystrokesList.add(
-                    new KeyStrokesItem(
-                            MinecraftClient.getInstance().options.forwardKey,
-                            "W",
-                            x1 + keySize + getConfig().elementPadding,
-                            y1,
-                            keySize,
-                            keySize
-                    )
-            );
-
-            y1 += keySize + getConfig().elementPadding;
-
-            keystrokesList.add(
-                    new KeyStrokesItem(
-                            MinecraftClient.getInstance().options.leftKey,
-                            "A",
-                            x1,
-                            y1,
-                            keySize,
-                            keySize
-                    )
-            );
-            keystrokesList.add(
-                    new KeyStrokesItem(
-                            MinecraftClient.getInstance().options.backKey,
-                            "S",
-                            x1 + keySize + getConfig().elementPadding,
-                            y1,
-                            keySize,
-                            keySize
-                    )
-            );
-            keystrokesList.add(
-                    new KeyStrokesItem(
-                            MinecraftClient.getInstance().options.rightKey,
-                            "D",
-                            x1 + (keySize + getConfig().elementPadding) * 2,
-                            y1,
-                            keySize,
-                            keySize
-                    )
-            );
-
-            y1 += keySize + getConfig().elementPadding;
-        }
-
-        if (settings.showSpace) {
-            keystrokesList.add(
-                    new KeyStrokesItem(
-                            MinecraftClient.getInstance().options.jumpKey,
-                            "_____",
-                            x1,
-                            y1,
-                            keySize * 3 + getConfig().elementPadding * 2,
-                            keySize
-                    )
-            );
-
-            y1 += keySize + getConfig().elementPadding;
-        }
-
-        if (settings.showMouseButtons) {
-            keystrokesList.add(
-                    new KeyStrokesItem(
-                            MinecraftClient.getInstance().options.attackKey,
-                            "LMB",
-                            x1,
-                            y1,
-                            (int) (keySize * 1.5 + getConfig().elementPadding / 2),
-                            keySize
-                    )
-            );
-            keystrokesList.add(
-                    new KeyStrokesItem(
-                            MinecraftClient.getInstance().options.useKey,
-                            "RMB",
-                            x1 + (int) (keySize * 1.5 + getConfig().elementPadding / 2) + getConfig().elementPadding,
-                            y1,
-                            (int) (keySize * 1.5 + getConfig().elementPadding / 2),
-                            keySize
-                    )
-            );
-
-            y1 += keySize + getConfig().elementPadding;
-        }
-
-        if (settings.clicksPerSecondFormat != ModConfig.ClicksPerSecondFormat.NONE) {
-            String cpsString = switch (settings.clicksPerSecondFormat) {
-                case LEFT_CLICK -> "%d CPS".formatted(leftCpsTimes.size());
-                case RIGHT_CLICK -> "%d CPS (R)".formatted(rightCpsTimes.size());
-                case BOTH -> "%d | %d CPS".formatted(leftCpsTimes.size(), rightCpsTimes.size());
-                default -> "";
-            };
-
-            keystrokesList.add(
-                    new KeyStrokesItem(
-                            null,
-                            cpsString,
-                            x1,
-                            y1,
-                            keySize * 3 + getConfig().elementPadding * 2,
-                            keySize
-                    )
-            );
-        }
+        List<KeyStrokesItem> keystrokesList = getKeyStrokesItems(settings);
 
         int elementWidth = keystrokesList.getLast().x + keystrokesList.getLast().width;
         int elementHeight = keystrokesList.getLast().y + keystrokesList.getLast().height;
 
         // horizontal adjustments (for element)
         int posX = switch (settings.coreSettings.elementAnchor) {
-            case TOPRIGHT, RIGHT, BOTTOMRIGHT -> settings.coreSettings.x + (RenderUtils.getScaledWidth() - elementWidth) - getConfig().elementPadding * 2;
+            case TOP_RIGHT, RIGHT, BOTTOM_RIGHT -> settings.coreSettings.x + (RenderUtils.getScaledWidth() - elementWidth) - getConfig().elementPadding * 2;
             case TOP, CENTER, BOTTOM -> settings.coreSettings.x + (RenderUtils.getScaledWidth() - elementWidth) / 2;
             default -> settings.coreSettings.x + getConfig().elementPadding * 2;
         };
         // vertical adjustments
         int posY = switch (settings.coreSettings.elementAnchor) {
-            case BOTTOMLEFT, BOTTOM, BOTTOMRIGHT -> settings.coreSettings.y + (RenderUtils.getScaledHeight() - elementHeight) - getConfig().elementPadding * 2;
+            case BOTTOM_LEFT, BOTTOM, BOTTOM_RIGHT -> settings.coreSettings.y + (RenderUtils.getScaledHeight() - elementHeight) - getConfig().elementPadding * 2;
             case LEFT, CENTER, RIGHT -> settings.coreSettings.y + (RenderUtils.getScaledHeight() - elementHeight) / 2;
             default -> settings.coreSettings.y + getConfig().elementPadding * 2;
         };
 
         // determine bounds of HUD element
-        // adjust for padding
-        int[] corners = RenderUtils.getCornersWithPadding(
-                posX,
-                posY,
-                posX + elementWidth,
-                posY + elementHeight
-        );
-        corners[3] += getConfig().elementPadding * 2;
-
-        // store corners for use in HUDElementEditor
-        RenderUtils.elementCorners.get(settings.coreSettings.elementId)[0] = corners[0];
-        RenderUtils.elementCorners.get(settings.coreSettings.elementId)[1] = corners[1];
-        RenderUtils.elementCorners.get(settings.coreSettings.elementId)[2] = corners[2];
-        RenderUtils.elementCorners.get(settings.coreSettings.elementId)[3] = corners[3];
+        ElementCorners corners = RenderUtils.getCornersWithPadding(posX, posY, posX + elementWidth, posY + elementHeight);
+        corners.bottom += getConfig().elementPadding * 2;
+        RenderUtils.CORE_SETTINGS_ELEMENTS.get(settings.coreSettings.elementId).corners = corners;
 
         // render backdrop
         int backdropOpacity = settings.coreSettings.overrideGlobalBackdropOpacity ? settings.coreSettings.backdropOpacity : getConfig().backdropOpacity;
-
         if (backdropOpacity > 0) {
             drawContext.fill(
-                    corners[0],
-                    corners[1],
-                    corners[2],
-                    corners[3],
+                    corners.left,
+                    corners.top,
+                    corners.right,
+                    corners.bottom,
                     -1,
                     backdropOpacity << 24
             );
@@ -279,5 +153,124 @@ public class KeystrokesHUD {
                     getConfig().textShadows
             );
         }
+    }
+
+    private static List<KeyStrokesItem> getKeyStrokesItems(KeystrokesHUDConfig settings) {
+        int keySize = 20;
+
+        // custom rendering logic
+        int x1 = 0;
+        int y1 = 0;
+
+        List<KeyStrokesItem> keystrokesList = new ArrayList<>(List.of());
+
+        if (settings.showWasd) {
+            keystrokesList.add(
+                    new KeyStrokesItem(
+                            MinecraftClient.getInstance().options.forwardKey,
+                            "W",
+                            x1 + keySize + getConfig().elementPadding,
+                            y1,
+                            keySize,
+                            keySize
+                    )
+            );
+
+            y1 += keySize + getConfig().elementPadding;
+
+            keystrokesList.add(
+                    new KeyStrokesItem(
+                            MinecraftClient.getInstance().options.leftKey,
+                            "A",
+                            x1,
+                            y1,
+                            keySize,
+                            keySize
+                    )
+            );
+            keystrokesList.add(
+                    new KeyStrokesItem(
+                            MinecraftClient.getInstance().options.backKey,
+                            "S",
+                            x1 + keySize + getConfig().elementPadding,
+                            y1,
+                            keySize,
+                            keySize
+                    )
+            );
+            keystrokesList.add(
+                    new KeyStrokesItem(
+                            MinecraftClient.getInstance().options.rightKey,
+                            "D",
+                            x1 + (keySize + getConfig().elementPadding) * 2,
+                            y1,
+                            keySize,
+                            keySize
+                    )
+            );
+
+            y1 += keySize + getConfig().elementPadding;
+        }
+
+        if (settings.showSpace) {
+            keystrokesList.add(
+                    new KeyStrokesItem(
+                            MinecraftClient.getInstance().options.jumpKey,
+                            "_____",
+                            x1,
+                            y1,
+                            keySize * 3 + getConfig().elementPadding * 2,
+                            keySize
+                    )
+            );
+
+            y1 += keySize + getConfig().elementPadding;
+        }
+
+        if (settings.showMouseButtons) {
+            keystrokesList.add(
+                    new KeyStrokesItem(
+                            MinecraftClient.getInstance().options.attackKey,
+                            "LMB",
+                            x1,
+                            y1,
+                            (int) (keySize * 1.5 + (double) getConfig().elementPadding / 2),
+                            keySize
+                    )
+            );
+            keystrokesList.add(
+                    new KeyStrokesItem(
+                            MinecraftClient.getInstance().options.useKey,
+                            "RMB",
+                            x1 + (int) (keySize * 1.5 + (double) getConfig().elementPadding / 2) + getConfig().elementPadding,
+                            y1,
+                            (int) (keySize * 1.5 + (double) getConfig().elementPadding / 2),
+                            keySize
+                    )
+            );
+
+            y1 += keySize + getConfig().elementPadding;
+        }
+
+        if (settings.clicksPerSecondFormat != ClicksPerSecondFormat.NONE) {
+            String cpsString = switch (settings.clicksPerSecondFormat) {
+                case LEFT_CLICK -> "%d CPS".formatted(leftCpsTimes.size());
+                case RIGHT_CLICK -> "%d CPS (R)".formatted(rightCpsTimes.size());
+                case BOTH -> "%d | %d CPS".formatted(leftCpsTimes.size(), rightCpsTimes.size());
+                default -> "";
+            };
+
+            keystrokesList.add(
+                    new KeyStrokesItem(
+                            null,
+                            cpsString,
+                            x1,
+                            y1,
+                            keySize * 3 + getConfig().elementPadding * 2,
+                            keySize
+                    )
+            );
+        }
+        return keystrokesList;
     }
 }

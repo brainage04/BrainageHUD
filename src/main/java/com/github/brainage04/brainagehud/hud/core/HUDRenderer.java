@@ -1,28 +1,22 @@
 package com.github.brainage04.brainagehud.hud.core;
 
-import com.github.brainage04.brainagehud.config.ModConfig;
+import com.github.brainage04.brainagehud.config.core.CoreSettings;
+import com.github.brainage04.brainagehud.hud.*;
+import com.github.brainage04.brainagehud.hud.custom.ArmourInfoHUD;
+import com.github.brainage04.brainagehud.hud.custom.KeystrokesHUD;
+import com.github.brainage04.brainagehud.util.ElementCorners;
 import com.github.brainage04.brainagehud.util.RenderUtils;
-import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.render.RenderTickCounter;
 
 import java.util.List;
 
-import static com.github.brainage04.brainagehud.hud.ArmourInfoHUD.armourInfoHud;
-import static com.github.brainage04.brainagehud.hud.KeystrokesHUD.keystrokesHud;
-import static com.github.brainage04.brainagehud.hud.KillDeathRatioHUD.killDeathRatioHud;
-import static com.github.brainage04.brainagehud.hud.NetworkHUD.networkHud;
-import static com.github.brainage04.brainagehud.hud.PerformanceHUD.performanceHud;
-import static com.github.brainage04.brainagehud.hud.PositionHUD.positionHud;
-import static com.github.brainage04.brainagehud.hud.DateTimeHUD.dateTimeHud;
-import static com.github.brainage04.brainagehud.hud.ToggleSprintHUD.toggleSprintHud;
 import static com.github.brainage04.brainagehud.util.ConfigUtils.getConfig;
 
-public class HUDRenderer implements HudRenderCallback {
+public class HUDRenderer {
     // for rendering HUD elements
-    public static void renderElement(TextRenderer renderer, DrawContext drawContext, List<String> lines, ModConfig.CoreSettings coreSettings) {
+    public static void renderElement(TextRenderer renderer, DrawContext drawContext, List<String> lines, CoreSettings coreSettings) {
         int elementWidth = 0;
 
         int lineHeight = renderer.fontHeight + getConfig().elementPadding;
@@ -30,7 +24,7 @@ public class HUDRenderer implements HudRenderCallback {
 
         // vertical adjustments
         int posY = switch (coreSettings.elementAnchor) {
-            case BOTTOMLEFT, BOTTOM, BOTTOMRIGHT -> coreSettings.y + (RenderUtils.getScaledHeight() - elementHeight);
+            case BOTTOM_LEFT, BOTTOM, BOTTOM_RIGHT -> coreSettings.y + (RenderUtils.getScaledHeight() - elementHeight);
             case LEFT, CENTER, RIGHT -> coreSettings.y + (RenderUtils.getScaledHeight() - elementHeight) / 2 + getConfig().elementPadding;
             default -> coreSettings.y + getConfig().elementPadding * 2;
         };
@@ -42,7 +36,7 @@ public class HUDRenderer implements HudRenderCallback {
 
             // horizontal adjustments (for line)
             int posX = switch (coreSettings.elementAnchor) {
-                case TOPRIGHT, RIGHT, BOTTOMRIGHT -> coreSettings.x + (RenderUtils.getScaledWidth() - lineWidth) - getConfig().elementPadding * 2;
+                case TOP_RIGHT, RIGHT, BOTTOM_RIGHT -> coreSettings.x + (RenderUtils.getScaledWidth() - lineWidth) - getConfig().elementPadding * 2;
                 case TOP, CENTER, BOTTOM -> coreSettings.x + (RenderUtils.getScaledWidth() - lineWidth) / 2;
                 default -> coreSettings.x + getConfig().elementPadding * 2;
             };
@@ -59,23 +53,17 @@ public class HUDRenderer implements HudRenderCallback {
 
         // horizontal adjustments (for element)
         int posX = switch (coreSettings.elementAnchor) {
-            case TOPRIGHT, RIGHT, BOTTOMRIGHT -> coreSettings.x + (RenderUtils.getScaledWidth() - elementWidth) - getConfig().elementPadding * 2;
+            case TOP_RIGHT, RIGHT, BOTTOM_RIGHT -> coreSettings.x + (RenderUtils.getScaledWidth() - elementWidth) - getConfig().elementPadding * 2;
             case TOP, CENTER, BOTTOM -> coreSettings.x + (RenderUtils.getScaledWidth() - elementWidth) / 2;
             default -> coreSettings.x + getConfig().elementPadding * 2;
         };
 
         // adjust for padding
-        int[] corners = RenderUtils.getCornersWithPadding(posX, posY, posX + elementWidth, posY + elementHeight);
-
-        // store corners for use in BrainageHUDElementEditor
-        RenderUtils.elementCorners.get(coreSettings.elementId)[0] = corners[0];
-        RenderUtils.elementCorners.get(coreSettings.elementId)[1] = corners[1];
-        RenderUtils.elementCorners.get(coreSettings.elementId)[2] = corners[2];
-        RenderUtils.elementCorners.get(coreSettings.elementId)[3] = corners[3];
+        ElementCorners corners = RenderUtils.getCornersWithPadding(posX, posY, posX + elementWidth, posY + elementHeight);
+        RenderUtils.CORE_SETTINGS_ELEMENTS.get(coreSettings.elementId).corners = corners;
 
         // render backdrop
         int backdropOpacity;
-
         if (coreSettings.overrideGlobalBackdropOpacity) {
             backdropOpacity = coreSettings.backdropOpacity;
         } else {
@@ -84,27 +72,26 @@ public class HUDRenderer implements HudRenderCallback {
 
         if (backdropOpacity > 0) {
             drawContext.fill(
-                    corners[0],
-                    corners[1],
-                    corners[2],
-                    corners[3],
+                    corners.left,
+                    corners.top,
+                    corners.right,
+                    corners.bottom,
                     -1,
                     backdropOpacity << 24
             );
         }
     }
 
-    @Override
-    public void onHudRender(DrawContext drawContext, RenderTickCounter tickCounter) {
+    public static void render(DrawContext drawContext) {
         TextRenderer renderer = MinecraftClient.getInstance().textRenderer;
 
-        positionHud(renderer, drawContext, getConfig().positionHudConfig);
-        armourInfoHud(renderer, drawContext, getConfig().armourInfoHudConfig);
-        keystrokesHud(renderer, drawContext, getConfig().keystrokesHudConfig);
-        performanceHud(renderer, drawContext, getConfig().performanceHudConfig);
-        networkHud(renderer, drawContext, getConfig().networkHudConfig);
-        dateTimeHud(renderer, drawContext, getConfig().dateTimeHudConfig);
-        toggleSprintHud(renderer, drawContext, getConfig().toggleSprintHudConfig);
-        killDeathRatioHud(renderer, drawContext, getConfig().killDeathRatioHudConfig);
+        ArmourInfoHUD.render(renderer, drawContext, getConfig().armourInfoHudConfig);
+        DateTimeHUD.render(renderer, drawContext, getConfig().dateTimeHudConfig);
+        KeystrokesHUD.render(renderer, drawContext, getConfig().keystrokesHudConfig);
+        NetworkHUD.render(renderer, drawContext, getConfig().networkHudConfig);
+        PerformanceHUD.render(renderer, drawContext, getConfig().performanceHudConfig);
+        PositionHUD.render(renderer, drawContext, getConfig().positionHudConfig);
+        ReachHUD.render(renderer, drawContext, getConfig().reachHUDConfig);
+        ToggleSprintHUD.render(renderer, drawContext, getConfig().toggleSprintHudConfig);
     }
 }

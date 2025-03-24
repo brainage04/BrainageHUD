@@ -1,6 +1,4 @@
 # Todo
-killdeathratiohud: implement mixins for tracking player kills and deaths
-
 networkhud: implement non-integrated (singleplayer/self-hosted) TPS tracking
 
 performancehud: get GPU to work with Minecraft's existing GPU profiler

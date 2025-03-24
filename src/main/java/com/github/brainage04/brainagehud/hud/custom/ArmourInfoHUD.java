@@ -1,11 +1,14 @@
-package com.github.brainage04.brainagehud.hud;
+package com.github.brainage04.brainagehud.hud.custom;
 
-import com.github.brainage04.brainagehud.config.ModConfig;
+import com.github.brainage04.brainagehud.config.hud.custom.ArmourInfoHUDConfig;
+import com.github.brainage04.brainagehud.config.hud.custom.DurabilityFormat;
+import com.github.brainage04.brainagehud.util.ElementCorners;
 import com.github.brainage04.brainagehud.util.MathUtils;
 import com.github.brainage04.brainagehud.util.RenderUtils;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.DrawContext;
+import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.client.render.RenderLayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
@@ -17,7 +20,7 @@ import java.util.List;
 import static com.github.brainage04.brainagehud.util.ConfigUtils.getConfig;
 
 public class ArmourInfoHUD {
-    public static String generateItemInfo(ItemStack itemStack, ModConfig.ArmourInfoHUDConfig settings) {
+    public static String generateItemInfo(ItemStack itemStack, ArmourInfoHUDConfig settings) {
         String itemString = "";
 
         if (settings.showItemNames) {
@@ -25,7 +28,7 @@ public class ArmourInfoHUD {
         }
 
         if (itemStack.getMaxDamage() > 0) {
-            if (settings.showItemNames && settings.durabilityFormat != ModConfig.DurabilityFormat.NONE) {
+            if (settings.showItemNames && settings.durabilityFormat != DurabilityFormat.NONE) {
                 itemString += ": ";
             }
 
@@ -42,31 +45,30 @@ public class ArmourInfoHUD {
         return itemString;
     }
 
-    public static void armourInfoHud(TextRenderer renderer, DrawContext drawContext, ModConfig.ArmourInfoHUDConfig settings) {
-        if (!settings.coreSettings.enabled) {
-            return;
-        }
+    public static void render(TextRenderer renderer, DrawContext drawContext, ArmourInfoHUDConfig settings) {
+        if (!settings.coreSettings.enabled) return;
+
+        ClientPlayerEntity player = MinecraftClient.getInstance().player;
+        if (player == null) return;
 
         List<ItemStack> itemStacksTemp = new ArrayList<>(List.of());
         List<ItemStack> itemStacks = new ArrayList<>(List.of());
         List<String> lines = new ArrayList<>(List.of());
         List<Integer> lineWidths = new ArrayList<>(List.of());
 
-        assert MinecraftClient.getInstance().player != null;
-
         if (settings.showOffHand) {
-            itemStacksTemp.add(MinecraftClient.getInstance().player.getOffHandStack());
+            itemStacksTemp.add(player.getOffHandStack());
         }
 
         if (settings.showMainHand) {
-            itemStacksTemp.add(MinecraftClient.getInstance().player.getMainHandStack());
+            itemStacksTemp.add(player.getMainHandStack());
         }
 
         if (settings.showArmour) {
-            itemStacksTemp.add(MinecraftClient.getInstance().player.getInventory().getArmorStack(3));
-            itemStacksTemp.add(MinecraftClient.getInstance().player.getInventory().getArmorStack(2));
-            itemStacksTemp.add(MinecraftClient.getInstance().player.getInventory().getArmorStack(1));
-            itemStacksTemp.add(MinecraftClient.getInstance().player.getInventory().getArmorStack(0));
+            itemStacksTemp.add(player.getInventory().getArmorStack(3));
+            itemStacksTemp.add(player.getInventory().getArmorStack(2));
+            itemStacksTemp.add(player.getInventory().getArmorStack(1));
+            itemStacksTemp.add(player.getInventory().getArmorStack(0));
         }
 
         for (ItemStack itemStack : itemStacksTemp) {
@@ -98,34 +100,29 @@ public class ArmourInfoHUD {
 
         // horizontal adjustments (for element)
         int posX = switch (settings.coreSettings.elementAnchor) {
-            case TOPRIGHT, RIGHT, BOTTOMRIGHT -> settings.coreSettings.x + (RenderUtils.getScaledWidth() - elementWidth) - getConfig().elementPadding * 2;
+            case TOP_RIGHT, RIGHT, BOTTOM_RIGHT -> settings.coreSettings.x + (RenderUtils.getScaledWidth() - elementWidth) - getConfig().elementPadding * 2;
             case TOP, CENTER, BOTTOM -> settings.coreSettings.x + (RenderUtils.getScaledWidth() - elementWidth) / 2;
             default -> settings.coreSettings.x + getConfig().elementPadding * 2;
         };
         // vertical adjustments
         int posY = switch (settings.coreSettings.elementAnchor) {
-            case BOTTOMLEFT, BOTTOM, BOTTOMRIGHT -> settings.coreSettings.y + (RenderUtils.getScaledHeight() - elementHeight) - getConfig().elementPadding * 2;
+            case BOTTOM_LEFT, BOTTOM, BOTTOM_RIGHT -> settings.coreSettings.y + (RenderUtils.getScaledHeight() - elementHeight) - getConfig().elementPadding * 2;
             case LEFT, CENTER, RIGHT -> settings.coreSettings.y + (RenderUtils.getScaledHeight() - elementHeight) / 2;
             default -> settings.coreSettings.y + getConfig().elementPadding * 2;
         };
 
         // adjust for padding
-        int[] corners = RenderUtils.getCornersWithPadding(posX, posY, posX + elementWidth, posY + elementHeight);
-        corners[3] += getConfig().elementPadding * 2;
-
-        // store corners for use in HUDElementEditor
-        RenderUtils.elementCorners.get(settings.coreSettings.elementId)[0] = corners[0];
-        RenderUtils.elementCorners.get(settings.coreSettings.elementId)[1] = corners[1];
-        RenderUtils.elementCorners.get(settings.coreSettings.elementId)[2] = corners[2];
-        RenderUtils.elementCorners.get(settings.coreSettings.elementId)[3] = corners[3];
+        ElementCorners corners = RenderUtils.getCornersWithPadding(posX, posY, posX + elementWidth, posY + elementHeight);
+        corners.bottom += getConfig().elementPadding * 2;
+        RenderUtils.CORE_SETTINGS_ELEMENTS.get(settings.coreSettings.elementId).corners = corners;
 
         // render backdrop
         if (getConfig().backdropOpacity > 0) {
             drawContext.fill(
-                    corners[0],
-                    corners[1],
-                    corners[2],
-                    corners[3],
+                    corners.left,
+                    corners.top,
+                    corners.right,
+                    corners.bottom,
                     -1,
                     getConfig().backdropOpacity << 24
             );
@@ -137,7 +134,7 @@ public class ArmourInfoHUD {
             // horizontal adjustments (for line)
             int lineWidth = lineWidths.get(i);
             int linePosX = switch (settings.coreSettings.elementAnchor) { // do not ask how I figured this out SERIOUSLY
-                case TOPRIGHT, RIGHT, BOTTOMRIGHT -> posX - (lineWidth - elementWidth + 16 + getConfig().elementPadding * 2);
+                case TOP_RIGHT, RIGHT, BOTTOM_RIGHT -> posX - (lineWidth - elementWidth + 16 + getConfig().elementPadding * 2);
                 case TOP, CENTER, BOTTOM -> posX - (lineWidth - elementWidth + 16 + getConfig().elementPadding * 2) / 2;
                 default -> posX;
             };

@@ -2,7 +2,7 @@ package com.github.brainage04.brainagehud.command;
 
 import com.github.brainage04.brainagehud.BrainageHUD;
 import com.github.brainage04.brainagehud.hud.core.HUDElementEditor;
-import com.github.brainage04.brainagehud.config.ModConfig;
+import com.github.brainage04.brainagehud.config.core.ModConfig;
 import com.mojang.brigadier.arguments.DoubleArgumentType;
 import me.shedaniel.autoconfig.AutoConfig;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;

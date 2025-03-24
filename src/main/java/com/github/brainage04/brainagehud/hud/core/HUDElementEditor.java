@@ -1,7 +1,10 @@
 package com.github.brainage04.brainagehud.hud.core;
 
 import com.github.brainage04.brainagehud.BrainageHUD;
-import com.github.brainage04.brainagehud.config.ModConfig;
+import com.github.brainage04.brainagehud.config.core.CoreSettings;
+import com.github.brainage04.brainagehud.config.core.ModConfig;
+import com.github.brainage04.brainagehud.util.ElementCorners;
+import com.github.brainage04.brainagehud.util.CoreSettingsElement;
 import com.github.brainage04.brainagehud.util.MathUtils;
 import com.github.brainage04.brainagehud.util.RenderUtils;
 import net.minecraft.client.MinecraftClient;
@@ -14,13 +17,12 @@ import net.minecraft.util.math.MathHelper;
 import org.lwjgl.glfw.GLFW;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import static com.github.brainage04.brainagehud.util.ConfigUtils.*;
 
 public class HUDElementEditor extends Screen {
-    public final List<ModConfig.CoreSettings> elementList;
+    public final List<CoreSettingsElement> coreSettingsElementsTemp;
 
     public int selectedElementIndex = -1;
 
@@ -37,13 +39,7 @@ public class HUDElementEditor extends Screen {
     public HUDElementEditor() {
         super(Text.of(BrainageHUD.MOD_NAME + " Element Editor"));
 
-        this.elementList = loadElementSettings();
-
-        // refresh element corners
-        RenderUtils.elementCorners.clear();
-        while (RenderUtils.elementCorners.size() < elementList.size()) {
-            RenderUtils.elementCorners.add(new int[]{-1, -1, -1, -1});
-        }
+        this.coreSettingsElementsTemp = RenderUtils.CORE_SETTINGS_ELEMENTS;
 
         // disable blur while editing elements
         disableBlur();
@@ -58,28 +54,15 @@ public class HUDElementEditor extends Screen {
         MinecraftClient.getInstance().options.getMenuBackgroundBlurriness().setValue(previousMenuBackgroundBlurriness);
     }
 
-    private List<ModConfig.CoreSettings> loadElementSettings() {
-        return new ArrayList<>(Arrays.asList(
-                getConfig().armourInfoHudConfig.coreSettings,
-                getConfig().dateTimeHudConfig.coreSettings,
-                getConfig().keystrokesHudConfig.coreSettings,
-                getConfig().killDeathRatioHudConfig.coreSettings,
-                getConfig().networkHudConfig.coreSettings,
-                getConfig().performanceHudConfig.coreSettings,
-                getConfig().positionHudConfig.coreSettings,
-                getConfig().toggleSprintHudConfig.coreSettings
-        ));
-    }
-
     public int mouseInElement(double mouseX, double mouseY) {
-        for (int i = 0; i < elementList.size(); i++) {
-            int[] corners = RenderUtils.elementCorners.get(i);
+        for (int i = 0; i < coreSettingsElementsTemp.size(); i++) {
+            ElementCorners corners = coreSettingsElementsTemp.get(i).corners;
 
             if (RenderUtils.mouseInRect(
-                    corners[0],
-                    corners[1],
-                    corners[2],
-                    corners[3],
+                    corners.left,
+                    corners.top,
+                    corners.right,
+                    corners.bottom,
                     mouseX,
                     mouseY
             )) {
@@ -100,30 +83,34 @@ public class HUDElementEditor extends Screen {
             .build();
 
     public void updateElementPosition(int deltaX, int deltaY) {
-        int[] selectedElementCorners = RenderUtils.elementCorners.get(selectedElementIndex);
-        int elementWidth = selectedElementCorners[2] - selectedElementCorners[0];
-        int elementHeight = selectedElementCorners[3] - selectedElementCorners[1];
+        CoreSettingsElement coreSettingsElement = coreSettingsElementsTemp.get(selectedElementIndex);
+        ElementCorners corners = coreSettingsElement.corners;
+        CoreSettings coreSettings = coreSettingsElement.coreSettings;
+        int elementWidth = corners.right - corners.left;
+        int elementHeight = corners.bottom - corners.top;
 
-        int minX = switch (elementList.get(selectedElementIndex).elementAnchor) {
-            case TOPRIGHT, RIGHT, BOTTOMRIGHT -> getConfig().screenMargin - (RenderUtils.getScaledWidth() - elementWidth);
-            case TOP, CENTER, BOTTOM -> getConfig().screenMargin - (RenderUtils.getScaledWidth() - elementWidth) / 2;
-            default -> getConfig().screenMargin;
+        ModConfig config = getConfig();
+
+        int minX = switch (coreSettings.elementAnchor) {
+            case TOP_RIGHT, RIGHT, BOTTOM_RIGHT -> config.screenMargin - (RenderUtils.getScaledWidth() - elementWidth);
+            case TOP, CENTER, BOTTOM -> config.screenMargin - (RenderUtils.getScaledWidth() - elementWidth) / 2;
+            default -> config.screenMargin;
         };
-        int minY = switch (elementList.get(selectedElementIndex).elementAnchor) {
-            case BOTTOMLEFT, BOTTOM, BOTTOMRIGHT -> getConfig().screenMargin - (RenderUtils.getScaledHeight() - elementHeight);
-            case LEFT, CENTER, RIGHT -> getConfig().screenMargin - (RenderUtils.getScaledHeight() - elementHeight) / 2;
-            default -> getConfig().screenMargin;
+        int minY = switch (coreSettings.elementAnchor) {
+            case BOTTOM_LEFT, BOTTOM, BOTTOM_RIGHT -> config.screenMargin - (RenderUtils.getScaledHeight() - elementHeight);
+            case LEFT, CENTER, RIGHT -> config.screenMargin - (RenderUtils.getScaledHeight() - elementHeight) / 2;
+            default -> config.screenMargin;
         };
 
-        elementList.get(selectedElementIndex).x = (int) (MathHelper.clamp(
+        coreSettings.x = (int) (MathHelper.clamp(
                 selectedElementX - deltaX,
                 minX,
-                minX + RenderUtils.getScaledWidth() - elementWidth - getConfig().screenMargin * 2
+                minX + RenderUtils.getScaledWidth() - elementWidth - config.screenMargin * 2
         ));
-        elementList.get(selectedElementIndex).y = (int) (MathHelper.clamp(
+        coreSettings.y = (int) (MathHelper.clamp(
                 selectedElementY - deltaY,
                 minY,
-                minY + RenderUtils.getScaledHeight() - elementHeight - getConfig().screenMargin * 2
+                minY + RenderUtils.getScaledHeight() - elementHeight - config.screenMargin * 2
         ));
     }
 
@@ -136,14 +123,11 @@ public class HUDElementEditor extends Screen {
     @Override
     public void close() {
         // update config values
-        getConfig().armourInfoHudConfig.coreSettings = elementList.get(0);
-        getConfig().dateTimeHudConfig.coreSettings = elementList.get(1);
-        getConfig().keystrokesHudConfig.coreSettings = elementList.get(2);
-        getConfig().killDeathRatioHudConfig.coreSettings = elementList.get(3);
-        getConfig().networkHudConfig.coreSettings = elementList.get(4);
-        getConfig().performanceHudConfig.coreSettings = elementList.get(5);
-        getConfig().positionHudConfig.coreSettings = elementList.get(6);
-        getConfig().toggleSprintHudConfig.coreSettings = elementList.get(7);
+        for (CoreSettingsElement element : coreSettingsElementsTemp) {
+            element.updateCoreSettings();
+        }
+
+        coreSettingsElementsTemp.clear();
 
         saveConfig();
 
@@ -208,8 +192,9 @@ public class HUDElementEditor extends Screen {
             }
 
             // update selected element position
-            selectedElementX = elementList.get(selectedElementIndex).x;
-            selectedElementY = elementList.get(selectedElementIndex).y;
+            CoreSettings coreSettings = coreSettingsElementsTemp.get(selectedElementIndex).coreSettings;
+            selectedElementX = coreSettings.x;
+            selectedElementY = coreSettings.y;
 
             // update position in config
             updateElementPosition(xDirection, yDirection);
@@ -229,30 +214,33 @@ public class HUDElementEditor extends Screen {
         // if both indices are the same, use highlighted
         // otherwise, render separately
         if (highlightedElementIndex != -1 && highlightedElementIndex == selectedElementIndex) {
+            ElementCorners corners = coreSettingsElementsTemp.get(highlightedElementIndex).corners;
             context.fill(
-                    RenderUtils.elementCorners.get(highlightedElementIndex)[0],
-                    RenderUtils.elementCorners.get(highlightedElementIndex)[1],
-                    RenderUtils.elementCorners.get(highlightedElementIndex)[2],
-                    RenderUtils.elementCorners.get(highlightedElementIndex)[3],
+                    corners.left,
+                    corners.top,
+                    corners.right,
+                    corners.bottom,
                     0x7fffffff
             );
         } else {
             if (highlightedElementIndex != -1) {
+                ElementCorners corners = coreSettingsElementsTemp.get(highlightedElementIndex).corners;
                 context.fill(
-                        RenderUtils.elementCorners.get(highlightedElementIndex)[0],
-                        RenderUtils.elementCorners.get(highlightedElementIndex)[1],
-                        RenderUtils.elementCorners.get(highlightedElementIndex)[2],
-                        RenderUtils.elementCorners.get(highlightedElementIndex)[3],
+                        corners.left,
+                        corners.top,
+                        corners.right,
+                        corners.bottom,
                         0x7fffffff
                 );
             }
 
             if (selectedElementIndex != -1) {
+                ElementCorners corners = coreSettingsElementsTemp.get(selectedElementIndex).corners;
                 context.fill(
-                        RenderUtils.elementCorners.get(selectedElementIndex)[0],
-                        RenderUtils.elementCorners.get(selectedElementIndex)[1],
-                        RenderUtils.elementCorners.get(selectedElementIndex)[2],
-                        RenderUtils.elementCorners.get(selectedElementIndex)[3],
+                        corners.left,
+                        corners.top,
+                        corners.right,
+                        corners.bottom,
                         0x7fffffff
                 );
             }
@@ -260,9 +248,11 @@ public class HUDElementEditor extends Screen {
 
         // render element information
         if (highlightedElementIndex != -1) {
-            lines.add(Text.of(elementList.get(highlightedElementIndex).elementName));
-            lines.add(Text.of("X: %d Y: %d".formatted(elementList.get(highlightedElementIndex).x, elementList.get(highlightedElementIndex).y)));
-            lines.add(Text.of("Anchor: %s".formatted(elementList.get(highlightedElementIndex).elementAnchor.name())));
+            CoreSettings coreSettings = coreSettingsElementsTemp.get(highlightedElementIndex).coreSettings;
+
+            lines.add(Text.of(coreSettings.elementName));
+            lines.add(Text.of("X: %d Y: %d".formatted(coreSettings.x, coreSettings.y)));
+            lines.add(Text.of("Anchor: %s".formatted(coreSettings.elementAnchor.toString())));
 
             if (highlightedElementIndex == selectedElementIndex) {
                 lines.add(Text.of("Highlighted & Selected"));
@@ -270,9 +260,11 @@ public class HUDElementEditor extends Screen {
                 lines.add(Text.of("Highlighted"));
             }
         } else if (selectedElementIndex != -1) {
-            lines.add(Text.of(elementList.get(selectedElementIndex).elementName));
-            lines.add(Text.of("X: %d Y: %d".formatted(elementList.get(selectedElementIndex).x, elementList.get(selectedElementIndex).y)));
-            lines.add(Text.of("Anchor: %s".formatted(elementList.get(selectedElementIndex).elementAnchor.name())));
+            CoreSettings coreSettings = coreSettingsElementsTemp.get(selectedElementIndex).coreSettings;
+
+            lines.add(Text.of(coreSettings.elementName));
+            lines.add(Text.of("X: %d Y: %d".formatted(coreSettings.x, coreSettings.y)));
+            lines.add(Text.of("Anchor: %s".formatted(coreSettings.elementAnchor.toString())));
             lines.add(Text.of("Selected"));
         }
 
@@ -288,8 +280,10 @@ public class HUDElementEditor extends Screen {
         selectedElementIndex = mouseInElement(mouseX, mouseY);
 
         if (selectedElementIndex != -1) {
-            selectedElementX = elementList.get(selectedElementIndex).x;
-            selectedElementY = elementList.get(selectedElementIndex).y;
+            CoreSettings coreSettings = coreSettingsElementsTemp.get(selectedElementIndex).coreSettings;
+
+            selectedElementX = coreSettings.x;
+            selectedElementY = coreSettings.y;
 
             selectedMouseX = mouseX;
             selectedMouseY = mouseY;

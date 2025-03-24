@@ -1,7 +1,7 @@
 package com.github.brainage04.brainagehud.datagen;
 
 import com.github.brainage04.brainagehud.BrainageHUD;
-import com.github.brainage04.brainagehud.config.ModConfig;
+import com.github.brainage04.brainagehud.config.core.ModConfig;
 import com.github.brainage04.brainagehud.util.StringUtils;
 import net.fabricmc.fabric.api.datagen.v1.FabricDataOutput;
 import net.fabricmc.fabric.api.datagen.v1.provider.FabricLanguageProvider;
@@ -38,6 +38,7 @@ public class EnglishLangProvider extends FabricLanguageProvider {
         }
     }
 
+    @SuppressWarnings("SameParameterValue")
     private void addAutomaticTranslations(String[] keys, String packageName, TranslationBuilder translationBuilder) {
         for (String key : keys) {
             translationBuilder.add("%s.%s.%s".formatted(packageName, BrainageHUD.MOD_ID, key), StringUtils.pascalCaseToHumanReadable(key));
@@ -70,14 +71,12 @@ public class EnglishLangProvider extends FabricLanguageProvider {
                 new String[]{
                         "gamma.@Tooltip[0]",
                         "gamma.@Tooltip[1]",
-                        "gamma.@Tooltip[2]",
-                        "gamma.@Tooltip[3]",
+                        "gamma.@Tooltip[2]"
                 },
                 new String[]{
                         "1.0: Maximum vanilla brightness.",
                         "2.0: Very bright but lighting is still in effect.",
-                        "3.0: Fullbright.",
-                        "Update in-game with /setgamma <value> (until I figure out how to update it automatically)",
+                        "3.0: Fullbright."
                 },
                 "qualityOfLifeImprovementsConfig",
                 translationBuilder

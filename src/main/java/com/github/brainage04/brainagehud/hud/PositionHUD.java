@@ -1,10 +1,11 @@
 package com.github.brainage04.brainagehud.hud;
 
-import com.github.brainage04.brainagehud.config.ModConfig;
+import com.github.brainage04.brainagehud.config.hud.PositionHUDConfig;
 import com.github.brainage04.brainagehud.util.MathUtils;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.DrawContext;
+import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.math.MathHelper;
 
@@ -16,21 +17,18 @@ import static com.github.brainage04.brainagehud.hud.core.HUDRenderer.renderEleme
 import static com.github.brainage04.brainagehud.util.MathUtils.roundDecimalPlaces;
 
 public class PositionHUD {
-    public static void positionHud(TextRenderer renderer, DrawContext drawContext, ModConfig.PositionHUDConfig settings) {
-        if (!settings.coreSettings.enabled) {
-            return;
-        }
+    public static void render(TextRenderer renderer, DrawContext drawContext, PositionHUDConfig settings) {
+        if (!settings.coreSettings.enabled) return;
 
-        if (MinecraftClient.getInstance().player == null) {
-            return;
-        }
+        ClientPlayerEntity player = MinecraftClient.getInstance().player;
+        if (player == null) return;
 
         List<String> lines = new ArrayList<>(List.of());
 
         if (settings.showPosition) {
-            lines.add(String.format("X: %s", roundDecimalPlaces(MinecraftClient.getInstance().player.getX(), settings.positionDecimalPlaces)));
-            lines.add(String.format("Y: %s", roundDecimalPlaces(MinecraftClient.getInstance().player.getY(), settings.positionDecimalPlaces)));
-            lines.add(String.format("Z: %s", roundDecimalPlaces(MinecraftClient.getInstance().player.getZ(), settings.positionDecimalPlaces)));
+            lines.add(String.format("X: %s", roundDecimalPlaces(player.getX(), settings.positionDecimalPlaces)));
+            lines.add(String.format("Y: %s", roundDecimalPlaces(player.getY(), settings.positionDecimalPlaces)));
+            lines.add(String.format("Z: %s", roundDecimalPlaces(player.getZ(), settings.positionDecimalPlaces)));
         }
 
         if (settings.cCounter) {
