@@ -20,6 +20,7 @@ public class MixinSimpleOption<T> {
     @Final
     Text text;
 
+    @SuppressWarnings("unused")
     @Shadow
     T value;
 
