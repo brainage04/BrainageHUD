@@ -38,7 +38,7 @@ public class CommandRegistration {
 
         ClientCommandRegistrationCallback.EVENT.register(((dispatcher, registryAccess) ->
                 dispatcher.register(ClientCommandManager.literal("setgamma")
-                        .then(ClientCommandManager.argument("value", DoubleArgumentType.doubleArg(0.0, 3.0))
+                        .then(ClientCommandManager.argument("value", DoubleArgumentType.doubleArg(0.0, 10.0))
                                 .executes(context -> {
                                     final double value = DoubleArgumentType.getDouble(context, "value");
                                     setGamma(value);

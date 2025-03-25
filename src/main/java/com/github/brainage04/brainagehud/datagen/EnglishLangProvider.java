@@ -75,7 +75,7 @@ public class EnglishLangProvider extends FabricLanguageProvider {
 
         addAutoConfigTranslations(
                 new String[]{
-                        "adjustTopRightElementsWithStatusEffects.@Tooltip[0]"
+                        "adjustTopRightElementsWithStatusEffects.@Tooltip"
                 },
                 new String[]{
                         "Shifts elements with the \"%s\" alignment down by the specified amount of pixels below if potion effects are being overlayed in the top right.".formatted(ElementAnchor.TOP_RIGHT)
@@ -93,8 +93,8 @@ public class EnglishLangProvider extends FabricLanguageProvider {
                 new String[]{
                         "0.0: Minimum vanilla brightness.",
                         "1.0: Maximum vanilla brightness.",
-                        "2.0: Very bright but lighting is still in effect.",
-                        "3.0: Fullbright."
+                        "1.1 - 9.9: Very bright but lighting is still in effect.",
+                        "10.0: Fullbright."
                 },
                 "qualityOfLifeImprovementsConfig",
                 translationBuilder
