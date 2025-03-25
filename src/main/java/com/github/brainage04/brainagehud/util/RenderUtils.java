@@ -16,16 +16,14 @@ public class RenderUtils {
     public static void populateCoreSettingsElements() {
         CORE_SETTINGS_ELEMENTS.clear();
 
-        ModConfig config = getConfig();
-
-        for (Field field : config.getClass().getFields()) {
+        for (Field field : getConfig().getClass().getFields()) {
             if (field.getType().isPrimitive()) continue;
 
             for (Field subfield : field.getType().getFields()) {
                 if (subfield.getType() != CoreSettings.class) continue;
 
                 try {
-                    CORE_SETTINGS_ELEMENTS.add(new CoreSettingsElement(new ElementCorners(), field, subfield, (CoreSettings) subfield.get(field.get(config))));
+                    CORE_SETTINGS_ELEMENTS.add(new CoreSettingsElement(new ElementCorners(), (CoreSettings) subfield.get(field.get(getConfig()))));
                 } catch (IllegalAccessException e) {
                     throw new RuntimeException(e);
                 }

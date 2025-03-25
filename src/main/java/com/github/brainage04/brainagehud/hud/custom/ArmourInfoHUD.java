@@ -1,7 +1,9 @@
 package com.github.brainage04.brainagehud.hud.custom;
 
+import com.github.brainage04.brainagehud.config.core.ModConfig;
 import com.github.brainage04.brainagehud.config.hud.custom.ArmourInfoHUDConfig;
 import com.github.brainage04.brainagehud.config.hud.custom.DurabilityFormat;
+import com.github.brainage04.brainagehud.hud.core.HUDRenderer;
 import com.github.brainage04.brainagehud.util.ElementCorners;
 import com.github.brainage04.brainagehud.util.MathUtils;
 import com.github.brainage04.brainagehud.util.RenderUtils;
@@ -105,11 +107,12 @@ public class ArmourInfoHUD {
             default -> settings.coreSettings.x + getConfig().elementPadding * 2;
         };
         // vertical adjustments
-        int posY = switch (settings.coreSettings.elementAnchor) {
-            case BOTTOM_LEFT, BOTTOM, BOTTOM_RIGHT -> settings.coreSettings.y + (RenderUtils.getScaledHeight() - elementHeight) - getConfig().elementPadding * 2;
-            case LEFT, CENTER, RIGHT -> settings.coreSettings.y + (RenderUtils.getScaledHeight() - elementHeight) / 2;
-            default -> settings.coreSettings.y + getConfig().elementPadding * 2;
-        };
+        int posY = HUDRenderer.getPosY(settings.coreSettings, elementHeight);
+        // additional adjustments
+        switch (settings.coreSettings.elementAnchor) {
+            case BOTTOM_LEFT, BOTTOM, BOTTOM_RIGHT -> posY -= getConfig().elementPadding * 2;
+            case LEFT, CENTER, RIGHT -> posY -= getConfig().elementPadding;
+        }
 
         // adjust for padding
         ElementCorners corners = RenderUtils.getCornersWithPadding(posX, posY, posX + elementWidth, posY + elementHeight);

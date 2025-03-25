@@ -20,6 +20,10 @@ public class ModConfig implements ConfigData {
     public int elementPadding = 2;
     public int screenMargin = 5;
 
+    @ConfigEntry.Gui.Tooltip()
+    public boolean adjustTopRightElementsWithStatusEffects = true;
+    public int adjustTopRightElementsWithStatusEffectsAmount = 21;
+
     @ConfigEntry.Gui.CollapsibleObject public QualityOfLifeImprovements qualityOfLifeImprovementsConfig = new QualityOfLifeImprovements();
 
     @ConfigEntry.Gui.CollapsibleObject public ArmourInfoHUDConfig armourInfoHudConfig = new ArmourInfoHUDConfig();

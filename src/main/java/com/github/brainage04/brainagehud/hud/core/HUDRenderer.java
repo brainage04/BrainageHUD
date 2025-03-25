@@ -1,6 +1,7 @@
 package com.github.brainage04.brainagehud.hud.core;
 
 import com.github.brainage04.brainagehud.config.core.CoreSettings;
+import com.github.brainage04.brainagehud.config.core.ElementAnchor;
 import com.github.brainage04.brainagehud.hud.*;
 import com.github.brainage04.brainagehud.hud.custom.ArmourInfoHUD;
 import com.github.brainage04.brainagehud.hud.custom.KeystrokesHUD;
@@ -9,6 +10,7 @@ import com.github.brainage04.brainagehud.util.RenderUtils;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.DrawContext;
+import net.minecraft.client.network.ClientPlayerEntity;
 
 import java.util.List;
 
@@ -23,11 +25,7 @@ public class HUDRenderer {
         int elementHeight = lineHeight * lines.size() + getConfig().elementPadding;
 
         // vertical adjustments
-        int posY = switch (coreSettings.elementAnchor) {
-            case BOTTOM_LEFT, BOTTOM, BOTTOM_RIGHT -> coreSettings.y + (RenderUtils.getScaledHeight() - elementHeight);
-            case LEFT, CENTER, RIGHT -> coreSettings.y + (RenderUtils.getScaledHeight() - elementHeight) / 2 + getConfig().elementPadding;
-            default -> coreSettings.y + getConfig().elementPadding * 2;
-        };
+        int posY = getPosY(coreSettings, elementHeight);
 
         for (int i = 0; i < lines.size(); i++) {
             int lineWidth = renderer.getWidth(lines.get(i));
@@ -35,11 +33,7 @@ public class HUDRenderer {
             elementWidth = Math.max(elementWidth, lineWidth);
 
             // horizontal adjustments (for line)
-            int posX = switch (coreSettings.elementAnchor) {
-                case TOP_RIGHT, RIGHT, BOTTOM_RIGHT -> coreSettings.x + (RenderUtils.getScaledWidth() - lineWidth) - getConfig().elementPadding * 2;
-                case TOP, CENTER, BOTTOM -> coreSettings.x + (RenderUtils.getScaledWidth() - lineWidth) / 2;
-                default -> coreSettings.x + getConfig().elementPadding * 2;
-            };
+            int posX = getPosX(coreSettings, lineWidth);
 
             drawContext.drawText(
                     renderer,
@@ -52,11 +46,7 @@ public class HUDRenderer {
         }
 
         // horizontal adjustments (for element)
-        int posX = switch (coreSettings.elementAnchor) {
-            case TOP_RIGHT, RIGHT, BOTTOM_RIGHT -> coreSettings.x + (RenderUtils.getScaledWidth() - elementWidth) - getConfig().elementPadding * 2;
-            case TOP, CENTER, BOTTOM -> coreSettings.x + (RenderUtils.getScaledWidth() - elementWidth) / 2;
-            default -> coreSettings.x + getConfig().elementPadding * 2;
-        };
+        int posX = getPosX(coreSettings, elementWidth);
 
         // adjust for padding
         ElementCorners corners = RenderUtils.getCornersWithPadding(posX, posY, posX + elementWidth, posY + elementHeight);
@@ -80,6 +70,55 @@ public class HUDRenderer {
                     backdropOpacity << 24
             );
         }
+    }
+
+    public static int getXOffset(ElementAnchor elementAnchor, int elementWidth) {
+        return switch (elementAnchor) {
+            case TOP_RIGHT, RIGHT, BOTTOM_RIGHT -> RenderUtils.getScaledWidth() - elementWidth - getConfig().elementPadding * 2;
+            case TOP, CENTER, BOTTOM -> (RenderUtils.getScaledWidth() - elementWidth) / 2;
+            default -> getConfig().elementPadding * 2;
+        };
+    }
+
+    public static int getXOffsetNoPadding(ElementAnchor elementAnchor, int elementWidth) {
+        return switch (elementAnchor) {
+            case TOP_RIGHT, RIGHT, BOTTOM_RIGHT -> RenderUtils.getScaledWidth() - elementWidth;
+            case TOP, CENTER, BOTTOM -> (RenderUtils.getScaledWidth() - elementWidth) / 2;
+            default -> 0;
+        };
+    }
+
+    private static int getPosX(CoreSettings coreSettings, int elementWidth) {
+        return coreSettings.x + getXOffset(coreSettings.elementAnchor, elementWidth);
+    }
+
+    public static int getYOffset(ElementAnchor elementAnchor, int elementHeight) {
+        return switch (elementAnchor) {
+            case BOTTOM_LEFT, BOTTOM, BOTTOM_RIGHT -> RenderUtils.getScaledHeight() - elementHeight;
+            case LEFT, CENTER, RIGHT -> (RenderUtils.getScaledHeight() - elementHeight) / 2 + getConfig().elementPadding;
+            default -> getConfig().elementPadding * 2;
+        };
+    }
+
+    public static int getYOffsetNoPadding(ElementAnchor elementAnchor, int elementHeight) {
+        return switch (elementAnchor) {
+            case BOTTOM_LEFT, BOTTOM, BOTTOM_RIGHT -> RenderUtils.getScaledHeight() - elementHeight;
+            case LEFT, CENTER, RIGHT -> (RenderUtils.getScaledHeight() - elementHeight) / 2;
+            default -> 0;
+        };
+    }
+
+    public static int getPosY(CoreSettings coreSettings, int elementHeight) {
+        int posY = coreSettings.y + getYOffset(coreSettings.elementAnchor, elementHeight);
+
+        if (coreSettings.elementAnchor == ElementAnchor.TOP_RIGHT) {
+            ClientPlayerEntity player = MinecraftClient.getInstance().player;
+            if (player != null && !player.getStatusEffects().isEmpty() && getConfig().adjustTopRightElementsWithStatusEffects) {
+                posY += getConfig().adjustTopRightElementsWithStatusEffectsAmount;
+            }
+        }
+
+        return posY;
     }
 
     public static void render(DrawContext drawContext) {

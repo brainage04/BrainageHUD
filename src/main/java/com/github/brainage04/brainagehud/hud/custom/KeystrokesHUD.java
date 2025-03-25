@@ -2,6 +2,7 @@ package com.github.brainage04.brainagehud.hud.custom;
 
 import com.github.brainage04.brainagehud.config.hud.custom.ClicksPerSecondFormat;
 import com.github.brainage04.brainagehud.config.hud.custom.KeystrokesHUDConfig;
+import com.github.brainage04.brainagehud.hud.core.HUDRenderer;
 import com.github.brainage04.brainagehud.util.ElementCorners;
 import com.github.brainage04.brainagehud.util.RenderUtils;
 import net.minecraft.client.MinecraftClient;
@@ -41,11 +42,12 @@ public class KeystrokesHUD {
             default -> settings.coreSettings.x + getConfig().elementPadding * 2;
         };
         // vertical adjustments
-        int posY = switch (settings.coreSettings.elementAnchor) {
-            case BOTTOM_LEFT, BOTTOM, BOTTOM_RIGHT -> settings.coreSettings.y + (RenderUtils.getScaledHeight() - elementHeight) - getConfig().elementPadding * 2;
-            case LEFT, CENTER, RIGHT -> settings.coreSettings.y + (RenderUtils.getScaledHeight() - elementHeight) / 2;
-            default -> settings.coreSettings.y + getConfig().elementPadding * 2;
-        };
+        int posY = HUDRenderer.getPosY(settings.coreSettings, elementHeight);
+        // additional adjustments
+        switch (settings.coreSettings.elementAnchor) {
+            case BOTTOM_LEFT, BOTTOM, BOTTOM_RIGHT -> posY -= getConfig().elementPadding * 2;
+            case LEFT, CENTER, RIGHT -> posY -= getConfig().elementPadding;
+        }
 
         // determine bounds of HUD element
         ElementCorners corners = RenderUtils.getCornersWithPadding(posX, posY, posX + elementWidth, posY + elementHeight);

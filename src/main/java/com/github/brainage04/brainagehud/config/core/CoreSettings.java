@@ -4,10 +4,8 @@ import me.shedaniel.autoconfig.annotation.ConfigEntry;
 
 @SuppressWarnings("CanBeFinal")
 public class CoreSettings {
-    @ConfigEntry.Gui.Excluded
-    public final int elementId;
-    @ConfigEntry.Gui.Excluded
-    public final String elementName;
+    @ConfigEntry.Gui.Excluded public final int elementId;
+    @ConfigEntry.Gui.Excluded public final String elementName;
 
     public boolean enabled;
     public int x;

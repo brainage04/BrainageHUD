@@ -1,6 +1,7 @@
 package com.github.brainage04.brainagehud.datagen;
 
 import com.github.brainage04.brainagehud.BrainageHUD;
+import com.github.brainage04.brainagehud.config.core.ElementAnchor;
 import com.github.brainage04.brainagehud.config.core.ModConfig;
 import com.github.brainage04.brainagehud.util.StringUtils;
 import net.fabricmc.fabric.api.datagen.v1.FabricDataOutput;
@@ -29,6 +30,12 @@ public class EnglishLangProvider extends FabricLanguageProvider {
             if (field.getType() == String.class) continue;
 
             generateReflectedTranslations(field.getType(), newBaseKey, translationBuilder);
+        }
+    }
+
+    private void addAutoConfigTranslations(String[] keys, String[] values, TranslationBuilder translationBuilder) {
+        for (int i = 0; i < keys.length; i++) {
+            translationBuilder.add("%s.%s".formatted(autoConfigPrefix, keys[i]), values[i]);
         }
     }
 
@@ -66,14 +73,25 @@ public class EnglishLangProvider extends FabricLanguageProvider {
         // config
         generateReflectedTranslations(ModConfig.class, autoConfigPrefix, translationBuilder);
 
-        // quality of life improvement config
+        addAutoConfigTranslations(
+                new String[]{
+                        "adjustTopRightElementsWithStatusEffects.@Tooltip[0]"
+                },
+                new String[]{
+                        "Shifts elements with the \"%s\" alignment down by the specified amount of pixels below if potion effects are being overlayed in the top right.".formatted(ElementAnchor.TOP_RIGHT)
+                },
+                translationBuilder
+        );
+
         addAutoConfigTranslations(
                 new String[]{
                         "gamma.@Tooltip[0]",
                         "gamma.@Tooltip[1]",
-                        "gamma.@Tooltip[2]"
+                        "gamma.@Tooltip[2]",
+                        "gamma.@Tooltip[3]"
                 },
                 new String[]{
+                        "0.0: Minimum vanilla brightness.",
                         "1.0: Maximum vanilla brightness.",
                         "2.0: Very bright but lighting is still in effect.",
                         "3.0: Fullbright."
@@ -82,7 +100,6 @@ public class EnglishLangProvider extends FabricLanguageProvider {
                 translationBuilder
         );
 
-        // performance hud config
         addAutoConfigTranslations(
                 new String[]{
                         "showGpuUsage.@Tooltip[0]",
