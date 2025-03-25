@@ -12,7 +12,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(ClientConnection.class)
 public class MixinClientConnection {
     @Inject(method = "handlePacket", at = @At(value = "HEAD"))
-    private static void handlePacket$Inject$HEAD(Packet<?> packet, PacketListener listener, CallbackInfo ci) {
+    private static void handlePacket(Packet<?> packet, PacketListener listener, CallbackInfo ci) {
         ModPacketEvents.onPacket();
     }
 }
