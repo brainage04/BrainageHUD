@@ -1,6 +1,5 @@
 package com.github.brainage04.brainagehud.hud.custom;
 
-import com.github.brainage04.brainagehud.config.core.ModConfig;
 import com.github.brainage04.brainagehud.config.hud.custom.ArmourInfoHUDConfig;
 import com.github.brainage04.brainagehud.config.hud.custom.DurabilityFormat;
 import com.github.brainage04.brainagehud.hud.core.HUDRenderer;

@@ -1,7 +1,6 @@
 package com.github.brainage04.brainagehud.util;
 
 import com.github.brainage04.brainagehud.config.core.CoreSettings;
-import com.github.brainage04.brainagehud.config.core.ModConfig;
 import net.minecraft.client.MinecraftClient;
 
 import java.lang.reflect.Field;

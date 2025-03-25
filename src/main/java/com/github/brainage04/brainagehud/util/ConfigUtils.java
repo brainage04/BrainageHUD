@@ -8,6 +8,7 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.util.ActionResult;
 
 public class ConfigUtils {
+    @SuppressWarnings("SameReturnValue")
     private static ActionResult saveLoad(ConfigHolder<ModConfig> configHolder, ModConfig modConfig) {
         MinecraftClient.getInstance().options.getGamma().setValue(
                 modConfig.qualityOfLifeImprovementsConfig.gamma

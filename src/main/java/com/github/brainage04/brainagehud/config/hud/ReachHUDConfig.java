@@ -10,12 +10,10 @@ public class ReachHUDConfig {
     public CoreSettings coreSettings;
     public int decimalPlaces;
     public boolean showName;
-    public boolean onlyUpdateOnLeftClick;
 
     public ReachHUDConfig() {
         this.coreSettings = new CoreSettings(6, "Reach HUD", true, 0, 30, ElementAnchor.CENTER, false, 100);
         this.decimalPlaces = 2;
         this.showName = true;
-        this.onlyUpdateOnLeftClick = false;
     }
 }

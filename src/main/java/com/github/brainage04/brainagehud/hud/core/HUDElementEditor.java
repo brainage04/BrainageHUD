@@ -3,7 +3,6 @@ package com.github.brainage04.brainagehud.hud.core;
 import com.github.brainage04.brainagehud.BrainageHUD;
 import com.github.brainage04.brainagehud.config.core.CoreSettings;
 import com.github.brainage04.brainagehud.config.core.ElementAnchor;
-import com.github.brainage04.brainagehud.config.core.ModConfig;
 import com.github.brainage04.brainagehud.util.ElementCorners;
 import com.github.brainage04.brainagehud.util.CoreSettingsElement;
 import com.github.brainage04.brainagehud.util.MathUtils;

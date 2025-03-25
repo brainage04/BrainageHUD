@@ -1,6 +1,5 @@
 package com.github.brainage04.brainagehud.event;
 
-import com.github.brainage04.brainagehud.config.core.ModConfig;
 import com.github.brainage04.brainagehud.util.TimerUtils;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 
