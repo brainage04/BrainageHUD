@@ -1,7 +1,7 @@
 package com.github.brainage04.brainagehud.config.core;
 
 import com.github.brainage04.brainagehud.BrainageHUD;
-import com.github.brainage04.brainagehud.config.QualityOfLifeImprovements;
+import com.github.brainage04.brainagehud.config.QualityOfLifeConfig;
 import com.github.brainage04.brainagehud.config.hud.*;
 import com.github.brainage04.brainagehud.config.hud.custom.ArmourInfoHUDConfig;
 import com.github.brainage04.brainagehud.config.hud.custom.KeystrokesHUDConfig;
@@ -24,7 +24,7 @@ public class ModConfig implements ConfigData {
     public boolean adjustTopRightElementsWithStatusEffects = true;
     public int adjustTopRightElementsWithStatusEffectsAmount = 21;
 
-    @ConfigEntry.Gui.CollapsibleObject public QualityOfLifeImprovements qualityOfLifeImprovementsConfig = new QualityOfLifeImprovements();
+    @ConfigEntry.Gui.CollapsibleObject public QualityOfLifeConfig qualityOfLifeConfig = new QualityOfLifeConfig();
 
     @ConfigEntry.Gui.CollapsibleObject public ArmourInfoHUDConfig armourInfoHudConfig = new ArmourInfoHUDConfig();
     @ConfigEntry.Gui.CollapsibleObject public KeystrokesHUDConfig keystrokesHudConfig = new KeystrokesHUDConfig();

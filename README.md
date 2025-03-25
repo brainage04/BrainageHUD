@@ -32,5 +32,6 @@ This mod has been built with the vanilla HUD in mind. For example:
 # Todo
 overhaul config with proper overrides
 add waypoints
+reachhud: add option to only update reachhud on left click (for pvp)
 performancehud: get GPU to work with Minecraft's existing GPU profiler
 keystrokeshud: smooth color transitions for key press/release events

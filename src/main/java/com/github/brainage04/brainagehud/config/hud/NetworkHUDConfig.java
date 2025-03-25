@@ -17,7 +17,7 @@ public class NetworkHUDConfig {
     public int tpsDecimalPlaces;
 
     public NetworkHUDConfig() {
-        this.coreSettings = new CoreSettings(3, "Network HUD", true, 5, 205, ElementAnchor.TOP_LEFT, false, 100);
+        this.coreSettings = new CoreSettings(3, "Network HUD", true, 5, 94, ElementAnchor.TOP_LEFT, false, 100);
         this.showPing = true;
         this.updatePingTickInterval = 10;
         this.pingIntervalsTracked = 3;

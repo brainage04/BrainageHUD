@@ -14,7 +14,7 @@ public class DateTimeHUDConfig {
     public boolean showTimezone;
 
     public DateTimeHUDConfig() {
-        this.coreSettings = new CoreSettings(2, "Date Time HUD", true, -85, 5, ElementAnchor.TOP_RIGHT, false, 100);
+        this.coreSettings = new CoreSettings(2, "Date Time HUD", true, -77, 5, ElementAnchor.TOP_RIGHT, false, 100);
         this.showDate = true;
         this.showTime = true;
         this.twelveHourFormat = true;

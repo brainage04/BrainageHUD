@@ -11,7 +11,7 @@ public class ConfigUtils {
     @SuppressWarnings("SameReturnValue")
     private static ActionResult saveLoad(ConfigHolder<ModConfig> configHolder, ModConfig modConfig) {
         MinecraftClient.getInstance().options.getGamma().setValue(
-                modConfig.qualityOfLifeImprovementsConfig.gamma
+                modConfig.qualityOfLifeConfig.gamma
         );
 
         RenderUtils.populateCoreSettingsElements();
@@ -37,7 +37,7 @@ public class ConfigUtils {
     }
 
     public static void setGamma(double value) {
-        getConfig().qualityOfLifeImprovementsConfig.gamma = value;
+        getConfig().qualityOfLifeConfig.gamma = value;
         saveConfig();
     }
 

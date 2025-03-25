@@ -17,7 +17,7 @@ public class ArmourInfoHUDConfig {
     public int durabilityDecimalPlaces;
 
     public ArmourInfoHUDConfig() {
-        this.coreSettings = new CoreSettings(0, "Armor Info HUD", true, -135, -5, ElementAnchor.BOTTOM_RIGHT, false, 100);
+        this.coreSettings = new CoreSettings(0, "Armor Info HUD", true, -150, -5, ElementAnchor.BOTTOM_RIGHT, false, 100);
         this.showArmour = true;
         this.showMainHand = false;
         this.showOffHand = false;

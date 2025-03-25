@@ -15,7 +15,7 @@ public class PerformanceHUDConfig {
     public boolean showGpuUsage;
 
     public PerformanceHUDConfig() {
-        this.coreSettings = new CoreSettings(4, "Performance HUD", true, 5, 105, ElementAnchor.TOP_LEFT, false, 100);
+        this.coreSettings = new CoreSettings(4, "Performance HUD", true, 5, 77, ElementAnchor.TOP_LEFT, false, 100);
         this.showFps = true;
         this.showRamUsage = false;
         this.showCpuUsage = false;
