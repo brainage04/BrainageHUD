@@ -1,7 +1,7 @@
 package com.github.brainage04.brainagehud.config.core;
 
 import com.github.brainage04.brainagehud.BrainageHUD;
-import com.github.brainage04.brainagehud.config.QualityOfLifeConfig;
+import com.github.brainage04.brainagehud.config.other.QualityOfLifeConfig;
 import com.github.brainage04.brainagehud.config.hud.*;
 import com.github.brainage04.brainagehud.config.hud.custom.ArmourInfoHUDConfig;
 import com.github.brainage04.brainagehud.config.hud.custom.KeystrokesHUDConfig;

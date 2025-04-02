@@ -1,4 +1,4 @@
-package com.github.brainage04.brainagehud.config;
+package com.github.brainage04.brainagehud.config.other;
 
 import me.shedaniel.autoconfig.annotation.ConfigEntry;
 
