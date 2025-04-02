@@ -30,8 +30,6 @@ public class RenderUtils {
         }
     }
 
-    // todo: what is bro waffling on about
-    // could be related to that alignment bug in the readme?
     public static ElementCorners getCornersWithPadding(int left, int top, int right, int bottom) {
         return new ElementCorners(
                 left - getConfig().elementPadding * 2,
