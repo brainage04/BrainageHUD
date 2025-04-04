@@ -291,7 +291,8 @@ public class HudElementEditor extends Screen {
 
         // render element information
         if (highlightedElementIndex != -1) {
-            CoreSettings coreSettings = CORE_SETTINGS_ELEMENTS.get(highlightedElementIndex).coreSettings;
+            CoreSettingsElement coreSettingsElement = CORE_SETTINGS_ELEMENTS.get(highlightedElementIndex);
+            CoreSettings coreSettings = coreSettingsElement.coreSettings;
 
             lines.add(Text.of(coreSettings.elementName));
             lines.add(Text.of("X: %d Y: %d".formatted(coreSettings.x, coreSettings.y)));

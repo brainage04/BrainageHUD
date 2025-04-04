@@ -5,7 +5,6 @@ import com.github.brainage04.brainagehud.config.core.ModConfig;
 import com.github.brainage04.brainagehud.event.ModPacketEvents;
 import com.github.brainage04.brainagehud.event.ModTickEvents;
 import com.github.brainage04.brainagehud.hud.*;
-import com.github.brainage04.brainagehud.hud.core.HudElementEditor;
 import com.github.brainage04.brainagehud.hud.core.HudRenderer;
 import com.github.brainage04.brainagehud.hud.custom.ArmourInfoHud;
 import com.github.brainage04.brainagehud.hud.custom.KeystrokesHud;
