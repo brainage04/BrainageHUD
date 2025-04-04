@@ -160,7 +160,7 @@ public class HudElementEditor extends Screen {
 
     @Override
     public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
-        // from package net.minecraft.client.gui.screen.Screen;
+        // from net.minecraft.client.gui.screen.Screen
         if (keyCode == GLFW.GLFW_KEY_ESCAPE && this.shouldCloseOnEsc()) {
             closeWithoutSaving();
             return true;
