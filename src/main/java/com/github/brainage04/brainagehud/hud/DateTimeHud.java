@@ -1,39 +1,37 @@
 package com.github.brainage04.brainagehud.hud;
 
-import com.github.brainage04.brainagehud.config.hud.DateTimeHUDConfig;
-import net.minecraft.client.font.TextRenderer;
-import net.minecraft.client.gui.DrawContext;
+import com.github.brainage04.brainagehud.config.hud.basic.DateTimeHudConfig;
+import com.github.brainage04.brainagehud.hud.core.BasicHudElement;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import static com.github.brainage04.brainagehud.hud.core.HUDRenderer.renderElement;
+import static com.github.brainage04.brainagehud.util.ConfigUtils.getConfig;
 
-public class DateTimeHUD {
-    public static void render(TextRenderer renderer, DrawContext drawContext, DateTimeHUDConfig settings) {
-        if (!settings.coreSettings.enabled) return;
-
+public class DateTimeHud implements BasicHudElement<DateTimeHudConfig> {
+    @Override
+    public List<String> getLines() {
         List<String> lines = new ArrayList<>(List.of());
 
-        if (settings.showDate) {
+        if (getElementConfig().showDate) {
             lines.add(new SimpleDateFormat("E dd MMM yyyy").format(new Date()));
         }
 
-        if (settings.showTime) {
-            if (settings.twelveHourFormat) {
+        if (getElementConfig().showTime) {
+            if (getElementConfig().twelveHourFormat) {
                 lines.add(
                         new SimpleDateFormat("hh:mm:ss a").format(new Date())
-                        .replace("am", "AM")
-                        .replace("pm", "PM")
+                                .replace("am", "AM")
+                                .replace("pm", "PM")
                 );
             } else {
                 lines.add(new SimpleDateFormat("HH:mm:ss").format(new Date()));
             }
         }
 
-        if (settings.showTimezone) {
+        if (getElementConfig().showTimezone) {
             lines.add(
                     String.format(
                             "%s (UTC %s)",
@@ -43,6 +41,11 @@ public class DateTimeHUD {
             );
         }
 
-        renderElement(renderer, drawContext, lines, settings.coreSettings);
+        return lines;
+    }
+
+    @Override
+    public DateTimeHudConfig getElementConfig() {
+        return getConfig().dateTimeHudConfig;
     }
 }

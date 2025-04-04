@@ -1,13 +1,12 @@
-package com.github.brainage04.brainagehud.config.hud;
+package com.github.brainage04.brainagehud.config.hud.basic;
 
 import com.github.brainage04.brainagehud.config.core.CoreSettings;
+import com.github.brainage04.brainagehud.config.core.CoreSettingsContainer;
 import com.github.brainage04.brainagehud.config.core.ElementAnchor;
 import me.shedaniel.autoconfig.annotation.ConfigEntry;
 
 @SuppressWarnings("CanBeFinal")
-public class NetworkHUDConfig {
-    @ConfigEntry.Gui.CollapsibleObject
-    public CoreSettings coreSettings;
+public class NetworkHudConfig extends CoreSettingsContainer {
     public boolean showPing;
     @ConfigEntry.BoundedDiscrete(min = 1, max = 20) public int updatePingTickInterval;
     @ConfigEntry.BoundedDiscrete(min = 1, max = 30) public int pingIntervalsTracked;
@@ -16,7 +15,7 @@ public class NetworkHUDConfig {
     @ConfigEntry.BoundedDiscrete(min = 1, max = 30) public int tpsIntervalsTracked;
     public int tpsDecimalPlaces;
 
-    public NetworkHUDConfig() {
+    public NetworkHudConfig() {
         this.coreSettings = new CoreSettings(3, "Network HUD", true, 5, 94, ElementAnchor.TOP_LEFT, false, 100);
         this.showPing = true;
         this.updatePingTickInterval = 10;

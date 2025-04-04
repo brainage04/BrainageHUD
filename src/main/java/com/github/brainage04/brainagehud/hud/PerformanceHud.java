@@ -1,24 +1,22 @@
 package com.github.brainage04.brainagehud.hud;
 
-import com.github.brainage04.brainagehud.config.hud.PerformanceHUDConfig;
+import com.github.brainage04.brainagehud.config.hud.basic.PerformanceHudConfig;
+import com.github.brainage04.brainagehud.hud.core.BasicHudElement;
 import com.github.brainage04.brainagehud.util.TimerUtils;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.font.TextRenderer;
-import net.minecraft.client.gui.DrawContext;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
-import static com.github.brainage04.brainagehud.hud.core.HUDRenderer.renderElement;
+import static com.github.brainage04.brainagehud.util.ConfigUtils.getConfig;
 
-public class PerformanceHUD {
-    public static void render(TextRenderer renderer, DrawContext drawContext, PerformanceHUDConfig settings) {
-        if (!settings.coreSettings.enabled) return;
-
+public class PerformanceHud implements BasicHudElement<PerformanceHudConfig> {
+    @Override
+    public List<String> getLines() {
         List<String> lines = new ArrayList<>(List.of());
 
-        if (settings.showFps) {
+        if (getElementConfig().showFps) {
             lines.add(
                     String.format(
                             "%d FPS",
@@ -28,7 +26,7 @@ public class PerformanceHUD {
         }
 
         // taken from net.minecraft.client.gui.hud.DebugHud
-        if (settings.showRamUsage) {
+        if (getElementConfig().showRamUsage) {
             long l = Runtime.getRuntime().maxMemory();
             long m = Runtime.getRuntime().totalMemory();
             long n = Runtime.getRuntime().freeMemory();
@@ -45,7 +43,7 @@ public class PerformanceHUD {
             );
         }
 
-        if (settings.showGpuUsage) {
+        if (getElementConfig().showGpuUsage) {
             TimerUtils.updateGpuUsage(500);
 
             lines.add(
@@ -57,7 +55,7 @@ public class PerformanceHUD {
             );
         }
 
-        if (settings.showCpuUsage) {
+        if (getElementConfig().showCpuUsage) {
             TimerUtils.updateCpuUsage(500);
 
             lines.add(
@@ -69,6 +67,11 @@ public class PerformanceHUD {
             );
         }
 
-        renderElement(renderer, drawContext, lines, settings.coreSettings);
+        return lines;
+    }
+
+    @Override
+    public PerformanceHudConfig getElementConfig() {
+        return getConfig().performanceHudConfig;
     }
 }

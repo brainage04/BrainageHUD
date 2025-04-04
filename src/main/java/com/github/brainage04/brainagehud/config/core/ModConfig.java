@@ -1,10 +1,10 @@
 package com.github.brainage04.brainagehud.config.core;
 
 import com.github.brainage04.brainagehud.BrainageHUD;
+import com.github.brainage04.brainagehud.config.hud.basic.*;
 import com.github.brainage04.brainagehud.config.other.QualityOfLifeConfig;
-import com.github.brainage04.brainagehud.config.hud.*;
-import com.github.brainage04.brainagehud.config.hud.custom.ArmourInfoHUDConfig;
-import com.github.brainage04.brainagehud.config.hud.custom.KeystrokesHUDConfig;
+import com.github.brainage04.brainagehud.config.hud.custom.armour_info.ArmourInfoHudConfig;
+import com.github.brainage04.brainagehud.config.hud.custom.keystrokes.KeystrokesHudConfig;
 import me.shedaniel.autoconfig.ConfigData;
 import me.shedaniel.autoconfig.annotation.Config;
 import me.shedaniel.autoconfig.annotation.ConfigEntry;
@@ -26,12 +26,12 @@ public class ModConfig implements ConfigData {
 
     @ConfigEntry.Gui.CollapsibleObject public QualityOfLifeConfig qualityOfLifeConfig = new QualityOfLifeConfig();
 
-    @ConfigEntry.Gui.CollapsibleObject public ArmourInfoHUDConfig armourInfoHudConfig = new ArmourInfoHUDConfig();
-    @ConfigEntry.Gui.CollapsibleObject public KeystrokesHUDConfig keystrokesHudConfig = new KeystrokesHUDConfig();
-    @ConfigEntry.Gui.CollapsibleObject public DateTimeHUDConfig dateTimeHudConfig = new DateTimeHUDConfig();
-    @ConfigEntry.Gui.CollapsibleObject public NetworkHUDConfig networkHudConfig = new NetworkHUDConfig();
-    @ConfigEntry.Gui.CollapsibleObject public PerformanceHUDConfig performanceHudConfig = new PerformanceHUDConfig();
-    @ConfigEntry.Gui.CollapsibleObject public PositionHUDConfig positionHudConfig = new PositionHUDConfig();
-    @ConfigEntry.Gui.CollapsibleObject public ReachHUDConfig reachHUDConfig = new ReachHUDConfig();
-    @ConfigEntry.Gui.CollapsibleObject public ToggleSprintHUDConfig toggleSprintHudConfig = new ToggleSprintHUDConfig();
+    @ConfigEntry.Gui.CollapsibleObject public ArmourInfoHudConfig armourInfoHudConfig = new ArmourInfoHudConfig();
+    @ConfigEntry.Gui.CollapsibleObject public KeystrokesHudConfig keystrokesHudConfig = new KeystrokesHudConfig();
+    @ConfigEntry.Gui.CollapsibleObject public DateTimeHudConfig dateTimeHudConfig = new DateTimeHudConfig();
+    @ConfigEntry.Gui.CollapsibleObject public NetworkHudConfig networkHudConfig = new NetworkHudConfig();
+    @ConfigEntry.Gui.CollapsibleObject public PerformanceHudConfig performanceHudConfig = new PerformanceHudConfig();
+    @ConfigEntry.Gui.CollapsibleObject public PositionHudConfig positionHudConfig = new PositionHudConfig();
+    @ConfigEntry.Gui.CollapsibleObject public ReachHudConfig reachHudConfig = new ReachHudConfig();
+    @ConfigEntry.Gui.CollapsibleObject public ToggleSprintHudConfig toggleSprintHudConfig = new ToggleSprintHudConfig();
 }

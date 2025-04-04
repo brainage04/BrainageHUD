@@ -1,23 +1,26 @@
 package com.github.brainage04.brainagehud.hud.core;
 
 import com.github.brainage04.brainagehud.config.core.CoreSettings;
+import com.github.brainage04.brainagehud.config.core.CoreSettingsContainer;
 import com.github.brainage04.brainagehud.config.core.ElementAnchor;
-import com.github.brainage04.brainagehud.hud.*;
-import com.github.brainage04.brainagehud.hud.custom.ArmourInfoHUD;
-import com.github.brainage04.brainagehud.hud.custom.KeystrokesHUD;
-import com.github.brainage04.brainagehud.util.ElementCorners;
-import com.github.brainage04.brainagehud.util.RenderUtils;
+import com.github.brainage04.brainagehud.config.core.ElementCorners;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.network.ClientPlayerEntity;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static com.github.brainage04.brainagehud.util.ConfigUtils.getConfig;
 
-public class HUDRenderer {
-    // for rendering HUD elements
+public class HudRenderer {
+    private static final List<HudElement<? extends CoreSettingsContainer>> REGISTERED_ELEMENTS = new ArrayList<>();
+
+    public static void registerHudElement(HudElement<? extends CoreSettingsContainer> hudElement) {
+        REGISTERED_ELEMENTS.add(hudElement);
+    }
+
     public static void renderElement(TextRenderer renderer, DrawContext drawContext, List<String> lines, CoreSettings coreSettings) {
         int elementWidth = 0;
 
@@ -49,8 +52,8 @@ public class HUDRenderer {
         int posX = getPosX(coreSettings, elementWidth);
 
         // adjust for padding
-        ElementCorners corners = RenderUtils.getCornersWithPadding(posX, posY, posX + elementWidth, posY + elementHeight);
-        RenderUtils.CORE_SETTINGS_ELEMENTS.get(coreSettings.elementId).corners = corners;
+        ElementCorners corners = getCornersWithPadding(posX, posY, posX + elementWidth, posY + elementHeight);
+        HudElementEditor.CORE_SETTINGS_ELEMENTS.get(coreSettings.elementId).corners = corners;
 
         // render backdrop
         int backdropOpacity;
@@ -74,36 +77,36 @@ public class HUDRenderer {
 
     public static int getXOffset(ElementAnchor elementAnchor, int elementWidth) {
         return switch (elementAnchor) {
-            case TOP_RIGHT, RIGHT, BOTTOM_RIGHT -> RenderUtils.getScaledWidth() - elementWidth - getConfig().elementPadding * 2;
-            case TOP, CENTER, BOTTOM -> (RenderUtils.getScaledWidth() - elementWidth) / 2;
+            case TOP_RIGHT, RIGHT, BOTTOM_RIGHT -> getScaledWidth() - elementWidth - getConfig().elementPadding * 2;
+            case TOP, CENTER, BOTTOM -> (getScaledWidth() - elementWidth) / 2;
             default -> getConfig().elementPadding * 2;
         };
     }
 
     public static int getXOffsetNoPadding(ElementAnchor elementAnchor, int elementWidth) {
         return switch (elementAnchor) {
-            case TOP_RIGHT, RIGHT, BOTTOM_RIGHT -> RenderUtils.getScaledWidth() - elementWidth;
-            case TOP, CENTER, BOTTOM -> (RenderUtils.getScaledWidth() - elementWidth) / 2;
+            case TOP_RIGHT, RIGHT, BOTTOM_RIGHT -> getScaledWidth() - elementWidth;
+            case TOP, CENTER, BOTTOM -> (getScaledWidth() - elementWidth) / 2;
             default -> 0;
         };
     }
 
-    private static int getPosX(CoreSettings coreSettings, int elementWidth) {
+    public static int getPosX(CoreSettings coreSettings, int elementWidth) {
         return coreSettings.x + getXOffset(coreSettings.elementAnchor, elementWidth);
     }
 
     public static int getYOffset(ElementAnchor elementAnchor, int elementHeight) {
         return switch (elementAnchor) {
-            case BOTTOM_LEFT, BOTTOM, BOTTOM_RIGHT -> RenderUtils.getScaledHeight() - elementHeight;
-            case LEFT, CENTER, RIGHT -> (RenderUtils.getScaledHeight() - elementHeight) / 2 + getConfig().elementPadding;
+            case BOTTOM_LEFT, BOTTOM, BOTTOM_RIGHT -> getScaledHeight() - elementHeight;
+            case LEFT, CENTER, RIGHT -> (getScaledHeight() - elementHeight) / 2 + getConfig().elementPadding;
             default -> getConfig().elementPadding * 2;
         };
     }
 
     public static int getYOffsetNoPadding(ElementAnchor elementAnchor, int elementHeight) {
         return switch (elementAnchor) {
-            case BOTTOM_LEFT, BOTTOM, BOTTOM_RIGHT -> RenderUtils.getScaledHeight() - elementHeight;
-            case LEFT, CENTER, RIGHT -> (RenderUtils.getScaledHeight() - elementHeight) / 2;
+            case BOTTOM_LEFT, BOTTOM, BOTTOM_RIGHT -> getScaledHeight() - elementHeight;
+            case LEFT, CENTER, RIGHT -> (getScaledHeight() - elementHeight) / 2;
             default -> 0;
         };
     }
@@ -124,13 +127,31 @@ public class HUDRenderer {
     public static void render(DrawContext drawContext) {
         TextRenderer renderer = MinecraftClient.getInstance().textRenderer;
 
-        ArmourInfoHUD.render(renderer, drawContext, getConfig().armourInfoHudConfig);
-        DateTimeHUD.render(renderer, drawContext, getConfig().dateTimeHudConfig);
-        KeystrokesHUD.render(renderer, drawContext, getConfig().keystrokesHudConfig);
-        NetworkHUD.render(renderer, drawContext, getConfig().networkHudConfig);
-        PerformanceHUD.render(renderer, drawContext, getConfig().performanceHudConfig);
-        PositionHUD.render(renderer, drawContext, getConfig().positionHudConfig);
-        ReachHUD.render(renderer, drawContext, getConfig().reachHUDConfig);
-        ToggleSprintHUD.render(renderer, drawContext, getConfig().toggleSprintHudConfig);
+        for (HudElement<? extends CoreSettingsContainer> hudElement : REGISTERED_ELEMENTS) {
+            if (!hudElement.getElementConfig().coreSettings.enabled) continue;
+
+            if (hudElement instanceof BasicHudElement<?> basicHudElement) {
+                renderElement(renderer, drawContext, basicHudElement.getLines(), hudElement.getElementConfig().coreSettings);
+            } else if (hudElement instanceof CustomHudElement<?> customHudElement) {
+                customHudElement.render(renderer, drawContext);
+            }
+        }
+    }
+
+    public static ElementCorners getCornersWithPadding(int left, int top, int right, int bottom) {
+        return new ElementCorners(
+                left - getConfig().elementPadding * 2,
+                top - getConfig().elementPadding * 2,
+                right + getConfig().elementPadding * 2,
+                bottom
+        );
+    }
+
+    public static int getScaledWidth() {
+        return MinecraftClient.getInstance().getWindow().getScaledWidth();
+    }
+
+    public static int getScaledHeight() {
+        return MinecraftClient.getInstance().getWindow().getScaledHeight();
     }
 }

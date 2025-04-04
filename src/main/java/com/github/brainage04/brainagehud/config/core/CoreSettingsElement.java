@@ -1,6 +1,4 @@
-package com.github.brainage04.brainagehud.util;
-
-import com.github.brainage04.brainagehud.config.core.CoreSettings;
+package com.github.brainage04.brainagehud.config.core;
 
 public class CoreSettingsElement {
     public ElementCorners corners;

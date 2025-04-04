@@ -1,4 +1,4 @@
-package com.github.brainage04.brainagehud.util;
+package com.github.brainage04.brainagehud.config.core;
 
 @SuppressWarnings("CanBeFinal")
 public class ElementCorners {

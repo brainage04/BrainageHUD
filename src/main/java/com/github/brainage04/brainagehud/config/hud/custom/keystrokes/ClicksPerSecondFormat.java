@@ -1,4 +1,4 @@
-package com.github.brainage04.brainagehud.config.hud.custom;
+package com.github.brainage04.brainagehud.config.hud.custom.keystrokes;
 
 public enum ClicksPerSecondFormat {
     NONE("None"),

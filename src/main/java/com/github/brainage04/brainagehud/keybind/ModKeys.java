@@ -1,7 +1,7 @@
 package com.github.brainage04.brainagehud.keybind;
 
 import com.github.brainage04.brainagehud.BrainageHUD;
-import com.github.brainage04.brainagehud.hud.core.HUDElementEditor;
+import com.github.brainage04.brainagehud.hud.core.HudElementEditor;
 import com.github.brainage04.brainagehud.config.core.ModConfig;
 import me.shedaniel.autoconfig.AutoConfig;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
@@ -36,7 +36,7 @@ public class ModKeys {
 
             if (openElementEditor.isPressed()) {
                 MinecraftClient.getInstance().setScreen(
-                        new HUDElementEditor()
+                        new HudElementEditor()
                 );
             }
         });

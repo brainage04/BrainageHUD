@@ -1,7 +1,7 @@
 package com.github.brainage04.brainagehud.command;
 
 import com.github.brainage04.brainagehud.BrainageHUD;
-import com.github.brainage04.brainagehud.hud.core.HUDElementEditor;
+import com.github.brainage04.brainagehud.hud.core.HudElementEditor;
 import com.github.brainage04.brainagehud.config.core.ModConfig;
 import com.mojang.brigadier.arguments.DoubleArgumentType;
 import me.shedaniel.autoconfig.AutoConfig;
@@ -20,6 +20,7 @@ public class CommandRegistration {
                             MinecraftClient.getInstance().send(() -> context.getSource().getClient().setScreen(
                                     AutoConfig.getConfigScreen(ModConfig.class, context.getSource().getClient().currentScreen).get()
                             ));
+
                             return 1;
                         })
                 )
@@ -29,8 +30,9 @@ public class CommandRegistration {
                 dispatcher.register(ClientCommandManager.literal(BrainageHUD.MOD_ID + "gui")
                         .executes(context -> {
                             MinecraftClient.getInstance().send(() -> context.getSource().getClient().setScreen(
-                                    new HUDElementEditor()
+                                    new HudElementEditor()
                             ));
+
                             return 1;
                         })
                 )
@@ -43,6 +45,7 @@ public class CommandRegistration {
                                     final double value = DoubleArgumentType.getDouble(context, "value");
                                     setGamma(value);
                                     context.getSource().sendFeedback(Text.literal("Gamma set to %f.".formatted(value)));
+
                                     return 1;
                                 })
                         )

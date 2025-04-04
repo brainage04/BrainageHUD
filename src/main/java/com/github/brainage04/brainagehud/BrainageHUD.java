@@ -4,10 +4,13 @@ import com.github.brainage04.brainagehud.command.CommandRegistration;
 import com.github.brainage04.brainagehud.config.core.ModConfig;
 import com.github.brainage04.brainagehud.event.ModPacketEvents;
 import com.github.brainage04.brainagehud.event.ModTickEvents;
-import com.github.brainage04.brainagehud.hud.core.HUDRenderer;
+import com.github.brainage04.brainagehud.hud.*;
+import com.github.brainage04.brainagehud.hud.core.HudElementEditor;
+import com.github.brainage04.brainagehud.hud.core.HudRenderer;
+import com.github.brainage04.brainagehud.hud.custom.ArmourInfoHud;
+import com.github.brainage04.brainagehud.hud.custom.KeystrokesHud;
 import com.github.brainage04.brainagehud.keybind.ModKeys;
 import com.github.brainage04.brainagehud.util.ConfigUtils;
-import com.github.brainage04.brainagehud.util.RenderUtils;
 import me.shedaniel.autoconfig.AutoConfig;
 import me.shedaniel.autoconfig.serializer.GsonConfigSerializer;
 import net.fabricmc.api.ClientModInitializer;
@@ -31,19 +34,28 @@ public class BrainageHUD implements ClientModInitializer {
 
 		AutoConfig.register(ModConfig.class, GsonConfigSerializer::new);
 		ConfigUtils.initialize();
-		RenderUtils.populateCoreSettingsElements();
 
 		ModTickEvents.initialize();
 		ModPacketEvents.initialize();
 
+		// hud
 		HudLayerRegistrationCallback.EVENT.register(layeredDrawer ->
 				layeredDrawer.attachLayerBefore(
 						IdentifiedLayer.CHAT,
 						HUD_LAYER_0,
 						(context, tickCounter) ->
-								HUDRenderer.render(context)
+								HudRenderer.render(context)
 				)
 		);
+
+		HudRenderer.registerHudElement(new ArmourInfoHud());
+		HudRenderer.registerHudElement(new DateTimeHud());
+		HudRenderer.registerHudElement(new KeystrokesHud());
+		HudRenderer.registerHudElement(new NetworkHud());
+		HudRenderer.registerHudElement(new PerformanceHud());
+		HudRenderer.registerHudElement(new PositionHud());
+		HudRenderer.registerHudElement(new ReachHud());
+		HudRenderer.registerHudElement(new ToggleSprintHud());
 
 		CommandRegistration.registerCommands();
 		ModKeys.registerKeys();

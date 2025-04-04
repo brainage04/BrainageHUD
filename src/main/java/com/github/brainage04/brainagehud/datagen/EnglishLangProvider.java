@@ -12,7 +12,6 @@ import java.lang.reflect.Field;
 import java.util.concurrent.CompletableFuture;
 
 public class EnglishLangProvider extends FabricLanguageProvider {
-
     public EnglishLangProvider(FabricDataOutput dataOutput, CompletableFuture<RegistryWrapper.WrapperLookup> registryLookup) {
         super(dataOutput, registryLookup);
     }

@@ -30,6 +30,7 @@ This mod has been built with the vanilla HUD in mind. For example:
 - HUD elements with the "Top Right" alignment will be shifted down a bit when the player has potion effects, so that the potion effect display and HUD elements do not overlap.
 
 # Todo
+refactor custom hud elements using proper HudRenderer utility methods like getPosX/Y
 overhaul config with proper overrides
 add waypoints
 reachhud: add option to only update reachhud on left click (for pvp)

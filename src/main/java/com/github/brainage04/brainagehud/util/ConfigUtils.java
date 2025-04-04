@@ -1,20 +1,20 @@
 package com.github.brainage04.brainagehud.util;
 
 import com.github.brainage04.brainagehud.config.core.ModConfig;
-import com.github.brainage04.brainagehud.config.hud.custom.ClicksPerSecondFormat;
+import com.github.brainage04.brainagehud.hud.core.HudElementEditor;
 import me.shedaniel.autoconfig.AutoConfig;
 import me.shedaniel.autoconfig.ConfigHolder;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.util.ActionResult;
 
 public class ConfigUtils {
-    @SuppressWarnings("SameReturnValue")
+    @SuppressWarnings({"SameReturnValue", "unused"})
     private static ActionResult saveLoad(ConfigHolder<ModConfig> configHolder, ModConfig modConfig) {
         MinecraftClient.getInstance().options.getGamma().setValue(
                 modConfig.qualityOfLifeConfig.gamma
         );
 
-        RenderUtils.populateCoreSettingsElements();
+        HudElementEditor.populateCoreSettingsElements();
 
         return ActionResult.SUCCESS;
     }
@@ -39,15 +39,5 @@ public class ConfigUtils {
     public static void setGamma(double value) {
         getConfig().qualityOfLifeConfig.gamma = value;
         saveConfig();
-    }
-
-    public static boolean isLeftClickShown() {
-        return getConfig().keystrokesHudConfig.clicksPerSecondFormat == ClicksPerSecondFormat.LEFT_CLICK
-                || getConfig().keystrokesHudConfig.clicksPerSecondFormat == ClicksPerSecondFormat.BOTH;
-    }
-
-    public static boolean isRightClickShown() {
-        return getConfig().keystrokesHudConfig.clicksPerSecondFormat == ClicksPerSecondFormat.RIGHT_CLICK
-                || getConfig().keystrokesHudConfig.clicksPerSecondFormat == ClicksPerSecondFormat.BOTH;
     }
 }
