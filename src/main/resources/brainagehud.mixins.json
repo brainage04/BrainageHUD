@@ -1,0 +1,14 @@
+{
+  "required": true,
+  "package": "io.github.brainage04.brainagehud.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "injectors": {
+    "defaultRequire": 1
+  },
+  "client": [
+    "MixinClientConnection",
+    "MixinClientPlayNetworkHandler",
+    "MixinLightmapTextureManager",
+    "MixinPingMeasurer"
+  ]
+}
