@@ -8,11 +8,7 @@ import me.shedaniel.autoconfig.annotation.ConfigEntry;
 @SuppressWarnings("CanBeFinal")
 public class ToggleSprintHudConfig implements ICoreSettingsContainer {
     @ConfigEntry.Gui.CollapsibleObject
-    public CoreSettings coreSettings;
-
-    public ToggleSprintHudConfig() {
-        this.coreSettings = new CoreSettings(7, "Toggle Sprint HUD", true, 5, -5, ElementAnchor.BOTTOM_LEFT);
-    }
+    public CoreSettings coreSettings = new CoreSettings(7, "Toggle Sprint HUD", true, 5, -5, ElementAnchor.BOTTOM_LEFT);
 
     @Override
     public CoreSettings getCoreSettings() {

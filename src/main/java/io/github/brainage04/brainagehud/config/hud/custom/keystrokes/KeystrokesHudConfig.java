@@ -8,21 +8,12 @@ import me.shedaniel.autoconfig.annotation.ConfigEntry;
 @SuppressWarnings("CanBeFinal")
 public class KeystrokesHudConfig implements ICoreSettingsContainer {
     @ConfigEntry.Gui.CollapsibleObject
-    public CoreSettings coreSettings;
-    public int keyBackdropOpacity;
-    public boolean showWasd;
-    public boolean showSpace;
-    public boolean showMouseButtons;
-    public ClicksPerSecondFormat clicksPerSecondFormat;
-
-    public KeystrokesHudConfig() {
-        this.coreSettings = new CoreSettings(1, "Keystrokes HUD", true, -5, 5, ElementAnchor.TOP_RIGHT);
-        this.keyBackdropOpacity = 100;
-        this.showWasd = true;
-        this.showSpace = true;
-        this.showMouseButtons = true;
-        this.clicksPerSecondFormat = ClicksPerSecondFormat.LEFT_CLICK;
-    }
+    public CoreSettings coreSettings = new CoreSettings(1, "Keystrokes HUD", true, -5, 5, ElementAnchor.TOP_RIGHT);
+    public int keyBackdropOpacity = 100;
+    public boolean showWasd = true;
+    public boolean showSpace = true;
+    public boolean showMouseButtons = true;
+    public ClicksPerSecondFormat clicksPerSecondFormat = ClicksPerSecondFormat.LEFT_CLICK;
 
     @Override
     public CoreSettings getCoreSettings() {

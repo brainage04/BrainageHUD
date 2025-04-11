@@ -8,20 +8,11 @@ import me.shedaniel.autoconfig.annotation.ConfigEntry;
 @SuppressWarnings("CanBeFinal")
 public class PerformanceHudConfig implements ICoreSettingsContainer {
     @ConfigEntry.Gui.CollapsibleObject
-    public CoreSettings coreSettings;
-    public boolean showFps;
-    public boolean showRamUsage;
-    public boolean showCpuUsage;
-    @ConfigEntry.Gui.Tooltip(count = 3)
-    public boolean showGpuUsage;
-
-    public PerformanceHudConfig() {
-        this.coreSettings = new CoreSettings(4, "Performance HUD", true, 5, 77, ElementAnchor.TOP_LEFT);
-        this.showFps = true;
-        this.showRamUsage = false;
-        this.showCpuUsage = false;
-        this.showGpuUsage = false;
-    }
+    public CoreSettings coreSettings = new CoreSettings(4, "Performance HUD", true, 5, 77, ElementAnchor.TOP_LEFT);
+    public boolean showFps = true;
+    public boolean showRamUsage = false;
+    public boolean showCpuUsage = false;
+    @ConfigEntry.Gui.Tooltip(count = 3) public boolean showGpuUsage = false;
 
     @Override
     public CoreSettings getCoreSettings() {
