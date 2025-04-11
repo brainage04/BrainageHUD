@@ -8,7 +8,11 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.client.render.WorldRenderer;
 import net.minecraft.entity.Entity;
+import net.minecraft.registry.entry.RegistryEntry;
+import net.minecraft.text.Text;
 import net.minecraft.util.math.MathHelper;
+import net.minecraft.world.LightType;
+import net.minecraft.world.biome.Biome;
 
 import static io.github.brainage04.brainagehud.util.ConfigUtils.getConfig;
 import static io.github.brainage04.brainagehud.util.MathUtils.roundDecimalPlaces;
@@ -102,7 +106,25 @@ public class PositionHud implements BasicHudElement<PositionHudConfig> {
             lines.add(yawString);
         }
 
+        // todo: test
+        if (getElementConfig().showLight) {
+            lines.add("Light: %s sky, %s block".formatted(
+                player.clientWorld.getLightLevel(LightType.SKY, player.getBlockPos()),
+                player.clientWorld.getLightLevel(LightType.BLOCK, player.getBlockPos())
+            ));
+        }
 
+        // todo: test
+        if (getElementConfig().showBiome) {
+            RegistryEntry<Biome> biome = player.clientWorld.getBiome(player.getBlockPos());
+
+            biome.getKey().ifPresent(biomeRegistryKey ->
+                    lines.add(Text.translatable("biome.%s.%s".formatted(
+                            biomeRegistryKey.getValue().getNamespace(),
+                            biomeRegistryKey.getValue().getPath()
+                    )))
+            );
+        }
 
         return lines;
     }

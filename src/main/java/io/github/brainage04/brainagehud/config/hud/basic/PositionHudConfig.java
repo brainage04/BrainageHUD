@@ -17,6 +17,8 @@ public class PositionHudConfig implements ICoreSettingsContainer {
     public boolean showDirection = true;
     public boolean showRotation = true;
     public int rotationDecimalPlaces = 2;
+    public boolean showLight = true;
+    public boolean showBiome = true;
 
     @Override
     public CoreSettings getCoreSettings() {
