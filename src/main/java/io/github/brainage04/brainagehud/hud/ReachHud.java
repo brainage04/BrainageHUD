@@ -3,6 +3,7 @@ package io.github.brainage04.brainagehud.hud;
 import io.github.brainage04.brainagehud.config.hud.basic.ReachHudConfig;
 import io.github.brainage04.brainagehud.util.MathUtils;
 import io.github.brainage04.hudrendererlib.hud.core.BasicHudElement;
+import io.github.brainage04.hudrendererlib.util.TextList;
 import net.minecraft.block.Block;
 import net.minecraft.block.Blocks;
 import net.minecraft.client.MinecraftClient;
@@ -13,15 +14,12 @@ import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.EntityHitResult;
 import net.minecraft.util.hit.HitResult;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import static io.github.brainage04.brainagehud.util.ConfigUtils.getConfig;
 
 public class ReachHud implements BasicHudElement<ReachHudConfig> {
     @Override
-    public List<String> getLines() {
-        List<String> lines = new ArrayList<>(List.of());
+    public TextList getLines() {
+        TextList lines = new TextList();
 
         MinecraftClient client = MinecraftClient.getInstance();
         if (client.cameraEntity == null) return lines;
@@ -54,7 +52,9 @@ public class ReachHud implements BasicHudElement<ReachHudConfig> {
                 }
             }
 
-            lines.add("%s blocks".formatted(MathUtils.roundDecimalPlaces(client.player.getEyePos().distanceTo(hitResult.getPos()), getElementConfig().decimalPlaces)));
+            lines.add("%s blocks".formatted(
+                    MathUtils.roundDecimalPlaces(client.player.getEyePos().distanceTo(hitResult.getPos()), getElementConfig().decimalPlaces))
+            );
         }
 
         return lines;

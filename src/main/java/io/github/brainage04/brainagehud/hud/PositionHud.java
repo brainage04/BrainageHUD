@@ -3,14 +3,12 @@ package io.github.brainage04.brainagehud.hud;
 import io.github.brainage04.brainagehud.config.hud.basic.PositionHudConfig;
 import io.github.brainage04.brainagehud.util.MathUtils;
 import io.github.brainage04.hudrendererlib.hud.core.BasicHudElement;
+import io.github.brainage04.hudrendererlib.util.TextList;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayerEntity;
+import net.minecraft.client.render.WorldRenderer;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.math.MathHelper;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
 
 import static io.github.brainage04.brainagehud.util.ConfigUtils.getConfig;
 import static io.github.brainage04.brainagehud.util.MathUtils.roundDecimalPlaces;
@@ -38,39 +36,38 @@ public class PositionHud implements BasicHudElement<PositionHudConfig> {
     }
 
     @Override
-    public List<String> getLines() {
-        List<String> lines = new ArrayList<>(List.of());
+    public TextList getLines() {
+        TextList lines = new TextList();
 
         ClientPlayerEntity player = MinecraftClient.getInstance().player;
         if (player == null) return lines;
 
         if (getElementConfig().showPosition) {
-            lines.add(String.format("X: %s", roundDecimalPlaces(player.getX(), getElementConfig().positionDecimalPlaces)));
-            lines.add(String.format("Y: %s", roundDecimalPlaces(player.getY(), getElementConfig().positionDecimalPlaces)));
-            lines.add(String.format("Z: %s", roundDecimalPlaces(player.getZ(), getElementConfig().positionDecimalPlaces)));
+            lines.add("X: %s".formatted(roundDecimalPlaces(player.getX(), getElementConfig().positionDecimalPlaces)));
+            lines.add("Y: %s".formatted(roundDecimalPlaces(player.getY(), getElementConfig().positionDecimalPlaces)));
+            lines.add("Z: %s".formatted(roundDecimalPlaces(player.getZ(), getElementConfig().positionDecimalPlaces)));
         }
+
+        WorldRenderer worldRenderer = MinecraftClient.getInstance().worldRenderer;
 
         if (getElementConfig().cCounter) {
             // taken from net.minecraft.client.renderer.WorldRenderer
-            int completedChunks = MinecraftClient.getInstance().worldRenderer.getCompletedChunkCount();
-            int totalChunks = (int) MinecraftClient.getInstance().worldRenderer.getChunkCount();
+            int completedChunks = worldRenderer.getCompletedChunkCount();
+            int totalChunks = (int) worldRenderer.getChunkCount();
 
-            lines.add(
-                    String.format(
-                            Locale.ROOT,
-                            "C: %d/%d %s",
-                            completedChunks,
-                            totalChunks,
-                            MinecraftClient.getInstance().chunkCullingEnabled ? "(s)" : ""
-                    )
-            );
+            lines.add("C: %d/%d%s".formatted(
+                    completedChunks,
+                    totalChunks,
+                    MinecraftClient.getInstance().chunkCullingEnabled ? " (s)" : ""
+            ));
         }
 
         if (getElementConfig().eCounter) {
             // taken from net.minecraft.client.renderer.WorldRenderer
-            lines.add(
-                    MinecraftClient.getInstance().worldRenderer.getEntitiesDebugString().split(", SD: ")[0]
-            );
+            lines.add("E: %d/%d".formatted(
+                    worldRenderer.renderedEntitiesCount,
+                    player.clientWorld.getRegularEntityCount()
+            ));
         }
 
         if (getElementConfig().showDirection) {
@@ -81,14 +78,12 @@ public class PositionHud implements BasicHudElement<PositionHudConfig> {
             float yaw = MathHelper.wrapDegrees(entity.getYaw());
             String yawString = "";
 
-            // this is cancer
             yawString = getYawString(yaw, yawString);
 
             float pitch = MathHelper.wrapDegrees(entity.getPitch());
 
             if (getElementConfig().showRotation) {
-                yawString += String.format(
-                        " (%s / %s)",
+                yawString += " (%s / %s)".formatted(
                         roundDecimalPlaces(yaw, getElementConfig().rotationDecimalPlaces),
                         roundDecimalPlaces(pitch, getElementConfig().rotationDecimalPlaces)
                 );

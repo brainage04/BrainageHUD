@@ -2,19 +2,18 @@ package io.github.brainage04.brainagehud.hud;
 
 import io.github.brainage04.brainagehud.config.hud.basic.ToggleSprintHudConfig;
 import io.github.brainage04.hudrendererlib.hud.core.BasicHudElement;
+import io.github.brainage04.hudrendererlib.util.TextList;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayerEntity;
+import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
-
-import java.util.ArrayList;
-import java.util.List;
 
 import static io.github.brainage04.brainagehud.util.ConfigUtils.getConfig;
 
 public class ToggleSprintHud implements BasicHudElement<ToggleSprintHudConfig> {
     @Override
-    public List<String> getLines() {
-        List<String> lines = new ArrayList<>();
+    public TextList getLines() {
+        TextList lines = new TextList();
 
         ClientPlayerEntity player = MinecraftClient.getInstance().player;
         if (player == null) return lines;
@@ -36,7 +35,7 @@ public class ToggleSprintHud implements BasicHudElement<ToggleSprintHudConfig> {
         }
 
         if (lines.isEmpty()) {
-            lines.add(Formatting.GRAY + "[Walking (Vanilla)]");
+            lines.add(Text.literal("[Walking (Vanilla)]").formatted(Formatting.GRAY));
         }
 
         return lines;
