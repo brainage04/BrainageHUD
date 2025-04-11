@@ -43,9 +43,19 @@ public class PositionHud implements BasicHudElement<PositionHudConfig> {
         if (player == null) return lines;
 
         if (getElementConfig().showPosition) {
-            lines.add("X: %s".formatted(roundDecimalPlaces(player.getX(), getElementConfig().positionDecimalPlaces)));
-            lines.add("Y: %s".formatted(roundDecimalPlaces(player.getY(), getElementConfig().positionDecimalPlaces)));
-            lines.add("Z: %s".formatted(roundDecimalPlaces(player.getZ(), getElementConfig().positionDecimalPlaces)));
+            String x = "X: %s".formatted(roundDecimalPlaces(player.getX(), getElementConfig().positionDecimalPlaces));
+            String y = "Y: %s".formatted(roundDecimalPlaces(player.getY(), getElementConfig().positionDecimalPlaces));
+            String z = "Z: %s".formatted(roundDecimalPlaces(player.getZ(), getElementConfig().positionDecimalPlaces));
+
+            if (getElementConfig().showChunkPosition) {
+                x += " [%d]".formatted(player.getBlockPos().getX() & 15);
+                y += " [%d]".formatted(player.getBlockPos().getY() & 15);
+                z += " [%d]".formatted(player.getBlockPos().getZ() & 15);
+            }
+
+            lines.add(x);
+            lines.add(y);
+            lines.add(z);
         }
 
         WorldRenderer worldRenderer = MinecraftClient.getInstance().worldRenderer;
@@ -91,6 +101,8 @@ public class PositionHud implements BasicHudElement<PositionHudConfig> {
 
             lines.add(yawString);
         }
+
+
 
         return lines;
     }
