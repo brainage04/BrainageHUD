@@ -29,7 +29,7 @@ repositories {
 	maven {
 		url = "https://maven.pkg.github.com/brainage04/HudRendererLib"
 		credentials {
-			username = "brainage04"
+			username = System.getenv("GITHUB_USERNAME")
 			password = System.getenv("GITHUB_TOKEN")
 		}
 	}
