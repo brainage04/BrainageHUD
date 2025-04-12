@@ -1,0 +1,38 @@
+{
+	"schemaVersion": 1,
+	"id": "brainagehud",
+	"version": "${version}",
+	"name": "BrainageHUD",
+	"description": "A client-side mod that adds useful HUD elements to Minecraft.",
+	"authors": [
+		"brainage04"
+	],
+	"contact": {
+		"homepage": "https://github.com/brainage04/BrainageHUD",
+		"sources": "https://github.com/brainage04/BrainageHUD"
+	},
+	"license": "MIT",
+	"icon": "assets/brainagehud/icon.png",
+	"environment": "*",
+	"entrypoints": {
+		"client": [
+          "io.github.brainage04.brainagehud.BrainageHUD"
+		],
+		"fabric-datagen": [
+          "io.github.brainage04.brainagehud.BrainageHUDDataGenerator"
+		],
+		"modmenu": [
+          "io.github.brainage04.brainagehud.modmenu.ModMenuIntegration"
+		]
+	},
+	"mixins": [
+		"brainagehud.mixins.json"
+	],
+	"depends": {
+		"fabricloader": ">=0.16.13",
+		"minecraft": "~1.21.5",
+		"java": ">=21",
+		"fabric-api": "*"
+	},
+	"accessWidener" : "brainagehud.accesswidener"
+}

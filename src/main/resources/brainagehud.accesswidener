@@ -1,0 +1,4 @@
+accessWidener v2 named
+accessible field net/minecraft/client/gui/hud/DebugHud blockHit Lnet/minecraft/util/hit/HitResult;
+accessible method net/minecraft/client/render/GameRenderer findCrosshairTarget (Lnet/minecraft/entity/Entity;DDF)Lnet/minecraft/util/hit/HitResult;
+accessible field net/minecraft/client/render/WorldRenderer renderedEntitiesCount I
