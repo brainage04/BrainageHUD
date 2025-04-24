@@ -3,7 +3,7 @@
 	"id": "brainagehud",
 	"version": "${version}",
 	"name": "BrainageHUD",
-	"description": "A client-side mod that adds useful HUD elements to Minecraft.",
+	"description": "A mod that adds useful HUD elements to Minecraft.",
 	"authors": [
 		"brainage04"
 	],
