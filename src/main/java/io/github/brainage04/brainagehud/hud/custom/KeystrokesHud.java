@@ -3,6 +3,7 @@ package io.github.brainage04.brainagehud.hud.custom;
 import io.github.brainage04.brainagehud.config.hud.custom.keystrokes.ClicksPerSecondFormat;
 import io.github.brainage04.brainagehud.config.hud.custom.keystrokes.KeystrokesHudConfig;
 import io.github.brainage04.hudrendererlib.HudRendererLib;
+import io.github.brainage04.hudrendererlib.config.core.CoreSettingsElement;
 import io.github.brainage04.hudrendererlib.config.core.ElementCorners;
 import io.github.brainage04.hudrendererlib.hud.core.CustomHudElement;
 import io.github.brainage04.hudrendererlib.hud.core.HudElementEditor;
@@ -20,14 +21,14 @@ import java.util.Objects;
 import static io.github.brainage04.brainagehud.util.ConfigUtils.getConfig;
 
 public class KeystrokesHud implements CustomHudElement<KeystrokesHudConfig> {
-    public static boolean isLeftClickShown() {
-        return getConfig().keystrokesHudConfig.clicksPerSecondFormat == ClicksPerSecondFormat.LEFT_CLICK
-                || getConfig().keystrokesHudConfig.clicksPerSecondFormat == ClicksPerSecondFormat.BOTH;
+    public boolean isLeftClickShown() {
+        return getElementConfig().clicksPerSecondFormat == ClicksPerSecondFormat.LEFT_CLICK
+                || getElementConfig().clicksPerSecondFormat == ClicksPerSecondFormat.BOTH;
     }
 
-    public static boolean isRightClickShown() {
-        return getConfig().keystrokesHudConfig.clicksPerSecondFormat == ClicksPerSecondFormat.RIGHT_CLICK
-                || getConfig().keystrokesHudConfig.clicksPerSecondFormat == ClicksPerSecondFormat.BOTH;
+    public boolean isRightClickShown() {
+        return getElementConfig().clicksPerSecondFormat == ClicksPerSecondFormat.RIGHT_CLICK
+                || getElementConfig().clicksPerSecondFormat == ClicksPerSecondFormat.BOTH;
     }
 
     private record KeyStrokesItem(@Nullable KeyBinding key, String name, int x, int y, int width, int height) {}
@@ -186,7 +187,10 @@ public class KeystrokesHud implements CustomHudElement<KeystrokesHudConfig> {
         // determine bounds of HUD element
         ElementCorners corners = HudRenderer.getCornersWithPadding(posX, posY, posX + elementWidth, posY + elementHeight, getElementConfig().coreSettings);
         corners.bottom += elementPadding * 2;
-        HudElementEditor.CORE_SETTINGS_ELEMENTS.get(getElementConfig().coreSettings.elementId).corners = corners;
+
+        CoreSettingsElement coreSettingsElement = HudElementEditor.CORE_SETTINGS_ELEMENTS.get(getElementConfig().coreSettings.elementId);
+        coreSettingsElement.corners = corners;
+        HudElementEditor.CORE_SETTINGS_ELEMENTS.put(getElementConfig().coreSettings.elementId, coreSettingsElement);
 
         // render backdrop
         int backdropOpacity = HudRendererLib.getOpacity(getElementConfig().coreSettings);

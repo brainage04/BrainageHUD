@@ -34,6 +34,7 @@ public class BrainageHUD implements ClientModInitializer {
 		HudRendererLib.registerHudElement(new KeystrokesHud());
 
 		HudRendererLib.registerHudElement(new DateTimeHud());
+		HudRendererLib.registerHudElement(new FishingHud());
 		HudRendererLib.registerHudElement(new NetworkHud());
 		HudRendererLib.registerHudElement(new PerformanceHud());
 		HudRendererLib.registerHudElement(new PositionHud());

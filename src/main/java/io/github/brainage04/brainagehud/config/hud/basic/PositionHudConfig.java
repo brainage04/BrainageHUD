@@ -8,7 +8,7 @@ import me.shedaniel.autoconfig.annotation.ConfigEntry;
 @SuppressWarnings("CanBeFinal")
 public class PositionHudConfig implements ICoreSettingsContainer {
     @ConfigEntry.Gui.CollapsibleObject
-    public CoreSettings coreSettings = new CoreSettings(5, "Position HUD", true, 5, 5, ElementAnchor.TOP_LEFT);
+    public CoreSettings coreSettings = new CoreSettings("Position HUD", true, 5, 5, ElementAnchor.TOP_LEFT);
     public boolean showPosition = true;
     public int positionDecimalPlaces = 1;
     public boolean showChunkPosition = true;
@@ -23,5 +23,10 @@ public class PositionHudConfig implements ICoreSettingsContainer {
     @Override
     public CoreSettings getCoreSettings() {
         return coreSettings;
+    }
+
+    @Override
+    public void setCoreSettings(CoreSettings coreSettings) {
+        this.coreSettings = coreSettings;
     }
 }
