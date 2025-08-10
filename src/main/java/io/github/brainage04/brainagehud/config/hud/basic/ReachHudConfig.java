@@ -8,7 +8,7 @@ import me.shedaniel.autoconfig.annotation.ConfigEntry;
 @SuppressWarnings("CanBeFinal")
 public class ReachHudConfig implements ICoreSettingsContainer {
     @ConfigEntry.Gui.CollapsibleObject
-    public CoreSettings coreSettings = new CoreSettings(6, "Reach HUD", true, 0, 30, ElementAnchor.CENTER);
+    public CoreSettings coreSettings = new CoreSettings("Reach HUD", true, 0, 30, ElementAnchor.CENTER);
     public int decimalPlaces = 2;
     public boolean showName = true;
     public boolean showCoordinates = true;
@@ -16,5 +16,10 @@ public class ReachHudConfig implements ICoreSettingsContainer {
     @Override
     public CoreSettings getCoreSettings() {
         return coreSettings;
+    }
+
+    @Override
+    public void setCoreSettings(CoreSettings coreSettings) {
+        this.coreSettings = coreSettings;
     }
 }

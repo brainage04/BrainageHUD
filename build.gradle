@@ -53,7 +53,7 @@ dependencies {
 	modApi "com.terraformersmc:modmenu:14.0.0-rc.2"
 
 	// HudRendererLib
-	modImplementation "io.github.brainage04:hudrendererlib:1.0.0-1.21.4"
+	modImplementation "io.github.brainage04:hudrendererlib:1.0.1-1.21.4"
 }
 
 processResources {

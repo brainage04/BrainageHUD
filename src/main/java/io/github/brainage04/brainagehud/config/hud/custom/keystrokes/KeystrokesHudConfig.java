@@ -8,7 +8,7 @@ import me.shedaniel.autoconfig.annotation.ConfigEntry;
 @SuppressWarnings("CanBeFinal")
 public class KeystrokesHudConfig implements ICoreSettingsContainer {
     @ConfigEntry.Gui.CollapsibleObject
-    public CoreSettings coreSettings = new CoreSettings(1, "Keystrokes HUD", true, -5, 5, ElementAnchor.TOP_RIGHT);
+    public CoreSettings coreSettings = new CoreSettings("Keystrokes HUD", true, -5, 5, ElementAnchor.TOP_RIGHT);
     public int keyBackdropOpacity = 100;
     public boolean showWasd = true;
     public boolean showSpace = true;
@@ -18,5 +18,10 @@ public class KeystrokesHudConfig implements ICoreSettingsContainer {
     @Override
     public CoreSettings getCoreSettings() {
         return coreSettings;
+    }
+
+    @Override
+    public void setCoreSettings(CoreSettings coreSettings) {
+        this.coreSettings = coreSettings;
     }
 }

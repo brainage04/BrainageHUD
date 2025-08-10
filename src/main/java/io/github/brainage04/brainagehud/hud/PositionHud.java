@@ -1,7 +1,6 @@
 package io.github.brainage04.brainagehud.hud;
 
 import io.github.brainage04.brainagehud.config.hud.basic.PositionHudConfig;
-import io.github.brainage04.brainagehud.util.MathUtils;
 import io.github.brainage04.hudrendererlib.hud.core.BasicHudElement;
 import io.github.brainage04.hudrendererlib.util.TextList;
 import net.minecraft.client.MinecraftClient;
@@ -18,25 +17,28 @@ import static io.github.brainage04.brainagehud.util.ConfigUtils.getConfig;
 import static io.github.brainage04.brainagehud.util.MathUtils.roundDecimalPlaces;
 
 public class PositionHud implements BasicHudElement<PositionHudConfig> {
-    private static String getYawString(float yaw, String yawString) {
-        if (MathUtils.isBetween(yaw, 157.5f, 180.0f) || MathUtils.isBetween(yaw, -180.0f, -157.5f)) {
-            yawString = "N (-Z)";
-        } else if (MathUtils.isBetween(yaw, -157.5f, -112.5f)) {
-            yawString = "NE (+X, -Z)";
-        } else if (MathUtils.isBetween(yaw, -112.5f, -67.5f)) {
-            yawString = "E (+X)";
-        } else if (MathUtils.isBetween(yaw, -67.5f, -22.5f)) {
-            yawString = "SE (+X, +Z)";
-        } else if (MathUtils.isBetween(yaw, -22.5f, 22.5f)) {
-            yawString = "S (+Z)";
-        } else if (MathUtils.isBetween(yaw, 22.5f, 67.5f)) {
-            yawString = "SW (-X, +Z)";
-        } else if (MathUtils.isBetween(yaw, 67.5f, 112.5f)) {
-            yawString = "W (-X)";
-        } else if (MathUtils.isBetween(yaw, 112.5f, 157.5f)) {
-            yawString = "NW (-X, -Z)";
-        }
-        return yawString;
+    private static final String[] YAW_LABEL = {
+            "S (+Z)",          // 0  : [-22.5,  22.5)
+            "SW (-X, +Z)",     // 1  :  [22.5,  67.5)
+            "W (-X)",          // 2  :  [67.5,  112.5)
+            "NW (-X, -Z)",     // 3  :  [112.5, 157.5)
+            "N (-Z)",          // 4  :  [157.5, 180) / [-180,-157.5)
+            "NE (+X, -Z)",     // 5  : [-157.5, -112.5)
+            "E (+X)",          // 6  : [-112.5, -67.5)
+            "SE (+X, +Z)"      // 7  : [-67.5,  -22.5)
+    };
+
+    public static String getYawString(float yaw) {
+        // move normalised range from [-180, 180) to [0, 360)
+        float wrapped = yaw + 180;
+
+        // rotate by half a sector (45 / 2 = 22.5)
+        wrapped = (wrapped + 22.5f) % 360f;
+
+        // calculate index and return label
+        int index = (int) (wrapped / 45f);
+
+        return YAW_LABEL[index];
     }
 
     @Override
@@ -90,9 +92,8 @@ public class PositionHud implements BasicHudElement<PositionHudConfig> {
             if (entity == null) return lines;
 
             float yaw = MathHelper.wrapDegrees(entity.getYaw());
-            String yawString = "";
 
-            yawString = getYawString(yaw, yawString);
+            String yawString = getYawString(yaw);
 
             float pitch = MathHelper.wrapDegrees(entity.getPitch());
 

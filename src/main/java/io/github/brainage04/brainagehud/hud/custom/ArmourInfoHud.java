@@ -4,6 +4,7 @@ import io.github.brainage04.brainagehud.config.hud.custom.armour_info.ArmourInfo
 import io.github.brainage04.brainagehud.config.hud.custom.armour_info.DurabilityFormat;
 import io.github.brainage04.brainagehud.util.MathUtils;
 import io.github.brainage04.hudrendererlib.HudRendererLib;
+import io.github.brainage04.hudrendererlib.config.core.CoreSettingsElement;
 import io.github.brainage04.hudrendererlib.config.core.ElementCorners;
 import io.github.brainage04.hudrendererlib.hud.core.CustomHudElement;
 import io.github.brainage04.hudrendererlib.hud.core.HudElementEditor;
@@ -123,7 +124,10 @@ public class ArmourInfoHud implements CustomHudElement<ArmourInfoHudConfig> {
         // adjust for padding
         ElementCorners corners = HudRenderer.getCornersWithPadding(posX, posY, posX + elementWidth, posY + elementHeight, getElementConfig().coreSettings);
         corners.bottom += elementPadding * 2;
-        HudElementEditor.CORE_SETTINGS_ELEMENTS.get(getElementConfig().coreSettings.elementId).corners = corners;
+
+        CoreSettingsElement coreSettingsElement = HudElementEditor.CORE_SETTINGS_ELEMENTS.get(getElementConfig().coreSettings.elementId);
+        coreSettingsElement.corners = corners;
+        HudElementEditor.CORE_SETTINGS_ELEMENTS.put(getElementConfig().coreSettings.elementId, coreSettingsElement);
 
         // render backdrop
         int backdropOpacity = HudRendererLib.getOpacity(getElementConfig().coreSettings);

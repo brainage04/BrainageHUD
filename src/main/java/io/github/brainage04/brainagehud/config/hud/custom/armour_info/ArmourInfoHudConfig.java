@@ -8,7 +8,7 @@ import me.shedaniel.autoconfig.annotation.ConfigEntry;
 @SuppressWarnings("CanBeFinal")
 public class ArmourInfoHudConfig implements ICoreSettingsContainer {
     @ConfigEntry.Gui.CollapsibleObject
-    public CoreSettings coreSettings = new CoreSettings(0, "Armor Info HUD", true, -150, -5, ElementAnchor.BOTTOM_RIGHT);
+    public CoreSettings coreSettings = new CoreSettings("Armor Info HUD", true, -150, -5, ElementAnchor.BOTTOM_RIGHT);
     public boolean showArmour = true;
     public boolean showMainHand = false;
     public boolean showOffHand = false;
@@ -20,5 +20,10 @@ public class ArmourInfoHudConfig implements ICoreSettingsContainer {
     @Override
     public CoreSettings getCoreSettings() {
         return coreSettings;
+    }
+
+    @Override
+    public void setCoreSettings(CoreSettings coreSettings) {
+        this.coreSettings = coreSettings;
     }
 }

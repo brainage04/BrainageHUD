@@ -14,12 +14,16 @@ import me.shedaniel.autoconfig.annotation.ConfigEntry;
 public class ModConfig implements ConfigData {
     @ConfigEntry.Gui.CollapsibleObject public QualityOfLifeConfig qualityOfLifeConfig = new QualityOfLifeConfig();
 
-    @ConfigEntry.Gui.CollapsibleObject public ArmourInfoHudConfig armourInfoHudConfig = new ArmourInfoHudConfig();
-    @ConfigEntry.Gui.CollapsibleObject public KeystrokesHudConfig keystrokesHudConfig = new KeystrokesHudConfig();
+    // basic
     @ConfigEntry.Gui.CollapsibleObject public DateTimeHudConfig dateTimeHudConfig = new DateTimeHudConfig();
+    @ConfigEntry.Gui.CollapsibleObject public FishingHudConfig fishingHudConfig = new FishingHudConfig();
     @ConfigEntry.Gui.CollapsibleObject public NetworkHudConfig networkHudConfig = new NetworkHudConfig();
     @ConfigEntry.Gui.CollapsibleObject public PerformanceHudConfig performanceHudConfig = new PerformanceHudConfig();
     @ConfigEntry.Gui.CollapsibleObject public PositionHudConfig positionHudConfig = new PositionHudConfig();
     @ConfigEntry.Gui.CollapsibleObject public ReachHudConfig reachHudConfig = new ReachHudConfig();
     @ConfigEntry.Gui.CollapsibleObject public ToggleSprintHudConfig toggleSprintHudConfig = new ToggleSprintHudConfig();
+
+    // custom
+    @ConfigEntry.Gui.CollapsibleObject public ArmourInfoHudConfig armourInfoHudConfig = new ArmourInfoHudConfig();
+    @ConfigEntry.Gui.CollapsibleObject public KeystrokesHudConfig keystrokesHudConfig = new KeystrokesHudConfig();
 }

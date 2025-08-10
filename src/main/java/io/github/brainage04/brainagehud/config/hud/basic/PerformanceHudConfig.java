@@ -8,7 +8,7 @@ import me.shedaniel.autoconfig.annotation.ConfigEntry;
 @SuppressWarnings("CanBeFinal")
 public class PerformanceHudConfig implements ICoreSettingsContainer {
     @ConfigEntry.Gui.CollapsibleObject
-    public CoreSettings coreSettings = new CoreSettings(4, "Performance HUD", true, 5, 99, ElementAnchor.TOP_LEFT);
+    public CoreSettings coreSettings = new CoreSettings("Performance HUD", true, 5, 99, ElementAnchor.TOP_LEFT);
     public boolean showFps = true;
     public boolean showRamUsage = false;
     public boolean showCpuUsage = false;
@@ -17,5 +17,10 @@ public class PerformanceHudConfig implements ICoreSettingsContainer {
     @Override
     public CoreSettings getCoreSettings() {
         return coreSettings;
+    }
+
+    @Override
+    public void setCoreSettings(CoreSettings coreSettings) {
+        this.coreSettings = coreSettings;
     }
 }
