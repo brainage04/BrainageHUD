@@ -10,6 +10,7 @@ Here is a comprehensive list of the HUD elements added by BrainageHUD:
 - Toggle Sprint - Displays the current movement state of the player (walking/sneaking/sprinting, vanilla/toggled)
 - Armour Info - Displays information (durability, name, item icons) about armour and main/off hand
 - Keystrokes - Displays information (pressed/released, clicks per second) about important keys (WASD, space, mouse buttons)
+- (WIP) Fishing - Displays information about fishing bobber while in water
 
 All of the HUD elements are customisable and can be configured to display as little or as much information as you would like!
 
@@ -32,17 +33,23 @@ This is where you can change all of the global rendering settings.
 This mod has been built with the vanilla HUD in mind. For example:
 - HUD elements with the "Top Right" alignment will be shifted down a bit when the player has potion effects, so that the potion effect display and HUD elements do not overlap.
 
+# Dependencies
+This mod requires the following dependencies:
+- [Fabric API](https://modrinth.com/mod/fabric-api/versions)
+- [HudRendererLib](https://github.com/brainage04/HudRendererLib/releases)
+- [Cloth Config](https://modrinth.com/mod/cloth-config/versions)
+
+[Mod Menu](https://modrinth.com/mod/modmenu/versions) is also recommended.
+
 # Todo
-figure out how to do away with elementId field
-
-add fishinghud: can treasure be caught, etc
-
 refactor custom hud elements using proper HudRenderer utility methods like getPosX/Y
 
-add waypoints
+fishinghud: can treasure be caught, etc
 
-reachhud: add option to only update reachhud on left click (for pvp)description
+reachhud: add option to only update reach distance on left click (for pvp)
 
 performancehud: get GPU to work with Minecraft's existing GPU profiler
 
 keystrokeshud: smooth color transitions for key press/release events
+
+add waypoints
