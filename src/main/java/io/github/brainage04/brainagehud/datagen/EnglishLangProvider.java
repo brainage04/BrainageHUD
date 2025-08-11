@@ -49,10 +49,9 @@ public class EnglishLangProvider extends FabricLanguageProvider {
         // keybinds
         addAutomaticTranslations(
                 new String[]{
-                        "openConfigEditor",
-                        "openElementEditor"
+                        "openConfig"
                 },
-                "keybind",
+                "key",
                 translationBuilder
         );
 

@@ -1,6 +1,5 @@
 {
-  "keybind.brainagehud.openConfigEditor": "Open Config Editor",
-  "keybind.brainagehud.openElementEditor": "Open Element Editor",
+  "key.brainagehud.openConfig": "Open Config",
   "text.autoconfig.brainagehud.option.armourInfoHudConfig": "Armour Info Hud Config",
   "text.autoconfig.brainagehud.option.armourInfoHudConfig.coreSettings": "Core Settings",
   "text.autoconfig.brainagehud.option.armourInfoHudConfig.coreSettings.elementAnchor": "Element Anchor",
