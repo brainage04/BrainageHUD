@@ -1,10 +1,9 @@
-package io.github.brainage04.brainagehud;
+package io.github.brainage04.brainagehud.datagen;
 
-import io.github.brainage04.brainagehud.datagen.EnglishLangProvider;
 import net.fabricmc.fabric.api.datagen.v1.DataGeneratorEntrypoint;
 import net.fabricmc.fabric.api.datagen.v1.FabricDataGenerator;
 
-public class BrainageHUDDataGenerator implements DataGeneratorEntrypoint {
+public class DataGenerator implements DataGeneratorEntrypoint {
 	@Override
 	public void onInitializeDataGenerator(FabricDataGenerator fabricDataGenerator) {
 		FabricDataGenerator.Pack pack = fabricDataGenerator.createPack();

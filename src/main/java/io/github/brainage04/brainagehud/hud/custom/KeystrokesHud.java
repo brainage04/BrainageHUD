@@ -5,13 +5,14 @@ import io.github.brainage04.brainagehud.config.hud.custom.keystrokes.KeystrokesH
 import io.github.brainage04.hudrendererlib.HudRendererLib;
 import io.github.brainage04.hudrendererlib.config.core.CoreSettingsElement;
 import io.github.brainage04.hudrendererlib.config.core.ElementCorners;
-import io.github.brainage04.hudrendererlib.hud.core.CustomHudElement;
+import io.github.brainage04.hudrendererlib.hud.core.CoreHudElement;
 import io.github.brainage04.hudrendererlib.hud.core.HudElementEditor;
 import io.github.brainage04.hudrendererlib.hud.core.HudRenderer;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.option.KeyBinding;
+import net.minecraft.client.render.RenderTickCounter;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -20,7 +21,7 @@ import java.util.Objects;
 
 import static io.github.brainage04.brainagehud.util.ConfigUtils.getConfig;
 
-public class KeystrokesHud implements CustomHudElement<KeystrokesHudConfig> {
+public class KeystrokesHud implements CoreHudElement<KeystrokesHudConfig> {
     public boolean isLeftClickShown() {
         return getElementConfig().clicksPerSecondFormat == ClicksPerSecondFormat.LEFT_CLICK
                 || getElementConfig().clicksPerSecondFormat == ClicksPerSecondFormat.BOTH;
@@ -162,7 +163,7 @@ public class KeystrokesHud implements CustomHudElement<KeystrokesHudConfig> {
     }
 
     @Override
-    public void render(TextRenderer renderer, DrawContext drawContext) {
+    public void render(DrawContext drawContext, RenderTickCounter tickCounter) {
         List<KeyStrokesItem> keystrokesList = getKeyStrokesItems(getElementConfig());
 
         int elementWidth = keystrokesList.getLast().x + keystrokesList.getLast().width;
@@ -189,8 +190,12 @@ public class KeystrokesHud implements CustomHudElement<KeystrokesHudConfig> {
         corners.bottom += elementPadding * 2;
 
         CoreSettingsElement coreSettingsElement = HudElementEditor.CORE_SETTINGS_ELEMENTS.get(getElementConfig().coreSettings.elementId);
-        coreSettingsElement.corners = corners;
-        HudElementEditor.CORE_SETTINGS_ELEMENTS.put(getElementConfig().coreSettings.elementId, coreSettingsElement);
+        if (coreSettingsElement == null) {
+            HudRendererLib.LOGGER.error("Core settings element with element ID {} in HudElementEditor.CORE_SETTINGS_ELEMENTS does not exist - this shouldn't happen!", getElementConfig().coreSettings.elementId);
+        } else {
+            coreSettingsElement.corners = corners;
+            HudElementEditor.CORE_SETTINGS_ELEMENTS.put(getElementConfig().coreSettings.elementId, coreSettingsElement);
+        }
 
         // render backdrop
         int backdropOpacity = HudRendererLib.getOpacity(getElementConfig().coreSettings);
@@ -200,7 +205,6 @@ public class KeystrokesHud implements CustomHudElement<KeystrokesHudConfig> {
                     corners.top,
                     corners.right,
                     corners.bottom,
-                    -1,
                     backdropOpacity << 24
             );
         }
@@ -212,7 +216,7 @@ public class KeystrokesHud implements CustomHudElement<KeystrokesHudConfig> {
             if (keyStrokesItem.key != null) {
                 if (keyStrokesItem.key.isPressed()) {
                     backdropColour += HudRendererLib.getTextColour(getElementConfig().coreSettings);
-                    textColour = 0x000000;
+                    textColour = 0xFF_00_00_00;
 
                     // measure left/right cps
                     if (isLeftClickShown()) {
@@ -282,6 +286,8 @@ public class KeystrokesHud implements CustomHudElement<KeystrokesHudConfig> {
                     posY + keyStrokesItem.y + keyStrokesItem.height,
                     backdropColour
             );
+
+            TextRenderer renderer = MinecraftClient.getInstance().textRenderer;
 
             // draw text in center of backdrop
             boolean textShadows = HudRendererLib.getTextShadows(getElementConfig().coreSettings);

@@ -1,5 +1,5 @@
 package io.github.brainage04.brainagehud.config.other;
 
 public class QualityOfLifeConfig {
-    public boolean fullbright = true;
+    public float fullbright = 0.0F;
 }

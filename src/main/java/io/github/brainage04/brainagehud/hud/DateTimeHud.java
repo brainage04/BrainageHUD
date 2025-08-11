@@ -1,7 +1,7 @@
 package io.github.brainage04.brainagehud.hud;
 
 import io.github.brainage04.brainagehud.config.hud.basic.DateTimeHudConfig;
-import io.github.brainage04.hudrendererlib.hud.core.BasicHudElement;
+import io.github.brainage04.hudrendererlib.hud.core.BasicCoreHudElement;
 import io.github.brainage04.hudrendererlib.util.TextList;
 
 import java.text.SimpleDateFormat;
@@ -9,7 +9,7 @@ import java.util.Date;
 
 import static io.github.brainage04.brainagehud.util.ConfigUtils.getConfig;
 
-public class DateTimeHud implements BasicHudElement<DateTimeHudConfig> {
+public class DateTimeHud implements BasicCoreHudElement<DateTimeHudConfig> {
     @Override
     public TextList getLines() {
         TextList lines = new TextList();

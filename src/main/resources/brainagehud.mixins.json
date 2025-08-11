@@ -8,7 +8,9 @@
   "client": [
     "MixinClientConnection",
     "MixinClientPlayNetworkHandler",
-    "MixinLightmapTextureManager",
     "MixinPingMeasurer"
+  ],
+  "mixins": [
+    "MixinDimensionType"
   ]
 }
