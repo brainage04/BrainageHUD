@@ -6,14 +6,15 @@ import io.github.brainage04.brainagehud.util.MathUtils;
 import io.github.brainage04.hudrendererlib.HudRendererLib;
 import io.github.brainage04.hudrendererlib.config.core.CoreSettingsElement;
 import io.github.brainage04.hudrendererlib.config.core.ElementCorners;
-import io.github.brainage04.hudrendererlib.hud.core.CustomHudElement;
+import io.github.brainage04.hudrendererlib.hud.core.CoreHudElement;
 import io.github.brainage04.hudrendererlib.hud.core.HudElementEditor;
 import io.github.brainage04.hudrendererlib.hud.core.HudRenderer;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
+import net.minecraft.client.gl.RenderPipelines;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.network.ClientPlayerEntity;
-import net.minecraft.client.render.RenderLayer;
+import net.minecraft.client.render.RenderTickCounter;
 import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.item.ItemStack;
@@ -25,7 +26,7 @@ import java.util.List;
 
 import static io.github.brainage04.brainagehud.util.ConfigUtils.getConfig;
 
-public class ArmourInfoHud implements CustomHudElement<ArmourInfoHudConfig> {
+public class ArmourInfoHud implements CoreHudElement<ArmourInfoHudConfig> {
     public static String generateItemInfo(ItemStack itemStack, ArmourInfoHudConfig settings) {
         String itemString = "";
 
@@ -52,7 +53,7 @@ public class ArmourInfoHud implements CustomHudElement<ArmourInfoHudConfig> {
     }
 
     @Override
-    public void render(TextRenderer renderer, DrawContext drawContext) {
+    public void render(DrawContext drawContext, RenderTickCounter renderTickCounter) {
         ClientPlayerEntity player = MinecraftClient.getInstance().player;
         if (player == null) return;
 
@@ -87,6 +88,8 @@ public class ArmourInfoHud implements CustomHudElement<ArmourInfoHudConfig> {
         for (ItemStack itemStack : itemStacks) {
             lines.add(generateItemInfo(itemStack, getElementConfig()));
         }
+
+        TextRenderer renderer = MinecraftClient.getInstance().textRenderer;
 
         // custom rendering logic
         // determine bounds of HUD element
@@ -126,8 +129,12 @@ public class ArmourInfoHud implements CustomHudElement<ArmourInfoHudConfig> {
         corners.bottom += elementPadding * 2;
 
         CoreSettingsElement coreSettingsElement = HudElementEditor.CORE_SETTINGS_ELEMENTS.get(getElementConfig().coreSettings.elementId);
-        coreSettingsElement.corners = corners;
-        HudElementEditor.CORE_SETTINGS_ELEMENTS.put(getElementConfig().coreSettings.elementId, coreSettingsElement);
+        if (coreSettingsElement == null) {
+            HudRendererLib.LOGGER.error("Core settings element with element ID {} in HudElementEditor.CORE_SETTINGS_ELEMENTS does not exist - this shouldn't happen!", getElementConfig().coreSettings.elementId);
+        } else {
+            coreSettingsElement.corners = corners;
+            HudElementEditor.CORE_SETTINGS_ELEMENTS.put(getElementConfig().coreSettings.elementId, coreSettingsElement);
+        }
 
         // render backdrop
         int backdropOpacity = HudRendererLib.getOpacity(getElementConfig().coreSettings);
@@ -137,7 +144,6 @@ public class ArmourInfoHud implements CustomHudElement<ArmourInfoHudConfig> {
                     corners.top,
                     corners.right,
                     corners.bottom,
-                    -1,
                     backdropOpacity << 24
             );
         }
@@ -166,8 +172,8 @@ public class ArmourInfoHud implements CustomHudElement<ArmourInfoHudConfig> {
                 int b = itemStack.getItemBarColor();
                 int c = linePosX + 2;
                 int d = linePosY + 8;
-                drawContext.fill(RenderLayer.getGuiOverlay(), c, d, c + 13, d + 2, Colors.BLACK);
-                drawContext.fill(RenderLayer.getGuiOverlay(), c, d, c + a, d + 1, b | Colors.BLACK);
+                drawContext.fill(RenderPipelines.GUI, c, d, c + 13, d + 2, Colors.BLACK);
+                drawContext.fill(RenderPipelines.GUI, c, d, c + a, d + 1, b | Colors.BLACK);
             }
 
             drawContext.drawText(

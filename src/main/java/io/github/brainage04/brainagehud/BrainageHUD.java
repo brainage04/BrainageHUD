@@ -1,6 +1,6 @@
 package io.github.brainage04.brainagehud;
 
-import io.github.brainage04.brainagehud.command.CommandRegistration;
+import io.github.brainage04.brainagehud.command.core.ModCommands;
 import io.github.brainage04.brainagehud.config.core.ModConfig;
 import io.github.brainage04.brainagehud.event.ModPacketEvents;
 import io.github.brainage04.brainagehud.event.ModTickEvents;
@@ -26,7 +26,7 @@ public class BrainageHUD implements ClientModInitializer {
 
 		HudRendererLib.register(ModConfig.class, GsonConfigSerializer::new);
 
-		CommandRegistration.registerCommands();
+		ModCommands.initialize();
 		HudRendererLib.registerConfigCommand(ModConfig.class, MOD_ID);
 		HudRendererLib.registerConfigKey(ModConfig.class, GLFW.GLFW_KEY_KP_SUBTRACT, MOD_ID, MOD_NAME);
 

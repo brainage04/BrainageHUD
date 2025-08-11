@@ -1,7 +1,7 @@
 package io.github.brainage04.brainagehud.hud;
 
 import io.github.brainage04.brainagehud.config.hud.basic.ToggleSprintHudConfig;
-import io.github.brainage04.hudrendererlib.hud.core.BasicHudElement;
+import io.github.brainage04.hudrendererlib.hud.core.BasicCoreHudElement;
 import io.github.brainage04.hudrendererlib.util.TextList;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayerEntity;
@@ -10,7 +10,7 @@ import net.minecraft.util.Formatting;
 
 import static io.github.brainage04.brainagehud.util.ConfigUtils.getConfig;
 
-public class ToggleSprintHud implements BasicHudElement<ToggleSprintHudConfig> {
+public class ToggleSprintHud implements BasicCoreHudElement<ToggleSprintHudConfig> {
     @Override
     public TextList getLines() {
         TextList lines = new TextList();

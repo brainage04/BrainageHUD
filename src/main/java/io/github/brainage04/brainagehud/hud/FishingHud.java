@@ -1,7 +1,7 @@
 package io.github.brainage04.brainagehud.hud;
 
 import io.github.brainage04.brainagehud.config.hud.basic.FishingHudConfig;
-import io.github.brainage04.hudrendererlib.hud.core.BasicHudElement;
+import io.github.brainage04.hudrendererlib.hud.core.BasicCoreHudElement;
 import io.github.brainage04.hudrendererlib.util.TextList;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayerEntity;
@@ -9,7 +9,7 @@ import net.minecraft.entity.projectile.FishingBobberEntity;
 
 import static io.github.brainage04.brainagehud.util.ConfigUtils.getConfig;
 
-public class FishingHud implements BasicHudElement<FishingHudConfig> {
+public class FishingHud implements BasicCoreHudElement<FishingHudConfig> {
     @Override
     public TextList getLines() {
         TextList lines = new TextList();

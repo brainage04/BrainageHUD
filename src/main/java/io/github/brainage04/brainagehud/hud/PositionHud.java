@@ -1,7 +1,7 @@
 package io.github.brainage04.brainagehud.hud;
 
 import io.github.brainage04.brainagehud.config.hud.basic.PositionHudConfig;
-import io.github.brainage04.hudrendererlib.hud.core.BasicHudElement;
+import io.github.brainage04.hudrendererlib.hud.core.BasicCoreHudElement;
 import io.github.brainage04.hudrendererlib.util.TextList;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayerEntity;
@@ -16,7 +16,7 @@ import net.minecraft.world.biome.Biome;
 import static io.github.brainage04.brainagehud.util.ConfigUtils.getConfig;
 import static io.github.brainage04.brainagehud.util.MathUtils.roundDecimalPlaces;
 
-public class PositionHud implements BasicHudElement<PositionHudConfig> {
+public class PositionHud implements BasicCoreHudElement<PositionHudConfig> {
     private static final String[] YAW_LABEL = {
             "S (+Z)",          // 0  : [-22.5,  22.5)
             "SW (-X, +Z)",     // 1  :  [22.5,  67.5)
