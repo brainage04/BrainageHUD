@@ -3,15 +3,14 @@ package io.github.brainage04.brainagehud.datagen;
 import io.github.brainage04.brainagehud.BrainageHUD;
 import io.github.brainage04.brainagehud.config.core.ModConfig;
 import io.github.brainage04.brainagehud.util.StringUtils;
-import net.fabricmc.fabric.api.datagen.v1.FabricDataOutput;
+import net.fabricmc.fabric.api.datagen.v1.FabricPackOutput;
 import net.fabricmc.fabric.api.datagen.v1.provider.FabricLanguageProvider;
-import net.minecraft.registry.RegistryWrapper;
-
+import net.minecraft.core.HolderLookup;
 import java.lang.reflect.Field;
 import java.util.concurrent.CompletableFuture;
 
 public class EnglishLangProvider extends FabricLanguageProvider {
-    public EnglishLangProvider(FabricDataOutput dataOutput, CompletableFuture<RegistryWrapper.WrapperLookup> registryLookup) {
+    public EnglishLangProvider(FabricPackOutput dataOutput, CompletableFuture<HolderLookup.Provider> registryLookup) {
         super(dataOutput, registryLookup);
     }
 
@@ -39,7 +38,7 @@ public class EnglishLangProvider extends FabricLanguageProvider {
     }
 
     @Override
-    public void generateTranslations(RegistryWrapper.WrapperLookup registryLookup, TranslationBuilder translationBuilder) {
+    public void generateTranslations(HolderLookup.Provider registryLookup, TranslationBuilder translationBuilder) {
         // element editor
         translationBuilder.add(
                 "text.autoconfig.%s.title".formatted(BrainageHUD.MOD_ID),

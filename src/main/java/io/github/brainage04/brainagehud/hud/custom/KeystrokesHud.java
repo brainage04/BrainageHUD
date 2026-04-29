@@ -8,16 +8,16 @@ import io.github.brainage04.hudrendererlib.config.core.ElementCorners;
 import io.github.brainage04.hudrendererlib.hud.core.CoreHudElement;
 import io.github.brainage04.hudrendererlib.hud.core.HudElementEditor;
 import io.github.brainage04.hudrendererlib.hud.core.HudRenderer;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.font.TextRenderer;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.option.KeyBinding;
-import net.minecraft.client.render.RenderTickCounter;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import net.minecraft.client.DeltaTracker;
+import net.minecraft.client.KeyMapping;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 
 import static io.github.brainage04.brainagehud.util.ConfigUtils.getConfig;
 
@@ -32,7 +32,7 @@ public class KeystrokesHud implements CoreHudElement<KeystrokesHudConfig> {
                 || getElementConfig().clicksPerSecondFormat == ClicksPerSecondFormat.BOTH;
     }
 
-    private record KeyStrokesItem(@Nullable KeyBinding key, String name, int x, int y, int width, int height) {}
+    private record KeyStrokesItem(@Nullable KeyMapping key, String name, int x, int y, int width, int height) {}
 
     public static boolean leftLastFrame = false;
     public static boolean rightLastFrame = false;
@@ -54,7 +54,7 @@ public class KeystrokesHud implements CoreHudElement<KeystrokesHudConfig> {
         if (settings.showWasd) {
             keystrokesList.add(
                     new KeyStrokesItem(
-                            MinecraftClient.getInstance().options.forwardKey,
+                            Minecraft.getInstance().options.keyUp,
                             "W",
                             x1 + keySize + elementPadding,
                             y1,
@@ -67,7 +67,7 @@ public class KeystrokesHud implements CoreHudElement<KeystrokesHudConfig> {
 
             keystrokesList.add(
                     new KeyStrokesItem(
-                            MinecraftClient.getInstance().options.leftKey,
+                            Minecraft.getInstance().options.keyLeft,
                             "A",
                             x1,
                             y1,
@@ -77,7 +77,7 @@ public class KeystrokesHud implements CoreHudElement<KeystrokesHudConfig> {
             );
             keystrokesList.add(
                     new KeyStrokesItem(
-                            MinecraftClient.getInstance().options.backKey,
+                            Minecraft.getInstance().options.keyDown,
                             "S",
                             x1 + keySize + elementPadding,
                             y1,
@@ -87,7 +87,7 @@ public class KeystrokesHud implements CoreHudElement<KeystrokesHudConfig> {
             );
             keystrokesList.add(
                     new KeyStrokesItem(
-                            MinecraftClient.getInstance().options.rightKey,
+                            Minecraft.getInstance().options.keyRight,
                             "D",
                             x1 + (keySize + elementPadding) * 2,
                             y1,
@@ -102,7 +102,7 @@ public class KeystrokesHud implements CoreHudElement<KeystrokesHudConfig> {
         if (settings.showSpace) {
             keystrokesList.add(
                     new KeyStrokesItem(
-                            MinecraftClient.getInstance().options.jumpKey,
+                            Minecraft.getInstance().options.keyJump,
                             "_____",
                             x1,
                             y1,
@@ -117,7 +117,7 @@ public class KeystrokesHud implements CoreHudElement<KeystrokesHudConfig> {
         if (settings.showMouseButtons) {
             keystrokesList.add(
                     new KeyStrokesItem(
-                            MinecraftClient.getInstance().options.attackKey,
+                            Minecraft.getInstance().options.keyAttack,
                             "LMB",
                             x1,
                             y1,
@@ -127,7 +127,7 @@ public class KeystrokesHud implements CoreHudElement<KeystrokesHudConfig> {
             );
             keystrokesList.add(
                     new KeyStrokesItem(
-                            MinecraftClient.getInstance().options.useKey,
+                            Minecraft.getInstance().options.keyUse,
                             "RMB",
                             x1 + (int) (keySize * 1.5 + (double) elementPadding / 2) + elementPadding,
                             y1,
@@ -163,7 +163,7 @@ public class KeystrokesHud implements CoreHudElement<KeystrokesHudConfig> {
     }
 
     @Override
-    public void render(DrawContext drawContext, RenderTickCounter tickCounter) {
+    public void render(GuiGraphicsExtractor drawContext, DeltaTracker tickCounter) {
         List<KeyStrokesItem> keystrokesList = getKeyStrokesItems(getElementConfig());
 
         int elementWidth = keystrokesList.getLast().x + keystrokesList.getLast().width;
@@ -214,13 +214,13 @@ public class KeystrokesHud implements CoreHudElement<KeystrokesHudConfig> {
             int textColour = HudRendererLib.getTextColour(getElementConfig().coreSettings);
 
             if (keyStrokesItem.key != null) {
-                if (keyStrokesItem.key.isPressed()) {
+                if (keyStrokesItem.key.isDown()) {
                     backdropColour += HudRendererLib.getTextColour(getElementConfig().coreSettings);
                     textColour = 0xFF_00_00_00;
 
                     // measure left/right cps
                     if (isLeftClickShown()) {
-                        if (Objects.equals(keyStrokesItem.key.getTranslationKey(), MinecraftClient.getInstance().options.attackKey.getTranslationKey())) {
+                        if (Objects.equals(keyStrokesItem.key.getName(), Minecraft.getInstance().options.keyAttack.getName())) {
                             if (!leftLastFrame) {
                                 leftCpsTimes.add(System.currentTimeMillis());
                             }
@@ -230,7 +230,7 @@ public class KeystrokesHud implements CoreHudElement<KeystrokesHudConfig> {
                     }
 
                     if (isRightClickShown()) {
-                        if (Objects.equals(keyStrokesItem.key.getTranslationKey(), MinecraftClient.getInstance().options.useKey.getTranslationKey())) {
+                        if (Objects.equals(keyStrokesItem.key.getName(), Minecraft.getInstance().options.keyUse.getName())) {
                             if (!rightLastFrame) {
                                 rightCpsTimes.add(System.currentTimeMillis());
                             }
@@ -243,7 +243,7 @@ public class KeystrokesHud implements CoreHudElement<KeystrokesHudConfig> {
 
             // update left/right cps
             if (isLeftClickShown()) {
-                if (!MinecraftClient.getInstance().options.attackKey.isPressed()) {
+                if (!Minecraft.getInstance().options.keyAttack.isDown()) {
                     leftLastFrame = false;
                 }
 
@@ -261,7 +261,7 @@ public class KeystrokesHud implements CoreHudElement<KeystrokesHudConfig> {
             }
 
             if (isRightClickShown()) {
-                if (!MinecraftClient.getInstance().options.useKey.isPressed()) {
+                if (!Minecraft.getInstance().options.keyUse.isDown()) {
                     rightLastFrame = false;
                 }
 
@@ -287,15 +287,15 @@ public class KeystrokesHud implements CoreHudElement<KeystrokesHudConfig> {
                     backdropColour
             );
 
-            TextRenderer renderer = MinecraftClient.getInstance().textRenderer;
+            Font renderer = Minecraft.getInstance().font;
 
             // draw text in center of backdrop
             boolean textShadows = HudRendererLib.getTextShadows(getElementConfig().coreSettings);
-            drawContext.drawText(
+            drawContext.text(
                     renderer,
                     keyStrokesItem.name,
-                    posX + keyStrokesItem.x + (keyStrokesItem.width / 2) - (renderer.getWidth(keyStrokesItem.name) / 2),
-                    posY + keyStrokesItem.y + (keyStrokesItem.height / 2) - (renderer.fontHeight / 2),
+                    posX + keyStrokesItem.x + (keyStrokesItem.width / 2) - (renderer.width(keyStrokesItem.name) / 2),
+                    posY + keyStrokesItem.y + (keyStrokesItem.height / 2) - (renderer.lineHeight / 2),
                     textColour,
                     textShadows
             );
