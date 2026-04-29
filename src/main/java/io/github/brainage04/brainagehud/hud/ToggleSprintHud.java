@@ -3,10 +3,10 @@ package io.github.brainage04.brainagehud.hud;
 import io.github.brainage04.brainagehud.config.hud.basic.ToggleSprintHudConfig;
 import io.github.brainage04.hudrendererlib.hud.core.BasicCoreHudElement;
 import io.github.brainage04.hudrendererlib.util.TextList;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.network.ClientPlayerEntity;
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
+import net.minecraft.ChatFormatting;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.network.chat.Component;
 
 import static io.github.brainage04.brainagehud.util.ConfigUtils.getConfig;
 
@@ -15,19 +15,19 @@ public class ToggleSprintHud implements BasicCoreHudElement<ToggleSprintHudConfi
     public TextList getLines() {
         TextList lines = new TextList();
 
-        ClientPlayerEntity player = MinecraftClient.getInstance().player;
+        LocalPlayer player = Minecraft.getInstance().player;
         if (player == null) return lines;
 
         if (player.isSprinting()) {
-            if (MinecraftClient.getInstance().options.getSprintToggled().getValue() && MinecraftClient.getInstance().options.sprintKey.isPressed()) {
+            if (Minecraft.getInstance().options.toggleSprint().get() && Minecraft.getInstance().options.keySprint.isDown()) {
                 lines.add("[Sprinting (Toggled)]");
             } else {
                 lines.add("[Sprinting (Vanilla)]");
             }
         }
 
-        if (player.isSneaking()) {
-            if (MinecraftClient.getInstance().options.getSneakToggled().getValue() && MinecraftClient.getInstance().options.sneakKey.isPressed()) {
+        if (player.isShiftKeyDown()) {
+            if (Minecraft.getInstance().options.toggleCrouch().get() && Minecraft.getInstance().options.keyShift.isDown()) {
                 lines.add("[Sneaking (Toggled)]");
             } else {
                 lines.add("[Sneaking (Vanilla)]");
@@ -35,7 +35,7 @@ public class ToggleSprintHud implements BasicCoreHudElement<ToggleSprintHudConfi
         }
 
         if (lines.isEmpty()) {
-            lines.add(Text.literal("[Walking (Vanilla)]").formatted(Formatting.GRAY));
+            lines.add(Component.literal("[Walking (Vanilla)]").withStyle(ChatFormatting.GRAY));
         }
 
         return lines;

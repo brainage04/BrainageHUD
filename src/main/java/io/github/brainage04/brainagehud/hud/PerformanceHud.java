@@ -4,7 +4,7 @@ import io.github.brainage04.brainagehud.config.hud.basic.PerformanceHudConfig;
 import io.github.brainage04.brainagehud.util.TimerUtils;
 import io.github.brainage04.hudrendererlib.hud.core.BasicCoreHudElement;
 import io.github.brainage04.hudrendererlib.util.TextList;
-import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.Minecraft;
 
 import static io.github.brainage04.brainagehud.util.ConfigUtils.getConfig;
 
@@ -14,7 +14,7 @@ public class PerformanceHud implements BasicCoreHudElement<PerformanceHudConfig>
         TextList lines = new TextList();
 
         if (getElementConfig().showFps) {
-            lines.add("%d FPS".formatted(MinecraftClient.getInstance().getCurrentFps()));
+            lines.add("%d FPS".formatted(Minecraft.getInstance().getFps()));
         }
 
         // taken from net.minecraft.client.gui.hud.DebugHud

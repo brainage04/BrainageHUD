@@ -1,9 +1,8 @@
 package io.github.brainage04.brainagehud.util;
 
 import com.sun.management.OperatingSystemMXBean;
-import net.minecraft.client.MinecraftClient;
-
 import java.lang.management.ManagementFactory;
+import net.minecraft.client.Minecraft;
 
 public class TimerUtils {
     private static final OperatingSystemMXBean osBean = ManagementFactory.getPlatformMXBean(OperatingSystemMXBean.class);
@@ -21,7 +20,7 @@ public class TimerUtils {
         if (System.currentTimeMillis() - GPU_LAST_UPDATED <= millisecondsBetweenUpdates) return;
 
         // todo: fix this not working without DebugHud enabled
-        GPU_USAGE = (long) MinecraftClient.getInstance().getGpuUtilizationPercentage();
+        GPU_USAGE = (long) Minecraft.getInstance().getGpuUtilization();
         GPU_LAST_UPDATED = System.currentTimeMillis();
     }
 

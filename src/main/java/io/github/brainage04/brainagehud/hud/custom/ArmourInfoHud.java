@@ -9,20 +9,19 @@ import io.github.brainage04.hudrendererlib.config.core.ElementCorners;
 import io.github.brainage04.hudrendererlib.hud.core.CoreHudElement;
 import io.github.brainage04.hudrendererlib.hud.core.HudElementEditor;
 import io.github.brainage04.hudrendererlib.hud.core.HudRenderer;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.font.TextRenderer;
-import net.minecraft.client.gl.RenderPipelines;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.network.ClientPlayerEntity;
-import net.minecraft.client.render.RenderTickCounter;
-import net.minecraft.entity.EquipmentSlot;
-import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.util.Colors;
-
 import java.util.ArrayList;
 import java.util.List;
+import net.minecraft.client.DeltaTracker;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.client.renderer.RenderPipelines;
+import net.minecraft.util.CommonColors;
+import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 
 import static io.github.brainage04.brainagehud.util.ConfigUtils.getConfig;
 
@@ -31,7 +30,7 @@ public class ArmourInfoHud implements CoreHudElement<ArmourInfoHudConfig> {
         String itemString = "";
 
         if (settings.showItemNames) {
-            itemString += "%s".formatted(itemStack.getName().getString());
+            itemString += "%s".formatted(itemStack.getHoverName().getString());
         }
 
         if (itemStack.getMaxDamage() > 0) {
@@ -39,7 +38,7 @@ public class ArmourInfoHud implements CoreHudElement<ArmourInfoHudConfig> {
                 itemString += ": ";
             }
 
-            int currentDurability = itemStack.getMaxDamage() - itemStack.getDamage();
+            int currentDurability = itemStack.getMaxDamage() - itemStack.getDamageValue();
 
             itemString += switch (settings.durabilityFormat) {
                 case NONE -> "";
@@ -53,8 +52,8 @@ public class ArmourInfoHud implements CoreHudElement<ArmourInfoHudConfig> {
     }
 
     @Override
-    public void render(DrawContext drawContext, RenderTickCounter renderTickCounter) {
-        ClientPlayerEntity player = MinecraftClient.getInstance().player;
+    public void render(GuiGraphicsExtractor drawContext, DeltaTracker renderTickCounter) {
+        LocalPlayer player = Minecraft.getInstance().player;
         if (player == null) return;
 
         List<ItemStack> itemStacksTemp = new ArrayList<>(List.of());
@@ -63,20 +62,20 @@ public class ArmourInfoHud implements CoreHudElement<ArmourInfoHudConfig> {
         List<Integer> lineWidths = new ArrayList<>(List.of());
 
         if (getElementConfig().showOffHand) {
-            itemStacksTemp.add(player.getOffHandStack());
+            itemStacksTemp.add(player.getOffhandItem());
         }
 
         if (getElementConfig().showMainHand) {
-            itemStacksTemp.add(player.getMainHandStack());
+            itemStacksTemp.add(player.getMainHandItem());
         }
 
         if (getElementConfig().showArmour) {
-            PlayerInventory inventory = player.getInventory();
+            Inventory inventory = player.getInventory();
 
-            itemStacksTemp.add(inventory.getStack(EquipmentSlot.HEAD.getOffsetEntitySlotId(PlayerInventory.MAIN_SIZE)));
-            itemStacksTemp.add(inventory.getStack(EquipmentSlot.CHEST.getOffsetEntitySlotId(PlayerInventory.MAIN_SIZE)));
-            itemStacksTemp.add(inventory.getStack(EquipmentSlot.LEGS.getOffsetEntitySlotId(PlayerInventory.MAIN_SIZE)));
-            itemStacksTemp.add(inventory.getStack(EquipmentSlot.FEET.getOffsetEntitySlotId(PlayerInventory.MAIN_SIZE)));
+            itemStacksTemp.add(inventory.getItem(EquipmentSlot.HEAD.getIndex(Inventory.INVENTORY_SIZE)));
+            itemStacksTemp.add(inventory.getItem(EquipmentSlot.CHEST.getIndex(Inventory.INVENTORY_SIZE)));
+            itemStacksTemp.add(inventory.getItem(EquipmentSlot.LEGS.getIndex(Inventory.INVENTORY_SIZE)));
+            itemStacksTemp.add(inventory.getItem(EquipmentSlot.FEET.getIndex(Inventory.INVENTORY_SIZE)));
         }
 
         for (ItemStack itemStack : itemStacksTemp) {
@@ -89,7 +88,7 @@ public class ArmourInfoHud implements CoreHudElement<ArmourInfoHudConfig> {
             lines.add(generateItemInfo(itemStack, getElementConfig()));
         }
 
-        TextRenderer renderer = MinecraftClient.getInstance().textRenderer;
+        Font renderer = Minecraft.getInstance().font;
 
         // custom rendering logic
         // determine bounds of HUD element
@@ -99,7 +98,7 @@ public class ArmourInfoHud implements CoreHudElement<ArmourInfoHudConfig> {
         int elementWidth = 16 + elementPadding * 2;
         int maxLineWidth = 0;
         for (String line : lines) {
-            int currentLineWidth = renderer.getWidth(line);
+            int currentLineWidth = renderer.width(line);
             lineWidths.add(currentLineWidth);
 
             if (currentLineWidth > maxLineWidth) {
@@ -160,23 +159,23 @@ public class ArmourInfoHud implements CoreHudElement<ArmourInfoHudConfig> {
             };
             int linePosY = posY + 5 + i * (16 + elementPadding);
 
-            drawContext.drawItem(
+            drawContext.item(
                     itemStack,
                     linePosX,
                     posY + i * (16 + elementPadding)
             );
 
-            if (getElementConfig().showDurabilityBar && itemStack.getMaxDamage() > 0 && itemStack.getDamage() > 0) {
+            if (getElementConfig().showDurabilityBar && itemStack.getMaxDamage() > 0 && itemStack.getDamageValue() > 0) {
                 // taken from package net.minecraft.client.gui.InGameHud; line 615
-                int a = itemStack.getItemBarStep();
-                int b = itemStack.getItemBarColor();
+                int a = itemStack.getBarWidth();
+                int b = itemStack.getBarColor();
                 int c = linePosX + 2;
                 int d = linePosY + 8;
-                drawContext.fill(RenderPipelines.GUI, c, d, c + 13, d + 2, Colors.BLACK);
-                drawContext.fill(RenderPipelines.GUI, c, d, c + a, d + 1, b | Colors.BLACK);
+                drawContext.fill(RenderPipelines.GUI, c, d, c + 13, d + 2, CommonColors.BLACK);
+                drawContext.fill(RenderPipelines.GUI, c, d, c + a, d + 1, b | CommonColors.BLACK);
             }
 
-            drawContext.drawText(
+            drawContext.text(
                     renderer,
                     lines.get(i),
                     linePosX + (16 + elementPadding * 2),

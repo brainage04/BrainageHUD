@@ -4,15 +4,15 @@ import io.github.brainage04.brainagehud.config.hud.basic.ReachHudConfig;
 import io.github.brainage04.brainagehud.util.MathUtils;
 import io.github.brainage04.hudrendererlib.hud.core.BasicCoreHudElement;
 import io.github.brainage04.hudrendererlib.util.TextList;
-import net.minecraft.block.Block;
-import net.minecraft.block.Blocks;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.network.ClientPlayerEntity;
-import net.minecraft.client.world.ClientWorld;
-import net.minecraft.entity.Entity;
-import net.minecraft.util.hit.BlockHitResult;
-import net.minecraft.util.hit.EntityHitResult;
-import net.minecraft.util.hit.HitResult;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.EntityHitResult;
+import net.minecraft.world.phys.HitResult;
 
 import static io.github.brainage04.brainagehud.util.ConfigUtils.getConfig;
 
@@ -21,19 +21,15 @@ public class ReachHud implements BasicCoreHudElement<ReachHudConfig> {
     public TextList getLines() {
         TextList lines = new TextList();
 
-        MinecraftClient client = MinecraftClient.getInstance();
-        if (client.cameraEntity == null) return lines;
-        ClientPlayerEntity player = client.player;
+        Minecraft client = Minecraft.getInstance();
+        if (client.getCameraEntity() == null) return lines;
+        LocalPlayer player = client.player;
         if (player == null) return lines;
-        ClientWorld world = client.world;
+        ClientLevel world = client.level;
         if (world == null) return lines;
 
-        HitResult hitResult = client.gameRenderer.findCrosshairTarget(
-                client.cameraEntity,
-                client.player.getBlockInteractionRange(),
-                client.player.getEntityInteractionRange(),
-                0
-        );
+        HitResult hitResult = client.hitResult;
+        if (hitResult == null) return lines;
 
         if (hitResult.getType() != HitResult.Type.MISS) {
             if (hitResult.getType() == HitResult.Type.BLOCK) {
@@ -55,13 +51,13 @@ public class ReachHud implements BasicCoreHudElement<ReachHudConfig> {
                     lines.add(entity.getName().getString());
 
                     if (getElementConfig().showCoordinates) {
-                        lines.add(entity.getBlockPos().toShortString());
+                        lines.add(entity.blockPosition().toShortString());
                     }
                 }
             }
 
             lines.add("%s blocks".formatted(
-                    MathUtils.roundDecimalPlaces(client.player.getEyePos().distanceTo(hitResult.getPos()), getElementConfig().decimalPlaces))
+                    MathUtils.roundDecimalPlaces(client.player.getEyePosition().distanceTo(hitResult.getLocation()), getElementConfig().decimalPlaces))
             );
         }
 

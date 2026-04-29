@@ -3,15 +3,16 @@ package io.github.brainage04.brainagehud.hud;
 import io.github.brainage04.brainagehud.config.hud.basic.PositionHudConfig;
 import io.github.brainage04.hudrendererlib.hud.core.BasicCoreHudElement;
 import io.github.brainage04.hudrendererlib.util.TextList;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.network.ClientPlayerEntity;
-import net.minecraft.client.render.WorldRenderer;
-import net.minecraft.entity.Entity;
-import net.minecraft.registry.entry.RegistryEntry;
-import net.minecraft.text.Text;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.world.LightType;
-import net.minecraft.world.biome.Biome;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.client.renderer.LevelRenderer;
+import net.minecraft.core.Holder;
+import net.minecraft.network.chat.Component;
+import net.minecraft.util.Mth;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.level.LightLayer;
+import net.minecraft.world.level.biome.Biome;
 
 import static io.github.brainage04.brainagehud.util.ConfigUtils.getConfig;
 import static io.github.brainage04.brainagehud.util.MathUtils.roundDecimalPlaces;
@@ -45,7 +46,7 @@ public class PositionHud implements BasicCoreHudElement<PositionHudConfig> {
     public TextList getLines() {
         TextList lines = new TextList();
 
-        ClientPlayerEntity player = MinecraftClient.getInstance().player;
+        LocalPlayer player = Minecraft.getInstance().player;
         if (player == null) return lines;
 
         if (getElementConfig().showPosition) {
@@ -54,9 +55,9 @@ public class PositionHud implements BasicCoreHudElement<PositionHudConfig> {
             String z = "Z: %s".formatted(roundDecimalPlaces(player.getZ(), getElementConfig().positionDecimalPlaces));
 
             if (getElementConfig().showChunkPosition) {
-                x += " [%d]".formatted(player.getBlockPos().getX() & 15);
-                y += " [%d]".formatted(player.getBlockPos().getY() & 15);
-                z += " [%d]".formatted(player.getBlockPos().getZ() & 15);
+                x += " [%d]".formatted(player.blockPosition().getX() & 15);
+                y += " [%d]".formatted(player.blockPosition().getY() & 15);
+                z += " [%d]".formatted(player.blockPosition().getZ() & 15);
             }
 
             lines.add(x);
@@ -64,38 +65,34 @@ public class PositionHud implements BasicCoreHudElement<PositionHudConfig> {
             lines.add(z);
         }
 
-        WorldRenderer worldRenderer = MinecraftClient.getInstance().worldRenderer;
+        LevelRenderer worldRenderer = Minecraft.getInstance().levelRenderer;
 
         if (getElementConfig().cCounter) {
             // taken from net.minecraft.client.renderer.WorldRenderer
-            int completedChunks = worldRenderer.getCompletedChunkCount();
-            int totalChunks = (int) worldRenderer.getChunkCount();
+            int completedChunks = worldRenderer.countRenderedSections();
+            int totalChunks = (int) worldRenderer.getTotalSections();
 
             lines.add("C: %d/%d%s".formatted(
                     completedChunks,
                     totalChunks,
-                    MinecraftClient.getInstance().chunkCullingEnabled ? " (s)" : ""
+                    Minecraft.getInstance().smartCull ? " (s)" : ""
             ));
         }
 
         if (getElementConfig().eCounter) {
-            // taken from net.minecraft.client.renderer.WorldRenderer
-            lines.add("E: %d/%d".formatted(
-                    worldRenderer.renderedEntitiesCount,
-                    player.clientWorld.getRegularEntityCount()
-            ));
+            lines.add(worldRenderer.getEntityStatistics());
         }
 
         if (getElementConfig().showDirection) {
             // taken from net.minecraft.client.gui.hud.DebugHud
-            Entity entity = MinecraftClient.getInstance().getCameraEntity();
+            Entity entity = Minecraft.getInstance().getCameraEntity();
             if (entity == null) return lines;
 
-            float yaw = MathHelper.wrapDegrees(entity.getYaw());
+            float yaw = Mth.wrapDegrees(entity.getYRot());
 
             String yawString = getYawString(yaw);
 
-            float pitch = MathHelper.wrapDegrees(entity.getPitch());
+            float pitch = Mth.wrapDegrees(entity.getXRot());
 
             if (getElementConfig().showRotation) {
                 yawString += " (%s / %s)".formatted(
@@ -108,20 +105,26 @@ public class PositionHud implements BasicCoreHudElement<PositionHudConfig> {
         }
 
         if (getElementConfig().showLight) {
+            ClientLevel level = Minecraft.getInstance().level;
+            if (level == null) return lines;
+
             lines.add("Light: %s sky, %s block".formatted(
-                player.clientWorld.getLightLevel(LightType.SKY, player.getBlockPos()),
-                player.clientWorld.getLightLevel(LightType.BLOCK, player.getBlockPos())
+                level.getBrightness(LightLayer.SKY, player.blockPosition()),
+                level.getBrightness(LightLayer.BLOCK, player.blockPosition())
             ));
         }
 
         if (getElementConfig().showBiome) {
-            RegistryEntry<Biome> biome = player.clientWorld.getBiome(player.getBlockPos());
+            ClientLevel level = Minecraft.getInstance().level;
+            if (level == null) return lines;
 
-            biome.getKey().ifPresent(biomeRegistryKey ->
-                    lines.add(Text.literal("Biome: ")
-                            .append(Text.translatable("biome.%s.%s".formatted(
-                                    biomeRegistryKey.getValue().getNamespace(),
-                                    biomeRegistryKey.getValue().getPath()
+            Holder<Biome> biome = level.getBiome(player.blockPosition());
+
+            biome.unwrapKey().ifPresent(biomeRegistryKey ->
+                    lines.add(Component.literal("Biome: ")
+                            .append(Component.translatable("biome.%s.%s".formatted(
+                                    biomeRegistryKey.identifier().getNamespace(),
+                                    biomeRegistryKey.identifier().getPath()
                             )))
                     )
             );
