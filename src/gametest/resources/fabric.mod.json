@@ -1,0 +1,12 @@
+{
+	"schemaVersion": 1,
+	"id": "brainagehud-gametest",
+	"version": "1.0.0",
+	"name": "BrainageHUD Game Tests",
+	"environment": "client",
+	"entrypoints": {
+		"fabric-client-gametest": [
+			"io.github.brainage04.brainagehud.test.BrainageHUDClientGameTest"
+		]
+	}
+}
