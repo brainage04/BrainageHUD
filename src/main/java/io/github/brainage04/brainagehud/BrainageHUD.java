@@ -20,7 +20,9 @@ public class BrainageHUD implements ClientModInitializer {
 	public static final String MOD_NAME = "BrainageHUD";
 	public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
 
-    @Override
+	private static volatile boolean initialized;
+
+	@Override
 	public void onInitializeClient() {
 		LOGGER.info(MOD_NAME + " initialising...");
 
@@ -44,6 +46,12 @@ public class BrainageHUD implements ClientModInitializer {
 		ModTickEvents.initialize();
 		ModPacketEvents.initialize();
 
+		initialized = true;
+
 		LOGGER.info(MOD_NAME + " initialised.");
+	}
+
+	public static boolean isInitialized() {
+		return initialized;
 	}
 }
