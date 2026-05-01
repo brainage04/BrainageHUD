@@ -1,5 +1,6 @@
 plugins {
 	id 'net.fabricmc.fabric-loom' version "${loom_version}"
+	id 'maven-publish'
 }
 
 version = project.mod_version
@@ -10,33 +11,35 @@ base {
 }
 
 repositories {
+	// Loom / Minecraft / Fabric
+	mavenCentral()
 	mavenLocal()
+	maven { url "https://libraries.minecraft.net" }
+	maven { url "https://maven.fabricmc.net/" }
 
-	// Dev Auth
+	// DevAuth
 	maven { url "https://pkgs.dev.azure.com/djtheredstoner/DevAuth/_packaging/public/maven/v1" }
 
 	// Cloth Config
 	maven { url "https://maven.shedaniel.me/" }
 
-	// Mod Menu
-	maven { url "https://maven.terraformersmc.com/releases/" }
+	// ModMenu
+	maven { url "https://maven.terraformersmc.com/" }
 
 	// HudRendererLib
-    def testingLocally = true
-
-    if (testingLocally) {
-        maven {
-            url = uri("/home/thomas/01_TM/_Coding/Minecraft/Fabric/HudRendererLib/build/local-repo")
-        }
-    } else {
-        maven {
-            url = "https://maven.pkg.github.com/brainage04/HudRendererLib"
-            credentials {
-                username = System.getenv("GITHUB_USERNAME")
-                password = System.getenv("GITHUB_TOKEN")
-            }
-        }
-    }
+	maven {
+		url = uri("../HudRendererLib/build/local-repo")
+	}
+	ivy {
+		name = "HudRendererLibGitHubRelease"
+		url = "https://github.com/brainage04/HudRendererLib/releases/download/v${project.hudrendererlib_version}"
+		patternLayout {
+			artifact "[artifact]-[revision].[ext]"
+		}
+		metadataSources {
+			artifact()
+		}
+	}
 }
 
 fabricApi {
@@ -57,39 +60,47 @@ dependencies {
 	minecraft "com.mojang:minecraft:${project.minecraft_version}"
 	implementation "net.fabricmc:fabric-loader:${project.loader_version}"
 	testImplementation "net.fabricmc:fabric-loader-junit:${project.loader_version}"
-	implementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
+	implementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
 
-	// Dev Auth
+	// DevAuth
 	runtimeOnly("me.djtheredstoner:DevAuth-fabric:1.2.2")
 
-    // Cloth Config
-    implementation("me.shedaniel.cloth:cloth-config-fabric:26.1.154") {
-        exclude(group: "net.fabricmc.fabric-api")
-    }
+	// Cloth Config
+	implementation("me.shedaniel.cloth:cloth-config-fabric:${project.cloth_config_version}") {
+		exclude(group: "net.fabricmc.fabric-api")
+	}
 
-    // Mod Menu
-    implementation "com.terraformersmc:modmenu:18.0.0-alpha.8"
+	// ModMenu
+	implementation "com.terraformersmc:modmenu:${project.modmenu_version}"
 
 	// HudRendererLib
-	implementation "io.github.brainage04:hudrendererlib:1.0.2-26.1.2"
+	if (providers.gradleProperty("use_local_hudrendererlib").map { it.toBoolean() }.getOrElse(false)) {
+		implementation "io.github.brainage04:hudrendererlib:${project.hudrendererlib_version}"
+	} else {
+		implementation "github.brainage04:hudrendererlib:${project.hudrendererlib_version}"
+	}
 }
 
 processResources {
-    inputs.property "version", project.version
-    inputs.property "archives_base_name", project.base.archivesName
-    inputs.property "mod_name", project.properties.mod_name
-    inputs.property "loader_version", project.properties.loader_version
-    inputs.property "minecraft_version", project.properties.minecraft_version
+	inputs.property "mod_id", project.properties.mod_id
+	inputs.property "mod_version", project.version
+	inputs.property "mod_name", project.properties.mod_name
+	inputs.property "loader_version", project.properties.loader_version
+	inputs.property "minecraft_version", project.properties.minecraft_version
+	inputs.property "java_version", project.properties.java_version
+	inputs.property "hudrendererlib_version", project.properties.hudrendererlib_version
 
-    filesMatching("fabric.mod.json") {
-        expand([
-                "version": inputs.properties.version,
-                "archives_base_name": inputs.properties.archives_base_name,
-                "mod_name": inputs.properties.mod_name,
-                "loader_version": inputs.properties.loader_version,
-                "minecraft_version": inputs.properties.minecraft_version,
-        ])
-    }
+	filesMatching("fabric.mod.json") {
+		expand([
+				"mod_id": inputs.properties.mod_id,
+				"mod_version": inputs.properties.mod_version,
+				"mod_name": inputs.properties.mod_name,
+				"loader_version": inputs.properties.loader_version,
+				"minecraft_version": inputs.properties.minecraft_version,
+				"java_version": inputs.properties.java_version,
+				"hudrendererlib_version": inputs.properties.hudrendererlib_version,
+		])
+	}
 }
 
 def clientGameTestRunDir = layout.buildDirectory.dir("run/clientGameTest")
@@ -134,19 +145,30 @@ tasks.matching { it.name == "runClientGameTest" }.configureEach {
 }
 
 tasks.withType(JavaCompile).configureEach {
-	it.options.release = 25
+	it.options.release = project.java_version.toInteger()
 }
 
 java {
 	withSourcesJar()
 
-	sourceCompatibility = JavaVersion.VERSION_25
-	targetCompatibility = JavaVersion.VERSION_25
+	sourceCompatibility = JavaVersion.toVersion(project.java_version)
+	targetCompatibility = JavaVersion.toVersion(project.java_version)
 }
 
 jar {
+	inputs.property "archivesName", project.base.archivesName
+
 	from("LICENSE") {
-		rename { "${it}_${project.base.archivesName.get()}"}
+		rename { "${it}_${inputs.properties.archivesName}" }
+	}
+}
+
+publishing {
+	publications {
+		create("mavenJava", MavenPublication) {
+			artifactId = project.archives_base_name
+			from components.java
+		}
 	}
 }
 

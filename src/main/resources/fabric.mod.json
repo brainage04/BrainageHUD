@@ -1,38 +1,43 @@
 {
 	"schemaVersion": 1,
-	"id": "${archives_base_name}",
-	"version": "${version}",
+	"id": "${mod_id}",
+	"version": "${mod_version}",
 	"name": "${mod_name}",
 	"description": "A mod that adds useful HUD elements to Minecraft.",
 	"authors": [
 		"brainage04"
 	],
 	"contact": {
-		"homepage": "https://github.com/brainage04/${mod_name}",
-		"sources": "https://github.com/brainage04/${mod_name}"
+		"homepage": "https://github.com/brainage04/BrainageHUD",
+		"sources": "https://github.com/brainage04/BrainageHUD"
 	},
 	"license": "MIT",
 	"icon": "assets/brainagehud/icon.png",
-	"environment": "*",
+	"environment": "client",
 	"entrypoints": {
 		"client": [
-          "io.github.brainage04.brainagehud.BrainageHUD"
+			"io.github.brainage04.brainagehud.BrainageHUD"
 		],
 		"fabric-datagen": [
-          "io.github.brainage04.brainagehud.datagen.DataGenerator"
+			"io.github.brainage04.brainagehud.datagen.DataGenerator"
 		],
 		"modmenu": [
-          "io.github.brainage04.brainagehud.modmenu.ModMenuIntegration"
+			"io.github.brainage04.brainagehud.modmenu.ModMenuIntegration"
 		]
 	},
 	"mixins": [
-		"brainagehud.mixins.json"
+		"brainagehud.client.mixins.json"
 	],
 	"depends": {
 		"fabricloader": ">=${loader_version}",
 		"minecraft": "~${minecraft_version}",
-		"java": ">=25",
-		"fabric-api": "*"
+		"java": ">=${java_version}",
+		"fabric-api": "*",
+		"cloth-config": ">=26.1.154",
+		"hudrendererlib": ">=${hudrendererlib_version}"
 	},
-	"accessWidener" : "brainagehud.accesswidener"
+	"suggests": {
+		"modmenu": "*"
+	},
+	"accessWidener": "brainagehud.accesswidener"
 }

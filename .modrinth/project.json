@@ -1,0 +1,15 @@
+{
+  "slug": "brainagehud",
+  "categories": [
+    "utility"
+  ],
+  "additional_categories": [],
+  "dependency_overrides": {
+    "cloth-config": {
+      "project_slug": "cloth-config"
+    },
+    "hudrendererlib": {
+      "project_slug": "hudrendererlib"
+    }
+  }
+}
