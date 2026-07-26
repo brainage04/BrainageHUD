@@ -1,7 +1,7 @@
 {
 	"schemaVersion": 1,
 	"id": "brainagehud-gametest",
-	"version": "1.0.0",
+	"version": "${mod_version}",
 	"name": "BrainageHUD Game Tests",
 	"environment": "client",
 	"entrypoints": {

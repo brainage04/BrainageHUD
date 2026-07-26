@@ -22,6 +22,7 @@ public class ModConfig implements ConfigData {
     @ConfigEntry.Gui.CollapsibleObject public PositionHudConfig positionHudConfig = new PositionHudConfig();
     @ConfigEntry.Gui.CollapsibleObject public ReachHudConfig reachHudConfig = new ReachHudConfig();
     @ConfigEntry.Gui.CollapsibleObject public ToggleSprintHudConfig toggleSprintHudConfig = new ToggleSprintHudConfig();
+    @ConfigEntry.Gui.CollapsibleObject public WaypointHudConfig waypointHudConfig = new WaypointHudConfig();
 
     // custom
     @ConfigEntry.Gui.CollapsibleObject public ArmourInfoHudConfig armourInfoHudConfig = new ArmourInfoHudConfig();

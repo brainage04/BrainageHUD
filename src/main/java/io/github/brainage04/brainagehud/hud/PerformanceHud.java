@@ -46,6 +46,11 @@ public class PerformanceHud implements BasicCoreHudElement<PerformanceHudConfig>
         return lines;
     }
 
+    public static boolean isGpuUsageEnabled() {
+        PerformanceHudConfig config = getConfig().performanceHudConfig;
+        return config.coreSettings.enabled && config.showGpuUsage;
+    }
+
     @Override
     public PerformanceHudConfig getElementConfig() {
         return getConfig().performanceHudConfig;

@@ -6,7 +6,6 @@ import io.github.brainage04.hudrendererlib.util.TextList;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.player.LocalPlayer;
-import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.core.Holder;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
@@ -65,22 +64,25 @@ public class PositionHud implements BasicCoreHudElement<PositionHudConfig> {
             lines.add(z);
         }
 
-        LevelRenderer worldRenderer = Minecraft.getInstance().levelRenderer;
+        var levelExtractor = Minecraft.getInstance().levelExtractor;
 
         if (getElementConfig().cCounter) {
-            // taken from net.minecraft.client.renderer.WorldRenderer
-            int completedChunks = worldRenderer.countRenderedSections();
-            int totalChunks = (int) worldRenderer.getTotalSections();
+            // Matches LevelExtractor.sectionStatistics(): its ViewArea is the vanilla C-counter denominator.
+            var viewArea = Minecraft.getInstance().levelRenderer.viewArea();
+            if (viewArea != null) {
+                int completedChunks = levelExtractor.countRenderedSections();
+                int totalChunks = viewArea.size();
 
-            lines.add("C: %d/%d%s".formatted(
-                    completedChunks,
-                    totalChunks,
-                    Minecraft.getInstance().smartCull ? " (s)" : ""
-            ));
+                lines.add("C: %d/%d%s".formatted(
+                        completedChunks,
+                        totalChunks,
+                        Minecraft.getInstance().smartCull ? " (s)" : ""
+                ));
+            }
         }
 
         if (getElementConfig().eCounter) {
-            lines.add(worldRenderer.getEntityStatistics());
+            lines.add(levelExtractor.entityStatistics());
         }
 
         if (getElementConfig().showDirection) {

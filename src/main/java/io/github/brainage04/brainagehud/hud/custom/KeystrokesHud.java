@@ -3,21 +3,20 @@ package io.github.brainage04.brainagehud.hud.custom;
 import io.github.brainage04.brainagehud.config.hud.custom.keystrokes.ClicksPerSecondFormat;
 import io.github.brainage04.brainagehud.config.hud.custom.keystrokes.KeystrokesHudConfig;
 import io.github.brainage04.hudrendererlib.HudRendererLib;
-import io.github.brainage04.hudrendererlib.config.core.CoreSettingsElement;
 import io.github.brainage04.hudrendererlib.config.core.ElementCorners;
 import io.github.brainage04.hudrendererlib.hud.core.CoreHudElement;
-import io.github.brainage04.hudrendererlib.hud.core.HudElementEditor;
 import io.github.brainage04.hudrendererlib.hud.core.HudRenderer;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
+import java.util.IdentityHashMap;
 import java.util.List;
-import java.util.Objects;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.util.ARGB;
 
 import static io.github.brainage04.brainagehud.util.ConfigUtils.getConfig;
 
@@ -32,13 +31,32 @@ public class KeystrokesHud implements CoreHudElement<KeystrokesHudConfig> {
                 || getElementConfig().clicksPerSecondFormat == ClicksPerSecondFormat.BOTH;
     }
 
+    private static final long KEY_TRANSITION_DURATION_NANOS = 100_000_000L;
+
     private record KeyStrokesItem(@Nullable KeyMapping key, String name, int x, int y, int width, int height) {}
+
+    private static final class KeyTransition {
+        private float progress;
+        private boolean down;
+        private long lastUpdateNanos;
+        private long lastSeenFrame;
+
+        private KeyTransition(boolean down, long nowNanos, long frame) {
+            this.progress = down ? 1.0F : 0.0F;
+            this.down = down;
+            this.lastUpdateNanos = nowNanos;
+            this.lastSeenFrame = frame;
+        }
+    }
 
     public static boolean leftLastFrame = false;
     public static boolean rightLastFrame = false;
 
     public static final List<Long> leftCpsTimes = new ArrayList<>(List.of());
     public static final List<Long> rightCpsTimes = new ArrayList<>(List.of());
+
+    private final IdentityHashMap<KeyMapping, KeyTransition> keyTransitions = new IdentityHashMap<>();
+    private long renderFrame;
 
     private static List<KeyStrokesItem> getKeyStrokesItems(KeystrokesHudConfig settings) {
         int keySize = 20;
@@ -162,123 +180,104 @@ public class KeystrokesHud implements CoreHudElement<KeystrokesHudConfig> {
         return keystrokesList;
     }
 
+    private static void updateCpsTimes(List<Long> clickTimes, long nowMillis) {
+        while (!clickTimes.isEmpty() && nowMillis - clickTimes.getFirst() > 1000L) {
+            clickTimes.removeFirst();
+        }
+    }
+
+    private void updateClicksPerSecond(KeystrokesHudConfig settings, Minecraft minecraft, long nowMillis) {
+        if (settings.showMouseButtons && isLeftClickShown()) {
+            if (minecraft.options.keyAttack.isDown()) {
+                if (!leftLastFrame) {
+                    leftCpsTimes.add(nowMillis);
+                }
+                leftLastFrame = true;
+            } else {
+                leftLastFrame = false;
+            }
+            updateCpsTimes(leftCpsTimes, nowMillis);
+        }
+
+        if (settings.showMouseButtons && isRightClickShown()) {
+            if (minecraft.options.keyUse.isDown()) {
+                if (!rightLastFrame) {
+                    rightCpsTimes.add(nowMillis);
+                }
+                rightLastFrame = true;
+            } else {
+                rightLastFrame = false;
+            }
+            updateCpsTimes(rightCpsTimes, nowMillis);
+        }
+    }
+
+    private static float advanceTransition(KeyTransition transition, boolean down, long nowNanos) {
+        long elapsedNanos = Math.max(0L, nowNanos - transition.lastUpdateNanos);
+        float amount = Math.min(1.0F, (float) elapsedNanos / KEY_TRANSITION_DURATION_NANOS);
+        if (transition.down) {
+            transition.progress = Math.min(1.0F, transition.progress + amount);
+        } else {
+            transition.progress = Math.max(0.0F, transition.progress - amount);
+        }
+        transition.down = down;
+        transition.lastUpdateNanos = nowNanos;
+        return transition.progress;
+    }
+
     @Override
     public void render(GuiGraphicsExtractor drawContext, DeltaTracker tickCounter) {
-        List<KeyStrokesItem> keystrokesList = getKeyStrokesItems(getElementConfig());
-
+        KeystrokesHudConfig settings = getElementConfig();
+        Minecraft minecraft = Minecraft.getInstance();
+        List<KeyStrokesItem> keystrokesList = getKeyStrokesItems(settings);
+        if (keystrokesList.isEmpty()) return;
         int elementWidth = keystrokesList.getLast().x + keystrokesList.getLast().width;
         int elementHeight = keystrokesList.getLast().y + keystrokesList.getLast().height;
-
-        // horizontal adjustments (for element)
-        int elementPadding = HudRendererLib.getPadding(getElementConfig().coreSettings);
-
-        int posX = switch (getElementConfig().coreSettings.elementAnchor) {
-            case TOP_RIGHT, RIGHT, BOTTOM_RIGHT -> getElementConfig().coreSettings.x + (HudRenderer.getScaledWidth() - elementWidth) - elementPadding * 2;
-            case TOP, CENTER, BOTTOM -> getElementConfig().coreSettings.x + (HudRenderer.getScaledWidth() - elementWidth) / 2;
-            default -> getElementConfig().coreSettings.x + elementPadding * 2;
-        };
-        // vertical adjustments
-        int posY = HudRenderer.getPosY(getElementConfig().coreSettings, elementHeight);
-        // additional adjustments
-        switch (getElementConfig().coreSettings.elementAnchor) {
+        int elementPadding = HudRendererLib.getPadding(settings.coreSettings);
+        int posX = HudRenderer.getPosX(settings.coreSettings, elementWidth);
+        int posY = HudRenderer.getPosY(settings.coreSettings, elementHeight);
+        switch (settings.coreSettings.elementAnchor) {
             case BOTTOM_LEFT, BOTTOM, BOTTOM_RIGHT -> posY -= elementPadding * 2;
             case LEFT, CENTER, RIGHT -> posY -= elementPadding;
         }
 
-        // determine bounds of HUD element
-        ElementCorners corners = HudRenderer.getCornersWithPadding(posX, posY, posX + elementWidth, posY + elementHeight, getElementConfig().coreSettings);
+        ElementCorners corners = HudRenderer.getCornersWithPadding(posX, posY, posX + elementWidth, posY + elementHeight, settings.coreSettings);
         corners.bottom += elementPadding * 2;
+        HudRenderer.setElementBounds(settings.coreSettings, corners);
+        HudRenderer.renderBackdrop(drawContext, corners, settings.coreSettings);
 
-        CoreSettingsElement coreSettingsElement = HudElementEditor.CORE_SETTINGS_ELEMENTS.get(getElementConfig().coreSettings.elementId);
-        if (coreSettingsElement == null) {
-            HudRendererLib.LOGGER.error("Core settings element with element ID {} in HudElementEditor.CORE_SETTINGS_ELEMENTS does not exist - this shouldn't happen!", getElementConfig().coreSettings.elementId);
-        } else {
-            coreSettingsElement.corners = corners;
-            HudElementEditor.CORE_SETTINGS_ELEMENTS.put(getElementConfig().coreSettings.elementId, coreSettingsElement);
-        }
+        updateClicksPerSecond(settings, minecraft, System.currentTimeMillis());
 
-        // render backdrop
-        int backdropOpacity = HudRendererLib.getOpacity(getElementConfig().coreSettings);
-        if (backdropOpacity > 0) {
-            drawContext.fill(
-                    corners.left,
-                    corners.top,
-                    corners.right,
-                    corners.bottom,
-                    backdropOpacity << 24
-            );
-        }
-
+        long frame = ++renderFrame;
+        long nowNanos = System.nanoTime();
+        int configuredTextColour = HudRendererLib.getTextColour(settings.coreSettings);
+        int keyBackdropAlpha = settings.keyBackdropOpacity;
+        Font renderer = minecraft.font;
+        boolean textShadows = HudRendererLib.getTextShadows(settings.coreSettings);
         for (KeyStrokesItem keyStrokesItem : keystrokesList) {
-            int backdropColour = getElementConfig().keyBackdropOpacity << 24;
-            int textColour = HudRendererLib.getTextColour(getElementConfig().coreSettings);
-
+            int backdropColour = ARGB.color(keyBackdropAlpha, 0, 0, 0);
+            int textColour = configuredTextColour;
             if (keyStrokesItem.key != null) {
-                if (keyStrokesItem.key.isDown()) {
-                    backdropColour += HudRendererLib.getTextColour(getElementConfig().coreSettings);
-                    textColour = 0xFF_00_00_00;
-
-                    // measure left/right cps
-                    if (isLeftClickShown()) {
-                        if (Objects.equals(keyStrokesItem.key.getName(), Minecraft.getInstance().options.keyAttack.getName())) {
-                            if (!leftLastFrame) {
-                                leftCpsTimes.add(System.currentTimeMillis());
-                            }
-
-                            leftLastFrame = true;
-                        }
-                    }
-
-                    if (isRightClickShown()) {
-                        if (Objects.equals(keyStrokesItem.key.getName(), Minecraft.getInstance().options.keyUse.getName())) {
-                            if (!rightLastFrame) {
-                                rightCpsTimes.add(System.currentTimeMillis());
-                            }
-
-                            rightLastFrame = true;
-                        }
-                    }
+                boolean down = keyStrokesItem.key.isDown();
+                KeyTransition transition = keyTransitions.get(keyStrokesItem.key);
+                if (transition == null) {
+                    transition = new KeyTransition(down, nowNanos, frame);
+                    keyTransitions.put(keyStrokesItem.key, transition);
+                } else {
+                    advanceTransition(transition, down, nowNanos);
+                    transition.lastSeenFrame = frame;
                 }
+
+                int pressedBackdropColour = ARGB.color(
+                        keyBackdropAlpha,
+                        ARGB.red(configuredTextColour),
+                        ARGB.green(configuredTextColour),
+                        ARGB.blue(configuredTextColour)
+                );
+                backdropColour = ARGB.srgbLerp(transition.progress, backdropColour, pressedBackdropColour);
+                textColour = ARGB.srgbLerp(transition.progress, configuredTextColour, ARGB.opaque(0));
             }
 
-            // update left/right cps
-            if (isLeftClickShown()) {
-                if (!Minecraft.getInstance().options.keyAttack.isDown()) {
-                    leftLastFrame = false;
-                }
-
-                for (int i = 0; i < leftCpsTimes.size(); i++) {
-                    long time = leftCpsTimes.get(i);
-                    if (System.currentTimeMillis() - time > 1000) {
-                        leftCpsTimes.remove(i);
-                    } else {
-                        // cps times are in chronological order
-                        // once the first time under 1000ms ago is found,
-                        // all times afterward will also be under 1000ms
-                        break;
-                    }
-                }
-            }
-
-            if (isRightClickShown()) {
-                if (!Minecraft.getInstance().options.keyUse.isDown()) {
-                    rightLastFrame = false;
-                }
-
-                for (int i = 0; i < rightCpsTimes.size(); i++) {
-                    long time = rightCpsTimes.get(i);
-                    if (System.currentTimeMillis() - time > 1000) {
-                        rightCpsTimes.remove(i);
-                    } else {
-                        // cps times are in chronological order
-                        // once the first time under 1000ms ago is found,
-                        // all times afterward will also be under 1000ms
-                        break;
-                    }
-                }
-            }
-
-            // draw backdrop
             drawContext.fill(
                     posX + keyStrokesItem.x,
                     posY + keyStrokesItem.y,
@@ -286,11 +285,6 @@ public class KeystrokesHud implements CoreHudElement<KeystrokesHudConfig> {
                     posY + keyStrokesItem.y + keyStrokesItem.height,
                     backdropColour
             );
-
-            Font renderer = Minecraft.getInstance().font;
-
-            // draw text in center of backdrop
-            boolean textShadows = HudRendererLib.getTextShadows(getElementConfig().coreSettings);
             drawContext.text(
                     renderer,
                     keyStrokesItem.name,
@@ -300,6 +294,7 @@ public class KeystrokesHud implements CoreHudElement<KeystrokesHudConfig> {
                     textShadows
             );
         }
+        keyTransitions.entrySet().removeIf(entry -> entry.getValue().lastSeenFrame != frame);
     }
 
     @Override

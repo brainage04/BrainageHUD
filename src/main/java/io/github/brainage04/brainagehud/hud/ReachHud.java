@@ -17,8 +17,30 @@ import net.minecraft.world.phys.HitResult;
 import static io.github.brainage04.brainagehud.util.ConfigUtils.getConfig;
 
 public class ReachHud implements BasicCoreHudElement<ReachHudConfig> {
+    private TextList cachedLines = new TextList();
+    private boolean attackWasDown;
+    private boolean wasClickMode;
+
     @Override
     public TextList getLines() {
+        ReachHudConfig config = getElementConfig();
+        if (!config.updateOnAttackClick) {
+            wasClickMode = false;
+            attackWasDown = false;
+            return calculateLines(config);
+        }
+
+        boolean attackDown = Minecraft.getInstance().options.keyAttack.isDown();
+        if (!wasClickMode || attackDown && !attackWasDown) {
+            cachedLines = calculateLines(config);
+        }
+
+        attackWasDown = attackDown;
+        wasClickMode = true;
+        return cachedLines;
+    }
+
+    private TextList calculateLines(ReachHudConfig config) {
         TextList lines = new TextList();
 
         Minecraft client = Minecraft.getInstance();
@@ -36,10 +58,10 @@ public class ReachHud implements BasicCoreHudElement<ReachHudConfig> {
                 BlockHitResult blockHitResult = (BlockHitResult) hitResult;
                 Block block = world.getBlockState(blockHitResult.getBlockPos()).getBlock();
 
-                if (block != null && block != Blocks.AIR && getElementConfig().showName) {
+                if (block != null && block != Blocks.AIR && config.showName) {
                     lines.add(block.getName().getString());
 
-                    if (getElementConfig().showCoordinates) {
+                    if (config.showCoordinates) {
                         lines.add(blockHitResult.getBlockPos().toShortString());
                     }
                 }
@@ -47,17 +69,17 @@ public class ReachHud implements BasicCoreHudElement<ReachHudConfig> {
                 EntityHitResult entityHitResult = (EntityHitResult) hitResult;
                 Entity entity = entityHitResult.getEntity();
 
-                if (getElementConfig().showName) {
+                if (config.showName) {
                     lines.add(entity.getName().getString());
 
-                    if (getElementConfig().showCoordinates) {
+                    if (config.showCoordinates) {
                         lines.add(entity.blockPosition().toShortString());
                     }
                 }
             }
 
             lines.add("%s blocks".formatted(
-                    MathUtils.roundDecimalPlaces(client.player.getEyePosition().distanceTo(hitResult.getLocation()), getElementConfig().decimalPlaces))
+                    MathUtils.roundDecimalPlaces(player.getEyePosition().distanceTo(hitResult.getLocation()), config.decimalPlaces))
             );
         }
 

@@ -33,7 +33,7 @@
 		"minecraft": "~${minecraft_version}",
 		"java": ">=${java_version}",
 		"fabric-api": "*",
-		"cloth-config": ">=26.1.154",
+		"cloth-config": ">=26.2.155",
 		"hudrendererlib": ">=${hudrendererlib_version}"
 	},
 	"suggests": {

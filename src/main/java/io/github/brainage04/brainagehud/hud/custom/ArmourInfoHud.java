@@ -4,10 +4,8 @@ import io.github.brainage04.brainagehud.config.hud.custom.armour_info.ArmourInfo
 import io.github.brainage04.brainagehud.config.hud.custom.armour_info.DurabilityFormat;
 import io.github.brainage04.brainagehud.util.MathUtils;
 import io.github.brainage04.hudrendererlib.HudRendererLib;
-import io.github.brainage04.hudrendererlib.config.core.CoreSettingsElement;
 import io.github.brainage04.hudrendererlib.config.core.ElementCorners;
 import io.github.brainage04.hudrendererlib.hud.core.CoreHudElement;
-import io.github.brainage04.hudrendererlib.hud.core.HudElementEditor;
 import io.github.brainage04.hudrendererlib.hud.core.HudRenderer;
 import java.util.ArrayList;
 import java.util.List;
@@ -56,134 +54,89 @@ public class ArmourInfoHud implements CoreHudElement<ArmourInfoHudConfig> {
         LocalPlayer player = Minecraft.getInstance().player;
         if (player == null) return;
 
-        List<ItemStack> itemStacksTemp = new ArrayList<>(List.of());
-        List<ItemStack> itemStacks = new ArrayList<>(List.of());
-        List<String> lines = new ArrayList<>(List.of());
-        List<Integer> lineWidths = new ArrayList<>(List.of());
-
-        if (getElementConfig().showOffHand) {
-            itemStacksTemp.add(player.getOffhandItem());
-        }
-
-        if (getElementConfig().showMainHand) {
-            itemStacksTemp.add(player.getMainHandItem());
-        }
-
-        if (getElementConfig().showArmour) {
-            Inventory inventory = player.getInventory();
-
-            itemStacksTemp.add(inventory.getItem(EquipmentSlot.HEAD.getIndex(Inventory.INVENTORY_SIZE)));
-            itemStacksTemp.add(inventory.getItem(EquipmentSlot.CHEST.getIndex(Inventory.INVENTORY_SIZE)));
-            itemStacksTemp.add(inventory.getItem(EquipmentSlot.LEGS.getIndex(Inventory.INVENTORY_SIZE)));
-            itemStacksTemp.add(inventory.getItem(EquipmentSlot.FEET.getIndex(Inventory.INVENTORY_SIZE)));
-        }
-
-        for (ItemStack itemStack : itemStacksTemp) {
-            if (itemStack.getItem() != Items.AIR) {
-                itemStacks.add(itemStack);
-            }
-        }
-
-        for (ItemStack itemStack : itemStacks) {
-            lines.add(generateItemInfo(itemStack, getElementConfig()));
-        }
-
         Font renderer = Minecraft.getInstance().font;
+        ArmourInfoHudConfig config = getElementConfig();
+        List<ItemInfo> items = new ArrayList<>(6);
 
-        // custom rendering logic
-        // determine bounds of HUD element
-        // determine longest line of text (for element width)
-        int elementPadding = HudRendererLib.getPadding(getElementConfig().coreSettings);
-
-        int elementWidth = 16 + elementPadding * 2;
-        int maxLineWidth = 0;
-        for (String line : lines) {
-            int currentLineWidth = renderer.width(line);
-            lineWidths.add(currentLineWidth);
-
-            if (currentLineWidth > maxLineWidth) {
-                maxLineWidth = currentLineWidth;
-            }
+        if (config.showOffHand) {
+            addItem(items, player.getOffhandItem(), config, renderer);
         }
-        elementWidth += maxLineWidth;
-        // determine element height
-        int elementHeight = 16 * itemStacks.size() + elementPadding * (itemStacks.size() - 1);
+        if (config.showMainHand) {
+            addItem(items, player.getMainHandItem(), config, renderer);
+        }
+        if (config.showArmour) {
+            Inventory inventory = player.getInventory();
+            addItem(items, inventory.getItem(EquipmentSlot.HEAD.getIndex(Inventory.INVENTORY_SIZE)), config, renderer);
+            addItem(items, inventory.getItem(EquipmentSlot.CHEST.getIndex(Inventory.INVENTORY_SIZE)), config, renderer);
+            addItem(items, inventory.getItem(EquipmentSlot.LEGS.getIndex(Inventory.INVENTORY_SIZE)), config, renderer);
+            addItem(items, inventory.getItem(EquipmentSlot.FEET.getIndex(Inventory.INVENTORY_SIZE)), config, renderer);
+        }
+        if (items.isEmpty()) return;
 
-        // horizontal adjustments (for element)
-        int posX = switch (getElementConfig().coreSettings.elementAnchor) {
-            case TOP_RIGHT, RIGHT, BOTTOM_RIGHT -> getElementConfig().coreSettings.x + (HudRenderer.getScaledWidth() - elementWidth) - elementPadding * 2;
-            case TOP, CENTER, BOTTOM -> getElementConfig().coreSettings.x + (HudRenderer.getScaledWidth() - elementWidth) / 2;
-            default -> getElementConfig().coreSettings.x + elementPadding * 2;
-        };
-        // vertical adjustments
-        int posY = HudRenderer.getPosY(getElementConfig().coreSettings, elementHeight);
-        // additional adjustments
-        switch (getElementConfig().coreSettings.elementAnchor) {
+        int elementPadding = HudRendererLib.getPadding(config.coreSettings);
+        int maxLineWidth = 0;
+        for (ItemInfo item : items) {
+            maxLineWidth = Math.max(maxLineWidth, item.textWidth());
+        }
+
+        int itemTextOffset = 16 + elementPadding * 2;
+        int elementWidth = itemTextOffset + maxLineWidth;
+        int elementHeight = 16 * items.size() + elementPadding * (items.size() - 1);
+        int posX = HudRenderer.getPosX(config.coreSettings, elementWidth);
+        int posY = HudRenderer.getPosY(config.coreSettings, elementHeight);
+        switch (config.coreSettings.elementAnchor) {
             case BOTTOM_LEFT, BOTTOM, BOTTOM_RIGHT -> posY -= elementPadding * 2;
             case LEFT, CENTER, RIGHT -> posY -= elementPadding;
         }
 
-        // adjust for padding
-        ElementCorners corners = HudRenderer.getCornersWithPadding(posX, posY, posX + elementWidth, posY + elementHeight, getElementConfig().coreSettings);
+        ElementCorners corners = HudRenderer.getCornersWithPadding(
+                posX,
+                posY,
+                posX + elementWidth,
+                posY + elementHeight,
+                config.coreSettings
+        );
         corners.bottom += elementPadding * 2;
+        HudRenderer.setElementBounds(config.coreSettings, corners);
+        HudRenderer.renderBackdrop(drawContext, corners, config.coreSettings);
 
-        CoreSettingsElement coreSettingsElement = HudElementEditor.CORE_SETTINGS_ELEMENTS.get(getElementConfig().coreSettings.elementId);
-        if (coreSettingsElement == null) {
-            HudRendererLib.LOGGER.error("Core settings element with element ID {} in HudElementEditor.CORE_SETTINGS_ELEMENTS does not exist - this shouldn't happen!", getElementConfig().coreSettings.elementId);
-        } else {
-            coreSettingsElement.corners = corners;
-            HudElementEditor.CORE_SETTINGS_ELEMENTS.put(getElementConfig().coreSettings.elementId, coreSettingsElement);
-        }
+        for (int i = 0; i < items.size(); i++) {
+            ItemInfo item = items.get(i);
+            int contentWidth = itemTextOffset + item.textWidth();
+            int linePosX = HudRenderer.alignContentX(config.coreSettings, posX, elementWidth, contentWidth);
+            int itemPosY = posY + i * (16 + elementPadding);
+            int linePosY = itemPosY + 5;
 
-        // render backdrop
-        int backdropOpacity = HudRendererLib.getOpacity(getElementConfig().coreSettings);
-        if (backdropOpacity > 0) {
-            drawContext.fill(
-                    corners.left,
-                    corners.top,
-                    corners.right,
-                    corners.bottom,
-                    backdropOpacity << 24
-            );
-        }
+            drawContext.item(item.stack(), linePosX, itemPosY);
 
-        for (int i = 0; i < itemStacks.size(); i++) {
-            ItemStack itemStack = itemStacks.get(i);
-
-            // horizontal adjustments (for line)
-            int lineWidth = lineWidths.get(i);
-            int linePosX = switch (getElementConfig().coreSettings.elementAnchor) { // do not ask how I figured this out SERIOUSLY
-                case TOP_RIGHT, RIGHT, BOTTOM_RIGHT -> posX - (lineWidth - elementWidth + 16 + elementPadding * 2);
-                case TOP, CENTER, BOTTOM -> posX - (lineWidth - elementWidth + 16 + elementPadding * 2) / 2;
-                default -> posX;
-            };
-            int linePosY = posY + 5 + i * (16 + elementPadding);
-
-            drawContext.item(
-                    itemStack,
-                    linePosX,
-                    posY + i * (16 + elementPadding)
-            );
-
-            if (getElementConfig().showDurabilityBar && itemStack.getMaxDamage() > 0 && itemStack.getDamageValue() > 0) {
-                // taken from package net.minecraft.client.gui.InGameHud; line 615
-                int a = itemStack.getBarWidth();
-                int b = itemStack.getBarColor();
-                int c = linePosX + 2;
-                int d = linePosY + 8;
-                drawContext.fill(RenderPipelines.GUI, c, d, c + 13, d + 2, CommonColors.BLACK);
-                drawContext.fill(RenderPipelines.GUI, c, d, c + a, d + 1, b | CommonColors.BLACK);
+            if (config.showDurabilityBar && item.stack().getMaxDamage() > 0 && item.stack().getDamageValue() > 0) {
+                int barWidth = item.stack().getBarWidth();
+                int barColour = item.stack().getBarColor();
+                int barX = linePosX + 2;
+                int barY = linePosY + 8;
+                drawContext.fill(RenderPipelines.GUI, barX, barY, barX + 13, barY + 2, CommonColors.BLACK);
+                drawContext.fill(RenderPipelines.GUI, barX, barY, barX + barWidth, barY + 1, barColour | CommonColors.BLACK);
             }
 
             drawContext.text(
                     renderer,
-                    lines.get(i),
-                    linePosX + (16 + elementPadding * 2),
+                    item.text(),
+                    linePosX + itemTextOffset,
                     linePosY,
-                    HudRendererLib.getTextColour(getElementConfig().coreSettings),
-                    HudRendererLib.getTextShadows(getElementConfig().coreSettings)
+                    HudRendererLib.getTextColour(config.coreSettings),
+                    HudRendererLib.getTextShadows(config.coreSettings)
             );
         }
+    }
+
+    private static void addItem(List<ItemInfo> items, ItemStack stack, ArmourInfoHudConfig config, Font renderer) {
+        if (stack.getItem() == Items.AIR) return;
+
+        String text = generateItemInfo(stack, config);
+        items.add(new ItemInfo(stack, text, renderer.width(text)));
+    }
+
+    private record ItemInfo(ItemStack stack, String text, int textWidth) {
     }
 
     @Override

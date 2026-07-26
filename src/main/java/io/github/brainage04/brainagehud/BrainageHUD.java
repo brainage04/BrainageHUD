@@ -42,6 +42,7 @@ public class BrainageHUD implements ClientModInitializer {
 		HudRendererLib.registerHudElement(new PositionHud());
 		HudRendererLib.registerHudElement(new ReachHud());
 		HudRendererLib.registerHudElement(new ToggleSprintHud());
+		HudRendererLib.registerHudElement(new WaypointHud());
 
 		ModTickEvents.initialize();
 		ModPacketEvents.initialize();
