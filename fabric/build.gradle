@@ -1,0 +1,71 @@
+plugins {
+	id 'io.github.brainage04.fabric-mod-conventions' version "${fabricmoddingconventions_version}"
+	id 'io.github.brainage04.client-gametest-recorder' version "${fabricmoddingconventions_version}"
+	id 'io.github.brainage04.production-gametests' version "${fabricmoddingconventions_version}"
+	id 'io.github.brainage04.workspace-dependencies' version "${fabricmoddingconventions_version}"
+	id 'io.github.brainage04.mod-publishing' version "${fabricmoddingconventions_version}"
+}
+
+base { archivesName = rootProject.archives_base_name }
+
+sourceSets {
+	main {
+		java.srcDir rootProject.file('src/main/java')
+		resources.srcDir rootProject.file('src/main/resources')
+	}
+	gametest {
+		java.srcDir rootProject.file('src/gametest/java')
+		resources.srcDir rootProject.file('src/gametest/resources')
+	}
+}
+
+loom {
+	accessWidenerPath = rootProject.file('src/main/resources/brainagehud.accesswidener')
+	mods { main { sourceSet sourceSets.main; sourceSet project(':common').sourceSets.main } }
+	runs { client { runDir 'run/client' } }
+}
+
+configurations {
+	common { canBeResolved = true; canBeConsumed = false }
+	compileClasspath.extendsFrom common
+	runtimeClasspath.extendsFrom common
+	developmentFabric.extendsFrom common
+}
+
+workspaceDependencies {
+	siblingMaven('FabricModdingConventions') { coordinate.set("io.github.brainage04:fabricmoddingconventions:${project.fabricmoddingconventions_version}"); siblingDirectory.set(rootProject.layout.projectDirectory.dir('../FabricModdingConventions')) }
+	siblingMaven('HudRendererLib') { coordinate.set("io.github.brainage04:hudrendererlib:${project.hudrendererlib_version}"); siblingDirectory.set(rootProject.layout.projectDirectory.dir('../HudRendererLib')) }
+}
+
+fabricApi { configureDataGeneration { client = true } }
+fabricModConventions { additionalFabricModJsonProperties.add('hudrendererlib_version') }
+productionGameTests { includeServer = false }
+
+modPublishing {
+	github.repository.set('brainage04/BrainageHUD')
+	licenseFile.set(rootProject.layout.projectDirectory.file('LICENSE'))
+	modrinth.projectConfig.set(rootProject.layout.projectDirectory.file('.modrinth/project.json'))
+	modrinth.projectBody.set(rootProject.layout.projectDirectory.file('README.md'))
+	modrinth.iconFile.set(rootProject.layout.projectDirectory.file('src/main/resources/assets/brainagehud/icon.png'))
+}
+
+dependencies {
+	common(project(':common')) { transitive = false }
+	implementation "io.github.brainage04:fabricmoddingconventions:${project.fabricmoddingconventions_version}"
+	implementation("me.shedaniel.cloth:cloth-config-fabric:${project.cloth_config_version}") { exclude(group: 'net.fabricmc.fabric-api') }
+	productionRuntimeMods("me.shedaniel.cloth:cloth-config-fabric:${project.cloth_config_version}") { exclude(group: 'net.fabricmc.fabric-api') }
+	if (providers.gradleProperty('use_local_hudrendererlib').map { it.toBoolean() }.getOrElse(false)) {
+		implementation "io.github.brainage04:hudrendererlib:${project.hudrendererlib_version}"
+		productionRuntimeMods "io.github.brainage04:hudrendererlib:${project.hudrendererlib_version}"
+	} else {
+		implementation "github.brainage04:hudrendererlib:${project.hudrendererlib_version}"
+		productionRuntimeMods "github.brainage04:hudrendererlib:${project.hudrendererlib_version}"
+	}
+	implementation "maven.modrinth:modmenu:${project.modmenu_version}"
+}
+
+tasks.named('jar') { from project(':common').sourceSets.main.output; duplicatesStrategy = DuplicatesStrategy.EXCLUDE }
+tasks.named('sourcesJar') { from project(':common').sourceSets.main.allSource }
+tasks.matching { it.name.startsWith('run') }.configureEach { dependsOn project(':common').tasks.named('jar') }
+
+tasks.named('sourcesJar') { from project(':common').sourceSets.main.allSource; duplicatesStrategy = DuplicatesStrategy.EXCLUDE }

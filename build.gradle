@@ -1,79 +1,69 @@
 plugins {
-	id 'io.github.brainage04.client-gametest-recorder' version "${fabricmoddingconventions_version}"
-	id 'io.github.brainage04.production-gametests' version "${fabricmoddingconventions_version}"
-	id 'io.github.brainage04.workspace-dependencies' version "${fabricmoddingconventions_version}"
-	id 'io.github.brainage04.mod-publishing' version "${fabricmoddingconventions_version}"
+	id 'dev.architectury.loom-no-remap' version "${architectury_loom_version}" apply false
+	id 'dev.architectury.loom' version "${architectury_loom_version}" apply false
 }
 
-repositories {
-	mavenLocal()
+allprojects {
+	group = rootProject.maven_group
+	version = rootProject.mod_version
+}
 
-	// Cloth Config
-	maven { url "https://maven.shedaniel.me/" }
+subprojects {
+	apply plugin: 'java'
 
-	// Mod Menu
-	maven { url "https://api.modrinth.com/maven/" }
-
-	// HudRendererLib release fallback
-	ivy {
-		name = "HudRendererLibGitHubRelease"
-		url = "https://github.com/brainage04/HudRendererLib/releases/download/v${project.hudrendererlib_version}"
-		patternLayout {
-			artifact "[artifact]-[revision].[ext]"
+	repositories {
+		mavenLocal()
+		maven { url = uri('https://maven.architectury.dev/') }
+		maven { url = uri('https://maven.neoforged.net/releases/') }
+		maven { url = uri('https://maven.fabricmc.net/') }
+		maven { url = uri('https://maven.shedaniel.me/') }
+		maven { url = uri('https://api.modrinth.com/maven/') }
+		mavenCentral()
+		ivy {
+			name = 'HudRendererLibGitHubRelease'
+			url = "https://github.com/brainage04/HudRendererLib/releases/download/v${rootProject.hudrendererlib_version}"
+			patternLayout { artifact '[artifact]-[revision].[ext]' }
+			metadataSources { artifact() }
 		}
-		metadataSources {
-			artifact()
+	}
+
+	java {
+		toolchain.languageVersion = JavaLanguageVersion.of(rootProject.java_version as int)
+		withSourcesJar()
+	}
+
+	tasks.withType(JavaCompile).configureEach {
+		options.encoding = 'UTF-8'
+		options.release = rootProject.java_version as int
+	}
+
+	tasks.withType(ProcessResources).configureEach {
+		def metadataProperties = [
+			version: rootProject.mod_version,
+			minecraft_version: rootProject.minecraft_version,
+			neoforge_version: rootProject.neoforge_version,
+			hudrendererlib_version: rootProject.hudrendererlib_version,
+			cloth_config_version: rootProject.cloth_config_version
+		]
+		inputs.properties(metadataProperties)
+		filesMatching('META-INF/neoforge.mods.toml') {
+			expand(metadataProperties)
 		}
 	}
 }
 
-workspaceDependencies {
-	siblingMaven("FabricModdingConventions") {
-		coordinate.set("io.github.brainage04:fabricmoddingconventions:${project.fabricmoddingconventions_version}")
-	}
-	siblingMaven("HudRendererLib") {
-		coordinate.set("io.github.brainage04:hudrendererlib:${project.hudrendererlib_version}")
-	}
+def fabricReleaseJar = project(':fabric').tasks.named('jar', org.gradle.api.tasks.bundling.AbstractArchiveTask)
+def neoForgeReleaseJar = project(':neoforge').tasks.named('jar', org.gradle.api.tasks.bundling.AbstractArchiveTask)
+
+tasks.register('collectReleaseArtifacts', Sync) {
+	dependsOn fabricReleaseJar, neoForgeReleaseJar
+	from fabricReleaseJar.flatMap { it.archiveFile }
+	from neoForgeReleaseJar.flatMap { it.archiveFile }
+	into layout.buildDirectory.dir('libs')
 }
 
-fabricApi {
-	configureDataGeneration {
-		client = true
-	}
-}
-
-fabricModConventions {
-	additionalFabricModJsonProperties.add("hudrendererlib_version")
-}
-
-dependencies {
-	// Cloth Config
-	implementation("me.shedaniel.cloth:cloth-config-fabric:${project.cloth_config_version}") {
-		exclude(group: "net.fabricmc.fabric-api")
-	}
-	productionRuntimeMods("me.shedaniel.cloth:cloth-config-fabric:${project.cloth_config_version}") {
-		exclude(group: "net.fabricmc.fabric-api")
-	}
-
-	// Mod Menu
-	implementation "maven.modrinth:modmenu:${project.modmenu_version}"
-
-	// HudRendererLib: opt into sibling Maven output when requested, otherwise use the release fallback.
-	if (providers.gradleProperty("use_local_hudrendererlib").map { it.toBoolean() }.getOrElse(false)) {
-		implementation "io.github.brainage04:hudrendererlib:${project.hudrendererlib_version}"
-		productionRuntimeMods "io.github.brainage04:hudrendererlib:${project.hudrendererlib_version}"
-	} else {
-		implementation "github.brainage04:hudrendererlib:${project.hudrendererlib_version}"
-		productionRuntimeMods "github.brainage04:hudrendererlib:${project.hudrendererlib_version}"
-	}
-}
-
-pluginManager.withPlugin("io.github.brainage04.client-gametest-recorder") {
-	clientGameTestRecorder {
-		minecraftOptionsVersion.set("4671")
-		maxFps.set("30")
-		renderDistance.set("5")
-		simulationDistance.set("5")
-		guiScale.set("3")
-	}
+tasks.register('build') {
+	group = 'build'
+	dependsOn subprojects.collect { it.tasks.named('build') }
+	dependsOn tasks.named('collectReleaseArtifacts')
 }

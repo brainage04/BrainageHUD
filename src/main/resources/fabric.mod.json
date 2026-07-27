@@ -16,7 +16,7 @@
 	"environment": "client",
 	"entrypoints": {
 		"client": [
-			"io.github.brainage04.brainagehud.BrainageHUD"
+			"io.github.brainage04.brainagehud.fabric.BrainageHUDFabric"
 		],
 		"fabric-datagen": [
 			"io.github.brainage04.brainagehud.datagen.DataGenerator"

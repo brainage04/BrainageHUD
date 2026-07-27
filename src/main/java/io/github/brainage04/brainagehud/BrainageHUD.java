@@ -1,34 +1,27 @@
 package io.github.brainage04.brainagehud;
 
-import io.github.brainage04.brainagehud.command.core.ModCommands;
 import io.github.brainage04.brainagehud.config.core.ModConfig;
-import io.github.brainage04.brainagehud.event.ModPacketEvents;
-import io.github.brainage04.brainagehud.event.ModTickEvents;
 import io.github.brainage04.brainagehud.hud.*;
 import io.github.brainage04.brainagehud.hud.custom.ArmourInfoHud;
 import io.github.brainage04.brainagehud.hud.custom.KeystrokesHud;
 import io.github.brainage04.hudrendererlib.HudRendererLib;
 import me.shedaniel.autoconfig.serializer.GsonConfigSerializer;
-import net.fabricmc.api.ClientModInitializer;
-
 import org.lwjgl.glfw.GLFW;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class BrainageHUD implements ClientModInitializer {
+public final class BrainageHUD {
 	public static final String MOD_ID = "brainagehud";
 	public static final String MOD_NAME = "BrainageHUD";
 	public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
 
 	private static volatile boolean initialized;
 
-	@Override
-	public void onInitializeClient() {
+	public static void initialize() {
 		LOGGER.info(MOD_NAME + " initialising...");
 
 		HudRendererLib.register(ModConfig.class, GsonConfigSerializer::new);
 
-		ModCommands.initialize();
 		HudRendererLib.registerConfigCommand(ModConfig.class, MOD_ID);
 		HudRendererLib.registerConfigKey(ModConfig.class, GLFW.GLFW_KEY_KP_SUBTRACT, MOD_ID, MOD_NAME);
 
@@ -44,8 +37,6 @@ public class BrainageHUD implements ClientModInitializer {
 		HudRendererLib.registerHudElement(new ToggleSprintHud());
 		HudRendererLib.registerHudElement(new WaypointHud());
 
-		ModTickEvents.initialize();
-		ModPacketEvents.initialize();
 
 		initialized = true;
 

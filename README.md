@@ -1,5 +1,5 @@
 # About
-BrainageHUD is a client-side mod for the Fabric modloader that adds useful heads-up display (HUD) elements to Minecraft.
+BrainageHUD is a client-side mod for the Fabric and NeoForge modloaders that adds useful heads-up display (HUD) elements to Minecraft.
 
 Here is a comprehensive list of the HUD elements added by BrainageHUD:
 - Date Time - Displays date, 12/24 hr time, timezone
@@ -34,12 +34,13 @@ This mod has been built with the vanilla HUD in mind. For example:
 - HUD elements with the "Top Right" alignment will be shifted down a bit when the player has potion effects, so that the potion effect display and HUD elements do not overlap.
 
 # Dependencies
-This mod requires the following dependencies:
-- [Fabric API](https://modrinth.com/mod/fabric-api/versions)
-- [HudRendererLib](https://github.com/brainage04/HudRendererLib/releases)
-- [Cloth Config](https://modrinth.com/mod/cloth-config/versions)
+This mod requires [HudRendererLib](https://github.com/brainage04/HudRendererLib/releases) and [Cloth Config](https://modrinth.com/mod/cloth-config/versions) on both loaders. Fabric installations also require [Fabric API](https://modrinth.com/mod/fabric-api/versions).
 
 [Mod Menu](https://modrinth.com/mod/modmenu/versions) is also recommended.
+
+## Migrating from the Fabric-only release
+
+Install exactly one matching BrainageHUD JAR: Fabric or NeoForge. Remove the old BrainageHUD JAR before switching loaders; do not place both variants in the same client `mods` directory. BrainageHUD remains client-only, so install it and its loader-specific dependencies on the client rather than a dedicated server. Fabric requires Fabric API, HudRendererLib (Fabric), and Cloth Config (Fabric); NeoForge requires HudRendererLib (NeoForge) and Cloth Config (NeoForge). The stable mod ID remains `brainagehud`, so the existing `config/brainagehud.json` configuration path is preserved. Running the root `./gradlew build` emits both loader artifacts under `build/libs`.
 
 # Todo
 refactor custom hud elements using proper HudRenderer utility methods like getPosX/Y

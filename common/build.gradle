@@ -1,0 +1,26 @@
+plugins {
+	id 'dev.architectury.loom-no-remap'
+	id 'dev.architectury.loom'
+}
+
+sourceSets {
+	main {
+		java.srcDir rootProject.file('src/main/java')
+		resources.srcDir rootProject.file('src/main/resources')
+		java.exclude 'io/github/brainage04/brainagehud/command/**'
+		resources.exclude 'fabric.mod.json'
+		java.exclude 'io/github/brainage04/brainagehud/datagen/**'
+		java.exclude 'io/github/brainage04/brainagehud/modmenu/**'
+	}
+}
+
+loom {
+	accessWidenerPath = rootProject.file('src/main/resources/brainagehud.accesswidener')
+}
+
+dependencies {
+	minecraft "com.mojang:minecraft:${rootProject.minecraft_version}"
+	compileOnly "net.fabricmc:fabric-loader:${rootProject.loader_version}"
+	compileOnly "io.github.brainage04:hudrendererlib:${rootProject.hudrendererlib_version}"
+	implementation "me.shedaniel.cloth:cloth-config:${rootProject.cloth_config_version}"
+}
