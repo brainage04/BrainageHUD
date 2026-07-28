@@ -8,7 +8,7 @@ import io.github.brainage04.fabricmoddingconventions.ClientGameTestRecorder;
 import io.github.brainage04.fabricmoddingconventions.ClientGameTestServers;
 import net.fabricmc.fabric.api.client.gametest.v1.FabricClientGameTest;
 import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext;
-import net.fabricmc.fabric.api.client.gametest.v1.context.TestDedicatedServerContext;
+
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.item.ItemStack;
@@ -22,9 +22,7 @@ public final class BrainageHUDClientGameTest implements FabricClientGameTest {
 	public void runTest(ClientGameTestContext context) {
 		Properties serverProperties = ClientGameTestServers.flatServerProperties();
 
-		try (TestDedicatedServerContext server = context.worldBuilder().createServer(serverProperties)) {
-			ClientGameTestServers.connectToDedicatedServer(context, server, "BrainageHUD visual showcase GameTest");
-			ShowcaseConfigSnapshot configSnapshot = null;
+		ClientGameTestServers.withDedicatedServer(context, serverProperties, "BrainageHUD visual showcase GameTest", server -> { ShowcaseConfigSnapshot configSnapshot = null;
 			try {
 				server.runOnServer(minecraftServer -> preparePlayer(
 						minecraftServer.getPlayerList().getPlayers().getFirst()));
@@ -62,9 +60,8 @@ public final class BrainageHUDClientGameTest implements FabricClientGameTest {
 					ShowcaseConfigSnapshot snapshotToRestore = configSnapshot;
 					context.runOnClient(client -> snapshotToRestore.restore());
 				}
-				ClientGameTestServers.disconnectFromDedicatedServer(context);
-			}
-		}
+				;
+			} });
 	}
 
 	private static void preparePlayer(ServerPlayer player) {
