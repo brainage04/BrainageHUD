@@ -3,19 +3,9 @@ plugins {
 	id 'dev.architectury.loom'
 }
 
-sourceSets {
-	main {
-		java.srcDir rootProject.file('src/main/java')
-		resources.srcDir rootProject.file('src/main/resources')
-		java.exclude 'io/github/brainage04/brainagehud/command/**'
-		resources.exclude 'fabric.mod.json'
-		java.exclude 'io/github/brainage04/brainagehud/datagen/**'
-		java.exclude 'io/github/brainage04/brainagehud/modmenu/**'
-	}
-}
 
 loom {
-	accessWidenerPath = rootProject.file('src/main/resources/brainagehud.accesswidener')
+	accessWidenerPath = project.file('src/main/resources/brainagehud.accesswidener')
 }
 
 dependencies {
