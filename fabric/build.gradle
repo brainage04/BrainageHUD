@@ -10,7 +10,12 @@ fabricApi { configureDataGeneration { client = true } }
 dependencies {
 	implementation("me.shedaniel.cloth:cloth-config-fabric:${project.cloth_config_version}") { exclude(group: 'net.fabricmc.fabric-api') }
 	productionRuntimeMods("me.shedaniel.cloth:cloth-config-fabric:${project.cloth_config_version}") { exclude(group: 'net.fabricmc.fabric-api') }
-	implementation "io.github.brainage04:hudrendererlib:${project.hudrendererlib_version}"
-	productionRuntimeMods "io.github.brainage04:hudrendererlib:${project.hudrendererlib_version}"
+	if (providers.gradleProperty('use_local_hudrendererlib').map { it.toBoolean() }.getOrElse(false)) {
+		implementation "io.github.brainage04:hudrendererlib:${project.hudrendererlib_version}"
+		productionRuntimeMods "io.github.brainage04:hudrendererlib:${project.hudrendererlib_version}"
+	} else {
+		implementation "github.brainage04:hudrendererlib:${project.hudrendererlib_version}"
+		productionRuntimeMods "github.brainage04:hudrendererlib:${project.hudrendererlib_version}"
+	}
 	implementation "maven.modrinth:modmenu:${project.modmenu_version}"
 }
