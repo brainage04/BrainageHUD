@@ -53,4 +53,4 @@ performancehud: get GPU to work with Minecraft's existing GPU profiler
 
 keystrokeshud: smooth color transitions for key press/release events
 
-add waypoints
+add waypoints (can get these from https://github.com/brainage04/NPCAddons)
