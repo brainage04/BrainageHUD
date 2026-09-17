@@ -161,10 +161,11 @@ The generated `common/src/main/generated/assets/brainagehud/lang/en_us.json` was
   Screenshot: `fabric/build/run/clientGameTest/screenshots/0000_enchant-info-hud.png` (a copy was kept outside the repo
   at `/tmp/brainagehud-enchant-info-hud.png`, because the GameTest run directory is cleared on the next run).
 - `./gradlew :fabric:runDatagen` – regenerated the language file.
-- `./gradlew :common:spotlessJavaCheck :fabric:spotlessJavaCheck :neoforge:spotlessJavaCheck -PstrictQuality=true` – the
-  `common` and `neoforge` modules pass; the only remaining violations are pre-existing unformatted files in the Fabric
-  module that this change did not touch (`BrainageHUDClientGameTest`, `FullbrightCommand`, `DataGenerator`,
-  `EnglishLangProvider`, `ModMenuIntegration`).
+- `./gradlew :common:spotlessJavaCheck :fabric:spotlessJavaCheck :neoforge:spotlessJavaCheck -PstrictQuality=true` – every
+  file this migration adds or rewrites is clean. The check still fails on the repository's pre-existing unformatted
+  sources (`common/.../hud/**`, `common/.../mixin/**`, `common/.../util/**`, `fabric/.../FullbrightCommand`,
+  `DataGenerator`, `EnglishLangProvider`, `ModMenuIntegration`) and on the GameTest harness file, which was edited in its
+  existing style instead of being reformatted wholesale.
 
 The client GameTest run above is the real-client check for this migration: it boots a full client against the fixture
 dedicated server, renders the element, asserts its lines and captures the screenshot listed there. The repository's
