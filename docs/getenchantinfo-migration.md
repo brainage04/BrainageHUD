@@ -145,12 +145,28 @@ The generated `common/src/main/generated/assets/brainagehud/lang/en_us.json` was
 - `./gradlew :fabric:test` – `EnchantInfoHudTest` runs four registry-backed cases (present + missing + blacklist +
   conflict, conflict grouping, fully-enchanted item, non-applicable items) and passed; the rendered lines above are its
   captured output.
+- `./gradlew :fabric:runClientGameTest` – the shipped Fabric client GameTest now hands the fixture player an enchanted
+  diamond pickaxe (Efficiency III, Unbreaking III, Mending) and asserts the element's lines in a real client before
+  capturing `enchant-info-hud`. The run passed and the screenshot shows the element rendering under the position HUD:
+
+  ```text
+  Diamond Pickaxe
+  Efficiency III (max 5)
+  Mending
+  Unbreaking III
+  Missing:
+  Fortune III / Silk Touch
+  ```
+
+  Screenshot: `fabric/build/run/clientGameTest/screenshots/0000_enchant-info-hud.png` (a copy was kept outside the repo
+  at `/tmp/brainagehud-enchant-info-hud.png`, because the GameTest run directory is cleared on the next run).
 - `./gradlew :fabric:runDatagen` – regenerated the language file.
 - `./gradlew :common:spotlessJavaCheck :fabric:spotlessJavaCheck :neoforge:spotlessJavaCheck -PstrictQuality=true` – the
   `common` and `neoforge` modules pass; the only remaining violations are pre-existing unformatted files in the Fabric
   module that this change did not touch (`BrainageHUDClientGameTest`, `FullbrightCommand`, `DataGenerator`,
   `EnglishLangProvider`, `ModMenuIntegration`).
 
-No client screenshot is included: the commands and element were verified through the registry-backed test above plus the
-loader builds. Running the shipped client GameTest/recorder (which would drive a real client and capture the element
-next to an enchanted item) was left to the repository's own recording workflow.
+The client GameTest run above is the real-client check for this migration: it boots a full client against the fixture
+dedicated server, renders the element, asserts its lines and captures the screenshot listed there. The repository's
+recording workflow (`./gradlew recordClientGameTest`) was not run, so no narrated video exists for the new element yet;
+the GameTest step added for it appears in the recording the next time that task runs.

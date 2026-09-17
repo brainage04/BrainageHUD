@@ -3,17 +3,24 @@ package io.github.brainage04.brainagehud.test;
 import io.github.brainage04.brainagehud.BrainageHUD;
 import io.github.brainage04.brainagehud.config.core.ModConfig;
 import io.github.brainage04.brainagehud.hud.PositionHud;
+import io.github.brainage04.brainagehud.hud.custom.EnchantInfoHud;
 import io.github.brainage04.brainagehud.util.ConfigUtils;
 import io.github.brainage04.fabricmoddingconventions.ClientGameTestRecorder;
 import io.github.brainage04.fabricmoddingconventions.ClientGameTestServers;
 import net.fabricmc.fabric.api.client.gametest.v1.FabricClientGameTest;
 import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext;
 
+import net.minecraft.core.HolderLookup;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.enchantment.Enchantment;
 
+import java.util.List;
 import java.util.Properties;
 
 @SuppressWarnings("UnstableApiUsage")
@@ -55,6 +62,16 @@ public final class BrainageHUDClientGameTest implements FabricClientGameTest {
 						"The equipped diamond armor and main-hand tool populate Armor Info while the WASD, space, and mouse controls populate Keystrokes."
 				);
 				context.waitTicks(100);
+
+				ClientGameTestRecorder.showStep(
+						context,
+						"enchant-info",
+						"Enchant info HUD",
+						"The enchanted pickaxe in the main hand populates Enchant Info with its enchantments and the ones still missing from it."
+				);
+				context.waitTicks(60);
+				context.runOnClient(client -> assertEnchantInfoHudShowsHeldItem());
+				System.out.println("[STDOUT]: Enchant info HUD screenshot: " + context.takeScreenshot("enchant-info-hud"));
 			} finally {
 				if (configSnapshot != null) {
 					ShowcaseConfigSnapshot snapshotToRestore = configSnapshot;
@@ -66,7 +83,13 @@ public final class BrainageHUDClientGameTest implements FabricClientGameTest {
 
 	private static void preparePlayer(ServerPlayer player) {
 		player.getInventory().clearContent();
-		player.getInventory().setItem(0, new ItemStack(Items.DIAMOND_PICKAXE));
+		HolderLookup.RegistryLookup<Enchantment> enchantments = player.level().registryAccess()
+				.lookupOrThrow(Registries.ENCHANTMENT);
+		ItemStack pickaxe = new ItemStack(Items.DIAMOND_PICKAXE);
+		pickaxe.enchant(enchantments.getOrThrow(enchantmentKey("minecraft:efficiency")), 3);
+		pickaxe.enchant(enchantments.getOrThrow(enchantmentKey("minecraft:unbreaking")), 3);
+		pickaxe.enchant(enchantments.getOrThrow(enchantmentKey("minecraft:mending")), 1);
+		player.getInventory().setItem(0, pickaxe);
 		player.getInventory().setSelectedSlot(0);
 		player.setItemSlot(EquipmentSlot.HEAD, new ItemStack(Items.DIAMOND_HELMET));
 		player.setItemSlot(EquipmentSlot.CHEST, new ItemStack(Items.DIAMOND_CHESTPLATE));
@@ -203,5 +226,23 @@ public final class BrainageHUDClientGameTest implements FabricClientGameTest {
 		if (!hasPosition || !hasCCounter) {
 			throw new AssertionError("Expected Position HUD to show the fixture position and corrected rendered-section C-counter.");
 		}
+	}
+
+	private static void assertEnchantInfoHudShowsHeldItem() {
+		List<String> lines = new EnchantInfoHud().getLines().stream()
+				.map(line -> line.getString())
+				.toList();
+		boolean hasEfficiency = lines.stream().anyMatch(line -> line.startsWith("Efficiency"));
+		boolean hasMissingHeader = lines.contains("Missing:");
+		boolean hasConflictGroup = lines.stream()
+				.anyMatch(line -> line.contains("Silk Touch") && line.contains("Fortune"));
+
+		if (!hasEfficiency || !hasMissingHeader || !hasConflictGroup) {
+			throw new AssertionError("Expected Enchant Info HUD to show the held pickaxe's enchantments plus the ones missing from it, but got " + lines + ".");
+		}
+	}
+
+	private static ResourceKey<Enchantment> enchantmentKey(String enchantmentId) {
+		return ResourceKey.create(Registries.ENCHANTMENT, Identifier.parse(enchantmentId));
 	}
 }
