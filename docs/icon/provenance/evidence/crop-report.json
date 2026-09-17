@@ -1,0 +1,177 @@
+{
+  "chat": {
+    "simpletpa": {
+      "tight": {
+        "path": "renders/simpletpa-autocomplete-tight.png",
+        "box": [
+          0,
+          2086,
+          251,
+          2160
+        ],
+        "size": [
+          251,
+          74
+        ],
+        "margins": {
+          "left": 16,
+          "right": 40,
+          "top": 26,
+          "bottom": 17
+        }
+      },
+      "square": {
+        "path": "renders/simpletpa-autocomplete-square.png",
+        "box": [
+          0,
+          1768,
+          392,
+          2160
+        ],
+        "size": [
+          392,
+          392
+        ],
+        "margins": {
+          "left": 16,
+          "right": 181,
+          "top": 344,
+          "bottom": 17
+        }
+      },
+      "ink": {
+        "x0": 16,
+        "x1": 211,
+        "y0": 2112,
+        "y1": 2143,
+        "width": 196,
+        "height": 32
+      },
+      "frame": "renders/frames/simpletpa-tp-full.png"
+    },
+    "simplehomes": {
+      "tight": {
+        "path": "renders/simplehomes-autocomplete-tight.png",
+        "box": [
+          0,
+          2086,
+          283,
+          2160
+        ],
+        "size": [
+          283,
+          74
+        ],
+        "margins": {
+          "left": 16,
+          "right": 40,
+          "top": 26,
+          "bottom": 21
+        }
+      },
+      "square": {
+        "path": "renders/simplehomes-autocomplete-square.png",
+        "box": [
+          0,
+          1704,
+          456,
+          2160
+        ],
+        "size": [
+          456,
+          456
+        ],
+        "margins": {
+          "left": 16,
+          "right": 213,
+          "top": 408,
+          "bottom": 21
+        }
+      },
+      "ink": {
+        "x0": 16,
+        "x1": 243,
+        "y0": 2112,
+        "y1": 2139,
+        "width": 228,
+        "height": 28
+      },
+      "frame": "renders/frames/simplehomes-home-full.png"
+    },
+    "spawncommands": {
+      "tight": {
+        "path": "renders/spawncommands-autocomplete-tight.png",
+        "box": [
+          0,
+          2086,
+          239,
+          2160
+        ],
+        "size": [
+          239,
+          74
+        ],
+        "margins": {
+          "left": 16,
+          "right": 40,
+          "top": 26,
+          "bottom": 17
+        }
+      },
+      "square": {
+        "path": "renders/spawncommands-autocomplete-square.png",
+        "box": [
+          0,
+          1792,
+          368,
+          2160
+        ],
+        "size": [
+          368,
+          368
+        ],
+        "margins": {
+          "left": 16,
+          "right": 169,
+          "top": 320,
+          "bottom": 17
+        }
+      },
+      "ink": {
+        "x0": 16,
+        "x1": 199,
+        "y0": 2112,
+        "y1": 2143,
+        "width": 184,
+        "height": 32
+      },
+      "frame": "renders/frames/spawncommands-spawn-full.png"
+    }
+  },
+  "brainagehud": {
+    "path": "renders/brainagehud-position-selected-600.png",
+    "box": [
+      0,
+      0,
+      600,
+      600
+    ],
+    "size": [
+      600,
+      600
+    ],
+    "highlightRect": {
+      "x0": 20,
+      "y0": 20,
+      "x1": 471,
+      "y1": 395
+    },
+    "frame": "renders/frames/hud-editor-selected.png",
+    "margins": {
+      "left": 20,
+      "top": 20,
+      "right": 129,
+      "bottom": 205
+    }
+  }
+}

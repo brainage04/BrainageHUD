@@ -1,0 +1,12 @@
+{
+  "entries": [
+    {
+      "project": "BrainageHUD",
+      "label": "Selected Position HUD in the HUD Element Editor - 600x600 square",
+      "path": "captures-ui/renders/brainagehud-position-selected-600.png",
+      "method": "RECAPTURE of the same scene (the 590x480 closeup captures/brainagehud-position-selected-final-closeup.png is smaller than 600x600 and a 600x600 crop of it is impossible), then a 600x600 crop of the new 3840x2160 frame",
+      "source": "captures-ui/renders/frames/hud-editor-selected.png; captures-ui/evidence/crop-report.json; captures-ui/logs/latest.log",
+      "notes": "600x600. Same scene as the approved closeup: HudRendererLib 1.0.7 HUD Element Editor open (keypad add), the BrainageHUD Position HUD element (TOP_LEFT, x=5 y=5, same brainagehud.json/hudrendererlib.json as the captures/ session) selected AND highlighted by the mouse, i.e. the translucent white selection overlay is drawn over the element rect, other HUD elements still visible. Measured in the frame: selection rectangle (20,20)-(471,395) px; crop (0,0,600,600) keeps 20 px left, 20 px top, 129 px right and 205 px bottom margin, so the selection rectangle (its border) is complete. Scene: void world, spectator at 0.5/-60/0.5, camera yaw 0 pitch 0, noon, weather clear, /tick freeze, GUI scale 4, 3840x2160. Difference from the original capture: the world behind the editor is this round's void world (sky above the horizon, void fog below) rather than the earlier dungeon world; the element, its selection overlay, the editor UI text and the HUD element set are the same."
+    }
+  ]
+}

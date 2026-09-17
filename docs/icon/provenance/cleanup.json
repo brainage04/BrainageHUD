@@ -1,0 +1,31 @@
+{
+  "kept": [
+    "renders/*.png - the 7 deliverables (3 tight + 3 square chat autocomplete crops, 1 BrainageHUD 600x600)",
+    "renders/frames/*-full.png - the uncropped 3840x2160 F2 screenshots the crops come from",
+    "renders/frames/*-tab*.png - the Tab-cycling frames backing the suggestion evidence",
+    "renders/frames/hud-editor-selected.png - the HUD Element Editor frame the 600x600 crop comes from",
+    "evidence/*.json - per-shot measurements (typed input, ink extents, candidates, scene commands), crop report, scene provenance",
+    "evidence/SHA256SUMS.txt - checksums of the 7 deliverables",
+    "evidence/client-log-chat-captures.log - the client log of the capture session (proves the scene commands, the world name and every saved screenshot)",
+    "runtime/ - the game directory used for the session (options.txt as rewritten by the client, the 'UI Void' world, config)",
+    "client-ui.args, launch-ui.sh, tools/, scripts/ - reproducible recipe"
+  ],
+  "removed": [
+    "throwaway probe frames from the UI-layout investigation (sky/time/cloud probes, chat-geometry diffs, pause-menu diagnostics, first-run tab frames) - moved to /tmp/captures-ui-scratch and not part of the deliverable tree",
+    "evidence/*-autocomplete.json - superseded probing runs of the autocomplete collector (the final runs are evidence/simpletpa-tp.json, simplehomes-home.json, spawncommands-spawn.json)"
+  ],
+  "resources": {
+    "stopped": [
+      "Minecraft client (hub process 'mc-ui')",
+      "Xvfb :182 (hub process 'xvfb-ui182')",
+      "PulseAudio null sink round3_ui_mcscreens (module unloaded)",
+      "clipboard owner (xclip) not left running"
+    ],
+    "never_touched": [
+      "primary desktop display (:0) and its running applications",
+      "the user's audio devices (HyperX sink 68 and the other sinks were never routed to)",
+      "any other agent's runtime/display/sink"
+    ]
+  },
+  "scope": "Only files inside round3/captures-ui/ were created or changed. No tracked file, no other capture directory and no round3-level manifest/index was edited (gallery integration is the main agent's job)."
+}

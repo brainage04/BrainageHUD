@@ -1,0 +1,22 @@
+{
+  "blockers": [
+    {
+      "item": "Requested 'command list' UI for the chat autocomplete is not rendered by Minecraft 26.2",
+      "detail": "The task asked for the command autocomplete entries to 'dominate the frame'. In this Minecraft version (26.2, Fabric Loader 0.19.3) the chat screen renders the native autocomplete as an inline completion inside the chat input line (typed prefix + gray suffix) plus, for argument commands, a usage box above the input. No dropdown suggestion list is drawn: with the chat open and a prefix typed, a whole-frame pixel diff against the same chat with an empty input changes only the input line region (e.g. '/gamemode ' on a cleared chat: changed band y=1928..2006 in the input box and y=2052..2098 for the usage box; nothing above the input line). CommandSuggestions$SuggestionsList exists in the client jar and Tab cycles it, but the list itself is not visible on screen in this build.",
+      "impact": "The delivered crops show the autocomplete affordance that this version actually renders (input line with the completion), not a vertical list of entries. The reachable suggestions were enumerated separately by Tab-cycling and are recorded in evidence/*.json.",
+      "evidence": "captures-ui/scripts/collect_autocomplete.py; captures-ui/evidence/*-autocomplete.json; captures-ui/evidence/*.json; captures-ui/logs/latest.log"
+    },
+    {
+      "item": "Tab-cycle entries can only be identified by ink width, which is ambiguous for some steps",
+      "detail": "Each Tab press completes/cycles the native suggestion list; the resulting input line was measured with the client's own font metrics. Steps whose rendered width matches several candidate commands are reported as raw widths instead of names (SimpleTPA step 2 = 312 px, step 3 = 184 px, step 4 = 248 px; SimpleHomes steps 1-2 = 116 px, step 3 = 288 px, step 4 = 256 px; SpawnCommands step 1 = 212 px, step 3 = 288 px). The delivered capture for each mod is step 0 (the typed prefix plus its completion), whose width matches exactly one candidate.",
+      "impact": "Only the captured (step 0) suggestion is named with certainty; the later Tab steps are reported as measured widths.",
+      "evidence": "captures-ui/evidence/crop-report.json; captures-ui/evidence/*.json"
+    },
+    {
+      "item": "BrainageHUD 600x600 is a recapture, not a crop of the existing closeup",
+      "detail": "captures/brainagehud-position-selected-final-closeup.png is 590x480, so a 600x600 crop of it is geometrically impossible without inventing pixels; per the task instruction the same scene was recaptured instead (HUD Element Editor, Position HUD selected and highlighted, same mod configs, same GUI scale 4 so the element is the same pixel size: measured selection rectangle 451x375 px in both sessions).",
+      "impact": "The backdrop behind the editor is this round's void world instead of the earlier dungeon world; the element, its selection overlay and the editor UI are the same.",
+      "evidence": "captures-ui/renders/frames/hud-editor-selected.png; captures-ui/evidence/crop-report.json"
+    }
+  ]
+}
