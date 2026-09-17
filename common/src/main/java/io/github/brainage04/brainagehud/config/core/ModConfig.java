@@ -7,7 +7,6 @@ import io.github.brainage04.brainagehud.config.hud.custom.enchant_info.EnchantIn
 import io.github.brainage04.brainagehud.config.hud.custom.keystrokes.KeystrokesHudConfig;
 import io.github.brainage04.brainagehud.config.other.EnchantInfoConfig;
 import io.github.brainage04.brainagehud.config.other.QualityOfLifeConfig;
-
 import me.shedaniel.autoconfig.ConfigData;
 import me.shedaniel.autoconfig.annotation.Config;
 import me.shedaniel.autoconfig.annotation.ConfigEntry;

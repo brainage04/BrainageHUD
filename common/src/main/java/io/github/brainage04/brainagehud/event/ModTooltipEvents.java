@@ -2,6 +2,8 @@ package io.github.brainage04.brainagehud.event;
 
 import static io.github.brainage04.brainagehud.util.ConfigUtils.getConfig;
 
+import java.util.List;
+import java.util.Set;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponents;
@@ -11,9 +13,6 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.enchantment.ItemEnchantments;
-
-import java.util.List;
-import java.util.Set;
 
 /**
  * Ported from GetEnchantInfo's tooltip callback, which highlights maxed enchantment tooltip lines

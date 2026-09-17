@@ -8,7 +8,7 @@ import com.mojang.brigadier.exceptions.Dynamic2CommandExceptionType;
 import com.mojang.brigadier.exceptions.Dynamic3CommandExceptionType;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
-
+import java.util.concurrent.CompletableFuture;
 import net.minecraft.commands.CommandBuildContext;
 import net.minecraft.commands.SharedSuggestionProvider;
 import net.minecraft.core.Holder;
@@ -20,8 +20,6 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.enchantment.Enchantment;
-
-import java.util.concurrent.CompletableFuture;
 
 /**
  * Ported from GetEnchantInfo's {@code

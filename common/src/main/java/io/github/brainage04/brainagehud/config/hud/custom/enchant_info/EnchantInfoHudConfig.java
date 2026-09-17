@@ -3,7 +3,6 @@ package io.github.brainage04.brainagehud.config.hud.custom.enchant_info;
 import io.github.brainage04.hudrendererlib.config.core.CoreSettings;
 import io.github.brainage04.hudrendererlib.config.core.ElementAnchor;
 import io.github.brainage04.hudrendererlib.config.core.ICoreSettingsContainer;
-
 import me.shedaniel.autoconfig.annotation.ConfigEntry;
 
 @SuppressWarnings("CanBeFinal")

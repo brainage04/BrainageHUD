@@ -4,12 +4,10 @@ import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.builder.RequiredArgumentBuilder;
-
 import io.github.brainage04.brainagehud.command.BlacklistedEnchantsCommand;
 import io.github.brainage04.brainagehud.command.GetEnchantInfoCommand;
 import io.github.brainage04.brainagehud.command.GetEnchantsCommand;
 import io.github.brainage04.brainagehud.command.core.argument.ClientHolderReferenceArgumentType;
-
 import net.minecraft.commands.CommandBuildContext;
 import net.minecraft.commands.SharedSuggestionProvider;
 import net.minecraft.core.Holder;

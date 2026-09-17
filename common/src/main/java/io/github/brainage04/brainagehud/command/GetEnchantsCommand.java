@@ -1,9 +1,10 @@
 package io.github.brainage04.brainagehud.command;
 
 import com.mojang.datafixers.util.Pair;
-
 import io.github.brainage04.brainagehud.util.EnchantmentUtils;
-
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.commands.SharedSuggestionProvider;
@@ -14,10 +15,6 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.enchantment.Enchantment;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
 
 /** Ported from GetEnchantInfo's {@code io.github.brainage04.commands.GetEnchantsCommand}. */
 public class GetEnchantsCommand {
