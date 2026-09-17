@@ -7,9 +7,5 @@ workspaceDependencies {
 
 dependencies {
 	implementation "me.shedaniel.cloth:cloth-config-neoforge:${rootProject.cloth_config_version}"
-	if (providers.gradleProperty('use_local_hudrendererlib').map { it.toBoolean() }.getOrElse(false)) {
-		implementation "io.github.brainage04:hudrendererlib-neoforge:${rootProject.hudrendererlib_version}"
-	} else {
-		implementation "github.brainage04:hudrendererlib-neoforge:${rootProject.hudrendererlib_version}"
-	}
+	implementation "io.github.brainage04:hudrendererlib-neoforge:${rootProject.hudrendererlib_version}"
 }

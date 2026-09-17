@@ -6,10 +6,6 @@ workspaceDependencies {
 }
 
 dependencies {
-	if (providers.gradleProperty('use_local_hudrendererlib').map { it.toBoolean() }.getOrElse(false)) {
-		compileOnly "io.github.brainage04:hudrendererlib:${rootProject.hudrendererlib_version}"
-	} else {
-		compileOnly "github.brainage04:hudrendererlib:${rootProject.hudrendererlib_version}"
-	}
+	compileOnly "io.github.brainage04:hudrendererlib:${rootProject.hudrendererlib_version}"
 	implementation "me.shedaniel.cloth:cloth-config:${rootProject.cloth_config_version}"
 }
