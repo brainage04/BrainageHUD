@@ -1,16 +1,11 @@
-plugins {
-	id 'dev.architectury.loom-no-remap'
-	id 'dev.architectury.loom'
-}
-
-
-loom {
-	accessWidenerPath = project.file('src/main/resources/brainagehud.accesswidener')
+workspaceDependencies {
+	siblingMaven('HudRendererLib') {
+		coordinate.set("io.github.brainage04:hudrendererlib:${rootProject.hudrendererlib_version}")
+		siblingDirectory.set(rootProject.layout.projectDirectory.dir('../HudRendererLib'))
+	}
 }
 
 dependencies {
-	minecraft "com.mojang:minecraft:${rootProject.minecraft_version}"
-	compileOnly "net.fabricmc:fabric-loader:${rootProject.loader_version}"
 	compileOnly "io.github.brainage04:hudrendererlib:${rootProject.hudrendererlib_version}"
 	implementation "me.shedaniel.cloth:cloth-config:${rootProject.cloth_config_version}"
 }
