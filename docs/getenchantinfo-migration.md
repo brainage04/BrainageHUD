@@ -11,7 +11,7 @@ under [Not yet equivalent / deliberate differences](#not-yet-equivalent--deliber
 | --- | --- | --- |
 | `common/.../GetEnchantInfo.java` (mod entry, tooltip callback) | `common/.../event/ModTooltipEvents.java` | Only the tooltip highlighting callback was kept; command/config/loader registration moved to the places BrainageHUD already registers those. |
 | `common/.../commands/GetEnchantInfoCommand.java` | `common/.../command/GetEnchantInfoCommand.java` | Logic unchanged. |
-| `common/.../commands/GetEnchantsCommand.java` | `common/.../command/GetEnchantsCommand.java` | Logic unchanged. |
+| `common/.../commands/GetEnchantsCommand.java` | `common/.../command/GetEnchantsCommand.java` | Conflicts are listed as groups (`EnchantmentUtils.groupConflictingEnchantments`, shared with the HUD) instead of one line per conflicting pair. |
 | `common/.../commands/BlacklistedEnchantsCommand.java` | `common/.../command/BlacklistedEnchantsCommand.java` | Blacklist is now persisted through BrainageHUD's config (`ConfigUtils.saveConfig()`); `enchantmentId(holder)` was folded into `EnchantmentUtils.getEnchantmentId`. |
 | `common/.../commands/core/ModCommands.java` | `common/.../command/core/ModCommands.java` | Now a static `registerClientCommands(CommandDispatcher<S>, CommandBuildContext)` that both loaders call; no `ClientPlatform` abstraction and no raw `CommandDispatcher` casts, because both loaders' command sources implement `SharedSuggestionProvider`. |
 | `common/.../commands/core/argument/ClientHolderReferenceArgumentType.java` | `common/.../command/core/argument/ClientHolderReferenceArgumentType.java` | The two `getHolder`/`getEnchantment`/`getItem` helpers are generic over the command source type instead of being typed to `SharedSuggestionProvider`. |
@@ -21,8 +21,7 @@ under [Not yet equivalent / deliberate differences](#not-yet-equivalent--deliber
 | `fabric/.../GetEnchantInfoFabric.java` | `fabric/.../fabric/BrainageHUDFabric.java` | Fabric entrypoint now registers the enchant commands and the item tooltip callback. |
 | `neoforge/.../GetEnchantInfoNeoForge.java` | `neoforge/.../neoforge/BrainageHUDNeoForge.java` | NeoForge entrypoint now registers the enchant commands and the item tooltip callback. |
 
-The Fabric-only `fabric/.../command/core/ModCommands.java` that used to register `/fullbright` was removed: the Fabric
-entrypoint registers the ported commands from the shared class and `/fullbright` from `FullbrightCommand` itself.
+`/fullbright` is registered for both loaders by the shared `ModCommands`, next to the ported commands.
 
 ## Commands
 
@@ -33,8 +32,8 @@ All three commands exist with unchanged names, namespaces and output:
   match is used directly, several matches list names plus IDs, no match reports "No potential matches found!". The
   argument is read as a quoted/plain string exactly as before.
 - `/getenchants` – acceptable enchantments for the held item.
-- `/getenchants <item>` – acceptable enchantments for an item ID (conflicting pairs are listed separately from
-  conflict-free enchantments, blacklisted enchantments are filtered out).
+- `/getenchants <item>` – acceptable enchantments for an item ID (groups of conflicting enchantments are listed
+  separately from conflict-free enchantments, blacklisted enchantments are filtered out).
 - `/blacklistedenchants query` / `add <enchantmentId>` / `remove <enchantmentId>` – blacklist management, with the same
   feedback messages; `add`/`remove` write through to `config/brainagehud.json`.
 

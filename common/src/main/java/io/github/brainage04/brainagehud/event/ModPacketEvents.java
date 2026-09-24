@@ -1,35 +1,40 @@
 package io.github.brainage04.brainagehud.event;
 
-import io.github.brainage04.brainagehud.util.TimerUtils;
-
-import java.util.ArrayList;
-import java.util.List;
+import io.github.brainage04.brainagehud.util.RollingAverage;
+import io.github.brainage04.brainagehud.util.TickRateTracker;
 
 import static io.github.brainage04.brainagehud.util.ConfigUtils.getConfig;
 
+/** Network statistics derived from packets the client receives. */
 public class ModPacketEvents {
-    private static boolean packetReceivedThisTick = false;
-    private static int packetsThisSecond = 0;
-    private static final List<Integer> tpsList = new ArrayList<>();
-    public static final List<Long> pingList = new ArrayList<>();
+    private static final RollingAverage PING = new RollingAverage();
+    private static final TickRateTracker TICK_RATE = new TickRateTracker();
 
-    public static void onClientTick() {
-        if (!getConfig().networkHudConfig.showTps) return;
-
-        if (packetReceivedThisTick) {
-            packetReceivedThisTick = false;
-            packetsThisSecond++;
-        }
-
-        if (ModTickEvents.getTicks() % getConfig().networkHudConfig.updateTpsTickInterval == 0) {
-            if (tpsList.size() >= getConfig().networkHudConfig.tpsIntervalsTracked) tpsList.removeFirst();
-            tpsList.add(packetsThisSecond);
-            packetsThisSecond = 0;
-            TimerUtils.tps = tpsList.stream().mapToInt(Integer::intValue).average().orElse(20.0) * 20.0 / getConfig().networkHudConfig.updateTpsTickInterval;
-        }
+    /** Called on the render thread when the client joins a world. */
+    public static void onLogin() {
+        PING.clear();
+        TICK_RATE.reset();
     }
 
-    public static void onPacket() {
-        packetReceivedThisTick = true;
+    /** Called on the network thread with the round trip time of a ping. */
+    public static void onPong(long roundTripMillis) {
+        PING.add(roundTripMillis, getConfig().networkHudConfig.pingIntervalsTracked);
+    }
+
+    /** Called on the render thread when the server reports its game time. */
+    public static void onServerGameTime(long gameTime) {
+        TICK_RATE.record(gameTime, System.nanoTime(), getConfig().networkHudConfig.tpsIntervalsTracked);
+    }
+
+    public static long getPing() {
+        return PING.mean();
+    }
+
+    public static boolean hasTps() {
+        return TICK_RATE.hasRate();
+    }
+
+    public static double getTps() {
+        return TICK_RATE.ticksPerSecond();
     }
 }

@@ -2,16 +2,34 @@ package io.github.brainage04.brainagehud.test;
 
 import io.github.brainage04.brainagehud.BrainageHUD;
 import io.github.brainage04.brainagehud.config.core.ModConfig;
+import io.github.brainage04.brainagehud.event.ModClickEvents;
+import io.github.brainage04.brainagehud.hud.FishingHud;
+import io.github.brainage04.brainagehud.hud.FoodHud;
+import io.github.brainage04.brainagehud.hud.NetworkHud;
 import io.github.brainage04.brainagehud.hud.PositionHud;
+import io.github.brainage04.brainagehud.hud.ProjectileHud;
 import io.github.brainage04.brainagehud.hud.custom.EnchantInfoHud;
+import io.github.brainage04.brainagehud.screen.WaypointsScreen;
 import io.github.brainage04.brainagehud.util.ConfigUtils;
+import io.github.brainage04.brainagehud.waypoint.Waypoint;
+import io.github.brainage04.brainagehud.waypoint.WaypointActions;
+import io.github.brainage04.brainagehud.waypoint.WaypointStore;
+import io.github.brainage04.hudrendererlib.HudRendererLib;
+import io.github.brainage04.hudrendererlib.hud.core.HudElementEditor;
+import io.github.brainage04.hudrendererlib.hud.core.HudRenderer;
 import io.github.brainage04.fabricmoddingconventions.ClientGameTestRecorder;
 import io.github.brainage04.fabricmoddingconventions.ClientGameTestServers;
 import net.fabricmc.fabric.api.client.gametest.v1.FabricClientGameTest;
 import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext;
 
+import net.minecraft.client.KeyMapping;
+import org.lwjgl.glfw.GLFW;
+import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.Minecraft;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerPlayer;
@@ -19,8 +37,10 @@ import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.enchantment.Enchantment;
+import net.minecraft.world.level.block.Blocks;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 
 @SuppressWarnings("UnstableApiUsage")
@@ -36,6 +56,13 @@ public final class BrainageHUDClientGameTest implements FabricClientGameTest {
 				ClientGameTestServers.assertClientWorldAndPlayerAvailable(context);
 				context.waitTicks(40);
 
+				context.runOnClient(client -> client.gui.setScreen(new HudElementEditor()));
+				context.waitTicks(5);
+				// leaving the editor with Escape reloads the configs from disk, replacing every config object,
+				// so it runs before the showcase configures them
+				context.runOnClient(client -> ((HudElementEditor) client.gui.screen()).closeWithoutSaving());
+				context.waitTicks(5);
+				context.runOnClient(client -> assertEditorKnowsEveryElement());
 				configSnapshot = context.computeOnClient(client -> configureAndAssertShowcase());
 				ClientGameTestRecorder.startRecording(context);
 
@@ -54,6 +81,8 @@ public final class BrainageHUDClientGameTest implements FabricClientGameTest {
 						"Performance, network, reach, and toggle-sprint HUDs remain visible against the local dedicated-server fixture."
 				);
 				context.waitTicks(60);
+				// the dedicated server has reported its game time every second for several seconds by now
+				context.runOnClient(client -> assertNetworkHudShowsServerTps());
 
 				ClientGameTestRecorder.showStep(
 						context,
@@ -61,7 +90,13 @@ public final class BrainageHUDClientGameTest implements FabricClientGameTest {
 						"Armor and keystrokes HUDs",
 						"The equipped diamond armor and main-hand tool populate Armor Info while the WASD, space, and mouse controls populate Keystrokes."
 				);
-				context.waitTicks(100);
+				context.waitTicks(40);
+				// three separate attack clicks, well within one second, whatever the frame rate
+				for (int click = 0; click < 3; click++) {
+					context.getInput().pressKey(options -> options.keyAttack);
+				}
+				context.runOnClient(client -> assertAttackClicksCounted(3));
+				context.waitTicks(60);
 
 				ClientGameTestRecorder.showStep(
 						context,
@@ -72,12 +107,94 @@ public final class BrainageHUDClientGameTest implements FabricClientGameTest {
 				context.waitTicks(60);
 				context.runOnClient(client -> assertEnchantInfoHudShowsHeldItem());
 				System.out.println("[STDOUT]: Enchant info HUD screenshot: " + context.takeScreenshot("enchant-info-hud"));
+
+				context.runOnClient(client -> assertModKeysHaveTheirOwnCategory());
+
+				ClientGameTestRecorder.showStep(
+						context,
+						"inventory-trackers",
+						"Motion, entity and inventory trackers",
+						"The Projectile HUD counts 96 arrows over two slots and 16 ender pearls, and the Food HUD lists the bread and steak in inventory order."
+				);
+				context.runOnClient(client -> {
+					assertHudLines("Projectile", new ProjectileHud().getLines(), List.of("Arrows: 96 [64, 32]", "Ender Pearls: 16"));
+					assertHudLines("Food", new FoodHud().getLines(), List.of("Bread: 12", "Steak: 5"));
+				});
+				System.out.println("[STDOUT]: Inventory trackers screenshot: " + context.takeScreenshot("inventory-trackers"));
+
+				ClientGameTestRecorder.showStep(
+						context,
+						"waypoints",
+						"Waypoints",
+						"The Create Waypoint key saves a waypoint where the player stands and the Manage Waypoints key opens the waypoint screen."
+				);
+				context.getInput().pressKey(KeyMapping.get("key.brainagehud.createWaypoint"));
+				context.waitTicks(20);
+				context.runOnClient(client -> assertQuickWaypointCreated());
+				context.getInput().pressKey(KeyMapping.get("key.brainagehud.manageWaypoints"));
+				context.waitTicks(40);
+				context.runOnClient(client -> {
+					if (!(client.gui.screen() instanceof WaypointsScreen)) {
+						throw new AssertionError("Expected the Manage Waypoints key to open the waypoint screen, but the screen is " + client.gui.screen() + ".");
+					}
+				});
+				// the World Centre is listed first; selecting it allows Hide but not Edit or Delete
+				clickAt(context, context.computeOnClient(client -> client.getWindow().getGuiScaledWidth() / 2), 40);
+				context.runOnClient(client -> assertButtons(client, Map.of("Edit", false, "Delete", false, "Hide", true)));
+				System.out.println("[STDOUT]: Waypoints screen screenshot: " + context.takeScreenshot("waypoints-screen"));
+				clickButton(context, "Hide");
+				context.runOnClient(client -> {
+					if (ConfigUtils.getConfig().waypointConfig.showWorldCentre) {
+						throw new AssertionError("Expected Hide on the World Centre to turn Show World Centre off.");
+					}
+					assertButtons(client, Map.of("Show", true));
+				});
+				clickButton(context, "Show");
+				context.runOnClient(client -> {
+					if (!ConfigUtils.getConfig().waypointConfig.showWorldCentre) {
+						throw new AssertionError("Expected Show on the World Centre to turn Show World Centre back on.");
+					}
+				});
+				context.runOnClient(client -> client.gui.setScreen(null));
+				context.waitTicks(20);
+
+				ClientGameTestRecorder.showStep(
+						context,
+						"waypoints-in-world",
+						"Waypoints in the world",
+						"From twelve blocks away the new waypoint shows its beam, gem, ground pulse and name label; a waypoint 300 blocks away shows a beam and its distance, and the white World Centre beacon stands at 0, 63, 0. Every beam spans the whole height of the world."
+				);
+				context.runOnClient(client -> WaypointActions.create("Far Base", new BlockPos(100, -60, 300)));
+				server.runOnServer(minecraftServer -> {
+					ServerPlayer player = minecraftServer.getPlayerList().getPlayers().getFirst();
+					player.teleportTo(12.5D, -60.0D, -20.5D);
+					player.setYRot(0.0F);
+					player.setXRot(0.0F);
+				});
+				context.waitTicks(60);
+				System.out.println("[STDOUT]: Waypoints in world screenshot: " + context.takeScreenshot("waypoints-in-world"));
+				context.runOnClient(client -> WaypointActions.remove("Far Base"));
+				server.runOnServer(minecraftServer -> minecraftServer.getPlayerList().getPlayers().getFirst().teleportTo(12.5D, -60.0D, -8.5D));
+				context.waitTicks(20);
+
+				ClientGameTestRecorder.showStep(
+						context,
+						"fishing",
+						"Fishing HUD",
+						"The Fishing HUD stays empty until the bobber is cast, then reports open water and possible treasure for a bobber in a wide, deep pool."
+				);
+				context.runOnClient(client -> assertFishingHudLines(List.of()));
+				context.getInput().pressKey(options -> options.keyHotbarSlots[1]);
+				context.waitTicks(5);
+				context.getInput().pressKey(options -> options.keyUse);
+				context.waitTicks(60);
+				context.runOnClient(client -> assertFishingHudLines(List.of("Open water: yes", "Treasure: possible")));
+				System.out.println("[STDOUT]: Fishing HUD screenshot: " + context.takeScreenshot("fishing-hud"));
 			} finally {
 				if (configSnapshot != null) {
 					ShowcaseConfigSnapshot snapshotToRestore = configSnapshot;
 					context.runOnClient(client -> snapshotToRestore.restore());
 				}
-				;
 			} });
 	}
 
@@ -95,6 +212,17 @@ public final class BrainageHUDClientGameTest implements FabricClientGameTest {
 		player.setItemSlot(EquipmentSlot.CHEST, new ItemStack(Items.DIAMOND_CHESTPLATE));
 		player.setItemSlot(EquipmentSlot.LEGS, new ItemStack(Items.DIAMOND_LEGGINGS));
 		player.setItemSlot(EquipmentSlot.FEET, new ItemStack(Items.DIAMOND_BOOTS));
+		player.getInventory().setItem(1, new ItemStack(Items.FISHING_ROD));
+		player.getInventory().setItem(2, new ItemStack(Items.ARROW, 64));
+		player.getInventory().setItem(20, new ItemStack(Items.ARROW, 32));
+		player.getInventory().setItem(3, new ItemStack(Items.ENDER_PEARL, 16));
+		player.getInventory().setItem(4, new ItemStack(Items.BREAD, 12));
+		player.getInventory().setItem(21, new ItemStack(Items.COOKED_BEEF, 5));
+		// a pool wide and deep enough for open water wherever the cast lands: its water surface is
+		// the flat world's grass layer, south of the player who faces south
+		for (BlockPos pos : BlockPos.betweenClosed(4, -62, -7, 20, -61, 16)) {
+			player.level().setBlockAndUpdate(pos, Blocks.WATER.defaultBlockState());
+		}
 		player.teleportTo(12.5D, -60.0D, -8.5D);
 		player.setYRot(0.0F);
 		player.setXRot(0.0F);
@@ -128,17 +256,15 @@ public final class BrainageHUDClientGameTest implements FabricClientGameTest {
 			config.keystrokesHudConfig.showWasd = true;
 			config.keystrokesHudConfig.showSpace = true;
 			config.keystrokesHudConfig.showMouseButtons = true;
+			config.fishingHudConfig.coreSettings.enabled = true;
+			config.motionHudConfig.coreSettings.enabled = true;
+			config.entityHudConfig.coreSettings.enabled = true;
+			config.projectileHudConfig.coreSettings.enabled = true;
+			config.projectileHudConfig.showSlotCounts = true;
+			config.foodHudConfig.coreSettings.enabled = true;
+			config.waypointConfig.showInWorld = true;
 
-			if (!config.positionHudConfig.coreSettings.enabled
-					|| !config.positionHudConfig.cCounter
-					|| !config.armourInfoHudConfig.coreSettings.enabled
-					|| !config.armourInfoHudConfig.showMainHand
-					|| !config.keystrokesHudConfig.coreSettings.enabled
-					|| !config.keystrokesHudConfig.showWasd) {
-				throw new AssertionError("Expected the basic and custom HUD showcase registrations to expose enabled configuration.");
-			}
-
-			assertPositionHudShowsCorrectedCounters();
+			assertPositionHudShowsFixture();
 			return snapshot;
 		} catch (RuntimeException | Error exception) {
 			snapshot.restore();
@@ -167,6 +293,13 @@ public final class BrainageHUDClientGameTest implements FabricClientGameTest {
 		private final boolean showWasd;
 		private final boolean showSpace;
 		private final boolean showMouseButtons;
+		private final boolean fishingEnabled;
+		private final boolean motionEnabled;
+		private final boolean entityEnabled;
+		private final boolean projectileEnabled;
+		private final boolean projectileSlotCounts;
+		private final boolean foodEnabled;
+		private final boolean waypointEnabled;
 
 		private ShowcaseConfigSnapshot(ModConfig config) {
 			this.config = config;
@@ -189,6 +322,13 @@ public final class BrainageHUDClientGameTest implements FabricClientGameTest {
 			showWasd = config.keystrokesHudConfig.showWasd;
 			showSpace = config.keystrokesHudConfig.showSpace;
 			showMouseButtons = config.keystrokesHudConfig.showMouseButtons;
+			fishingEnabled = config.fishingHudConfig.coreSettings.enabled;
+			motionEnabled = config.motionHudConfig.coreSettings.enabled;
+			entityEnabled = config.entityHudConfig.coreSettings.enabled;
+			projectileEnabled = config.projectileHudConfig.coreSettings.enabled;
+			projectileSlotCounts = config.projectileHudConfig.showSlotCounts;
+			foodEnabled = config.foodHudConfig.coreSettings.enabled;
+			waypointEnabled = config.waypointConfig.showInWorld;
 		}
 
 		private void restore() {
@@ -211,20 +351,137 @@ public final class BrainageHUDClientGameTest implements FabricClientGameTest {
 			config.keystrokesHudConfig.showWasd = showWasd;
 			config.keystrokesHudConfig.showSpace = showSpace;
 			config.keystrokesHudConfig.showMouseButtons = showMouseButtons;
+			config.fishingHudConfig.coreSettings.enabled = fishingEnabled;
+			config.motionHudConfig.coreSettings.enabled = motionEnabled;
+			config.entityHudConfig.coreSettings.enabled = entityEnabled;
+			config.projectileHudConfig.coreSettings.enabled = projectileEnabled;
+			config.projectileHudConfig.showSlotCounts = projectileSlotCounts;
+			config.foodHudConfig.coreSettings.enabled = foodEnabled;
+			config.waypointConfig.showInWorld = waypointEnabled;
 		}
 	}
 
-	private static void assertPositionHudShowsCorrectedCounters() {
-		PositionHud positionHud = new PositionHud();
-		boolean hasPosition = positionHud.getLines().stream()
-				.map(line -> line.getString())
-				.anyMatch(line -> line.startsWith("X: 12.5"));
-		boolean hasCCounter = positionHud.getLines().stream()
-				.map(line -> line.getString())
-				.anyMatch(line -> line.startsWith("C: "));
+	/** Clicks at GUI-scaled coordinates. */
+	private static void clickAt(ClientGameTestContext context, int x, int y) {
+		int scale = context.computeOnClient(client -> client.getWindow().getGuiScale());
+		context.getInput().setCursorPos(x * scale + scale / 2.0D, y * scale + scale / 2.0D);
+		context.getInput().pressMouse(GLFW.GLFW_MOUSE_BUTTON_LEFT);
+		context.waitTicks(2);
+	}
 
-		if (!hasPosition || !hasCCounter) {
-			throw new AssertionError("Expected Position HUD to show the fixture position and corrected rendered-section C-counter.");
+	private static void clickButton(ClientGameTestContext context, String label) {
+		Button button = context.computeOnClient(client -> findButton(client, label));
+		clickAt(context, button.getX() + button.getWidth() / 2, button.getY() + button.getHeight() / 2);
+	}
+
+	private static Button findButton(Minecraft client, String label) {
+		return client.gui.screen().children().stream()
+				.filter(child -> child instanceof Button button && button.getMessage().getString().equals(label))
+				.map(Button.class::cast)
+				.findFirst()
+				.orElseThrow(() -> new AssertionError("Expected a " + label + " button on " + client.gui.screen() + "."));
+	}
+
+	private static void assertButtons(Minecraft client, Map<String, Boolean> expectedActive) {
+		expectedActive.forEach((label, active) -> {
+			if (findButton(client, label).active != active) {
+				throw new AssertionError("Expected the " + label + " button to be " + (active ? "active" : "inactive") + " with the World Centre selected.");
+			}
+		});
+	}
+
+	private static void assertEditorKnowsEveryElement() {
+		for (var element : HudRenderer.REGISTERED_ELEMENTS) {
+			int id = element.getElementConfig().getCoreSettings().elementId;
+			if (!HudElementEditor.CORE_SETTINGS_ELEMENTS.containsKey(id)) {
+				throw new AssertionError("Expected the element editor to know " + element.getElementConfig().getCoreSettings().elementName
+						+ " (ID " + id + ") after reloading the configs, but it only knows " + HudElementEditor.CORE_SETTINGS_ELEMENTS.keySet() + ".");
+			}
+		}
+	}
+
+	private static void assertModKeysHaveTheirOwnCategory() {
+		KeyMapping.Category brainageHud = HudRendererLib.getKeyCategory(BrainageHUD.MOD_ID);
+		for (String key : List.of("key.brainagehud.openConfig", "key.brainagehud.createWaypoint", "key.brainagehud.manageWaypoints", "key.brainagehud.inventoryStats")) {
+			KeyMapping.Category category = KeyMapping.get(key).getCategory();
+			if (category != brainageHud) {
+				throw new AssertionError("Expected " + key + " in BrainageHUD's key category, but it is in " + category.id() + ".");
+			}
+		}
+		if (KeyMapping.get("key.hudrendererlib.openConfig").getCategory() != HudRendererLib.KEY_CATEGORY) {
+			throw new AssertionError("Expected HudRendererLib's own config key to stay in HudRendererLib's category.");
+		}
+		String title = brainageHud.label().getString();
+		if (!title.equals("BrainageHUD")) {
+			throw new AssertionError("Expected BrainageHUD's key category to be titled \"BrainageHUD\", but it is \"" + title + "\".");
+		}
+	}
+
+	private static void assertQuickWaypointCreated() {
+		List<Waypoint> waypoints = WaypointStore.current()
+				.orElseThrow(() -> new AssertionError("Expected waypoints to be available in a world."));
+		if (waypoints.size() != 1 || !waypoints.getFirst().name.equals("Waypoint 1")) {
+			throw new AssertionError("Expected the Create Waypoint key to create \"Waypoint 1\", but the waypoints are " + waypoints.stream().map(waypoint -> waypoint.name).toList() + ".");
+		}
+		BlockPos pos = waypoints.getFirst().pos();
+		if (!pos.equals(new BlockPos(12, -60, -9))) {
+			throw new AssertionError("Expected \"Waypoint 1\" where the player stands, at 12, -60, -9, but it is at " + pos.toShortString() + ".");
+		}
+	}
+
+	private static void assertHudLines(String hud, List<Component> actual, List<String> expected) {
+		List<String> lines = actual.stream().map(Component::getString).toList();
+		if (!lines.equals(expected)) {
+			throw new AssertionError("Expected the " + hud + " HUD to show " + expected + ", but got " + lines + ".");
+		}
+	}
+
+	private static void assertFishingHudLines(List<String> expected) {
+		List<String> lines = new FishingHud().getLines().stream().map(line -> line.getString()).toList();
+		if (!lines.equals(expected)) {
+			throw new AssertionError("Expected the Fishing HUD to show " + expected + ", but got " + lines + ".");
+		}
+	}
+
+	private static void assertPositionHudShowsFixture() {
+		List<String> lines = new PositionHud().getLines().stream()
+				.map(line -> line.getString())
+				.toList();
+		boolean hasPosition = lines.stream().anyMatch(line -> line.startsWith("X: 12.5"));
+		boolean hasCCounter = lines.stream().anyMatch(line -> line.startsWith("C: "));
+		// the fixture player faces yaw 0, which is south
+		boolean facesSouth = lines.stream().anyMatch(line -> line.startsWith("S (+Z)"));
+
+		if (!hasPosition || !hasCCounter || !facesSouth) {
+			throw new AssertionError("Expected Position HUD to show the fixture position, rendered-section C-counter and south-facing direction, but got " + lines + ".");
+		}
+	}
+
+	private static void assertNetworkHudShowsServerTps() {
+		List<String> lines = new NetworkHud().getLines().stream()
+				.map(line -> line.getString())
+				.toList();
+		String tpsLine = lines.stream()
+				.filter(line -> line.startsWith("TPS: "))
+				.findFirst()
+				.orElseThrow(() -> new AssertionError("Expected Network HUD to show TPS, but got " + lines + "."));
+		double tps;
+		try {
+			tps = Double.parseDouble(tpsLine.substring("TPS: ".length()).replace(',', '.'));
+		} catch (NumberFormatException exception) {
+			throw new AssertionError("Expected a measured TPS after several server time reports, but got " + lines + ".", exception);
+		}
+
+		// an idle local server ticks at its 20 TPS target; the lower bound allows for a slow CI machine
+		if (tps < 10.0D || tps > 20.0D) {
+			throw new AssertionError("Expected the idle dedicated server to measure close to 20 TPS, but got " + lines + ".");
+		}
+	}
+
+	private static void assertAttackClicksCounted(int expectedClicks) {
+		int clicks = ModClickEvents.getAttackClicksPerSecond();
+		if (clicks != expectedClicks) {
+			throw new AssertionError("Expected " + expectedClicks + " attack clicks in the last second, but counted " + clicks + ".");
 		}
 	}
 

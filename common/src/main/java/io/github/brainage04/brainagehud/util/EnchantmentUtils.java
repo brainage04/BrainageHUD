@@ -1,18 +1,14 @@
 package io.github.brainage04.brainagehud.util;
 
-import com.mojang.datafixers.util.Pair;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Deque;
-import java.util.Iterator;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
-import net.minecraft.core.Registry;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.tags.EnchantmentTags;
@@ -22,31 +18,22 @@ import net.minecraft.world.item.enchantment.ItemEnchantments;
 
 /** Ported from GetEnchantInfo's {@code io.github.brainage04.util.EnchantmentUtils}. */
 public class EnchantmentUtils {
-    public static Component getEnchantmentName(
-            Registry<Enchantment> enchantmentRegistry,
-            Enchantment enchantment,
-            ItemStack itemStack) {
-        Holder<Enchantment> enchantmentHolder = enchantmentRegistry.wrapAsHolder(enchantment);
-        MutableComponent text = Component.empty();
-        Component enchantmentName =
-                Enchantment.getFullname(enchantmentHolder, enchantment.getMaxLevel());
+    /** The enchantment at its maximum level, followed by the level already on {@code itemStack}. */
+    public static Component getEnchantmentName(Holder<Enchantment> enchantmentHolder, ItemStack itemStack) {
+        int maxLevel = enchantmentHolder.value().getMaxLevel();
+        Component enchantmentName = Enchantment.getFullname(enchantmentHolder, maxLevel);
+        int currentLevel = itemStack.getEnchantments().getLevel(enchantmentHolder);
 
-        if (itemStack.getEnchantments().keySet().contains(enchantmentHolder)) {
-            int currentLevel = itemStack.getEnchantments().getLevel(enchantmentHolder);
+        if (currentLevel <= 0) return enchantmentName;
 
-            if (currentLevel == enchantment.getMaxLevel()) {
-                text = text.append("You already have ").append(enchantmentName);
-            } else {
-                text =
-                        text.append(enchantmentName)
-                                .append(" - you have ")
-                                .append(Enchantment.getFullname(enchantmentHolder, currentLevel));
-            }
-        } else {
-            text = text.append(enchantmentName);
+        if (currentLevel == maxLevel) {
+            return Component.empty().append("You already have ").append(enchantmentName);
         }
 
-        return text;
+        return Component.empty()
+                .append(enchantmentName)
+                .append(" - you have ")
+                .append(Enchantment.getFullname(enchantmentHolder, currentLevel));
     }
 
     public static MutableComponent getEnchantmentName(Holder<Enchantment> enchantmentHolder) {
@@ -58,30 +45,14 @@ public class EnchantmentUtils {
         return enchantmentHolder.value().description().copy().withStyle(formatting);
     }
 
-    public static <T> List<Set<T>> conflictPairs(List<Pair<T, T>> pairs) {
-        List<Set<T>> conflicts = new ArrayList<>(pairs.size());
-        for (Pair<T, T> pair : pairs) {
-            Set<T> conflict = new LinkedHashSet<>(2);
-            conflict.add(pair.getFirst());
-            conflict.add(pair.getSecond());
-            conflicts.add(conflict);
-        }
-        return conflicts;
-    }
-
     public static Component joinEnchantmentNames(
-            Registry<Enchantment> enchantmentRegistry,
-            Set<Enchantment> enchantments,
-            ItemStack itemStack) {
+            List<? extends Holder<Enchantment>> enchantments, ItemStack itemStack) {
         MutableComponent text = Component.empty();
 
-        Iterator<Enchantment> iterator = enchantments.iterator();
-        while (iterator.hasNext()) {
-            Enchantment enchantment = iterator.next();
+        for (int i = 0; i < enchantments.size(); i++) {
+            if (i > 0) text.append(", ");
 
-            text = text.append(getEnchantmentName(enchantmentRegistry, enchantment, itemStack));
-
-            if (iterator.hasNext()) text = text.append(", ");
+            text.append(getEnchantmentName(enchantments.get(i), itemStack));
         }
 
         return text;

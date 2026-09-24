@@ -8,37 +8,51 @@ import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.Holder;
 import net.minecraft.network.chat.Component;
+import net.minecraft.tags.ItemTags;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.LightLayer;
 import net.minecraft.world.level.biome.Biome;
+
+import java.util.regex.Pattern;
 
 import static io.github.brainage04.brainagehud.util.ConfigUtils.getConfig;
 import static io.github.brainage04.brainagehud.util.MathUtils.roundDecimalPlaces;
 
 public class PositionHud implements BasicCoreHudElement<PositionHudConfig> {
+    // Minecraft yaw 0 faces south (+Z) and increases clockwise: 90 is west, 180/-180 north, -90 east
     private static final String[] YAW_LABEL = {
-            "S (+Z)",          // 0  : [-22.5,  22.5)
-            "SW (-X, +Z)",     // 1  :  [22.5,  67.5)
-            "W (-X)",          // 2  :  [67.5,  112.5)
-            "NW (-X, -Z)",     // 3  :  [112.5, 157.5)
-            "N (-Z)",          // 4  :  [157.5, 180) / [-180,-157.5)
-            "NE (+X, -Z)",     // 5  : [-157.5, -112.5)
-            "E (+X)",          // 6  : [-112.5, -67.5)
-            "SE (+X, +Z)"      // 7  : [-67.5,  -22.5)
+            "S (+Z)",          // 0 : centred on 0
+            "SW (-X, +Z)",     // 1 : centred on 45
+            "W (-X)",          // 2 : centred on 90
+            "NW (-X, -Z)",     // 3 : centred on 135
+            "N (-Z)",          // 4 : centred on 180 / -180
+            "NE (+X, -Z)",     // 5 : centred on 225 / -135
+            "E (+X)",          // 6 : centred on 270 / -90
+            "SE (+X, +Z)"      // 7 : centred on 315 / -45
     };
 
     public static String getYawString(float yaw) {
-        // move normalised range from [-180, 180) to [0, 360)
-        float wrapped = yaw + 180;
+        // shift by half a sector so each label's range starts at a multiple of 45, then wrap to [0, 360)
+        float wrapped = ((yaw + 22.5F) % 360.0F + 360.0F) % 360.0F;
 
-        // rotate by half a sector (45 / 2 = 22.5)
-        wrapped = (wrapped + 22.5f) % 360f;
+        return YAW_LABEL[(int) (wrapped / 45.0F)];
+    }
 
-        // calculate index and return label
-        int index = (int) (wrapped / 45f);
+    /** Words in the names of Hypixel SkyBlock's farming tools, which are not vanilla axes or hoes. */
+    private static final Pattern FARMING_TOOL_NAME = Pattern.compile("\\b(axe|hoe|chopper|dicer|cutter|knife)\\b", Pattern.CASE_INSENSITIVE);
 
-        return YAW_LABEL[index];
+    /** Vanilla axes and hoes, and items named as farming tools (like SkyBlock's Melon Dicer). */
+    private static boolean isFarmingTool(ItemStack stack) {
+        if (stack.isEmpty()) return false;
+        if (stack.is(ItemTags.AXES) || stack.is(ItemTags.HOES)) return true;
+        return isFarmingToolName(stack.getHoverName().getString());
+    }
+
+    /** Whole words only, so that a pickaxe does not count as an axe. */
+    static boolean isFarmingToolName(String name) {
+        return FARMING_TOOL_NAME.matcher(name).find();
     }
 
     @Override
@@ -96,11 +110,16 @@ public class PositionHud implements BasicCoreHudElement<PositionHudConfig> {
 
             float pitch = Mth.wrapDegrees(entity.getXRot());
 
-            if (getElementConfig().showRotation) {
+            if (getElementConfig().showRotation && (!getElementConfig().rotationOnlyWithFarmingTool || isFarmingTool(player.getMainHandItem()))) {
                 yawString += " (%s / %s)".formatted(
                         roundDecimalPlaces(yaw, getElementConfig().rotationDecimalPlaces),
                         roundDecimalPlaces(pitch, getElementConfig().rotationDecimalPlaces)
                 );
+                // the stored yaw keeps winding past ±180 as the player turns
+                float trueYaw = entity.getYRot();
+                if (getElementConfig().showTrueYaw && (trueYaw < -180.0F || trueYaw >= 180.0F)) {
+                    yawString += " [%s]".formatted(roundDecimalPlaces(trueYaw, getElementConfig().rotationDecimalPlaces));
+                }
             }
 
             lines.add(yawString);

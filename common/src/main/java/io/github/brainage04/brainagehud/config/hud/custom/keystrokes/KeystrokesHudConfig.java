@@ -9,7 +9,7 @@ import me.shedaniel.autoconfig.annotation.ConfigEntry;
 public class KeystrokesHudConfig implements ICoreSettingsContainer {
     @ConfigEntry.Gui.CollapsibleObject
     public CoreSettings coreSettings = new CoreSettings("Keystrokes HUD", true, -5, 5, ElementAnchor.TOP_RIGHT);
-    public int keyBackdropOpacity = 100;
+    @ConfigEntry.BoundedDiscrete(min = 0, max = 255) public int keyBackdropOpacity = 100;
     public boolean showWasd = true;
     public boolean showSpace = true;
     public boolean showMouseButtons = true;

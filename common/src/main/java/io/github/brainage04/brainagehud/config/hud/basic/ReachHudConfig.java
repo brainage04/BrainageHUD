@@ -3,13 +3,14 @@ package io.github.brainage04.brainagehud.config.hud.basic;
 import io.github.brainage04.hudrendererlib.config.core.CoreSettings;
 import io.github.brainage04.hudrendererlib.config.core.ICoreSettingsContainer;
 import io.github.brainage04.hudrendererlib.config.core.ElementAnchor;
+import io.github.brainage04.brainagehud.util.MathUtils;
 import me.shedaniel.autoconfig.annotation.ConfigEntry;
 
 @SuppressWarnings("CanBeFinal")
 public class ReachHudConfig implements ICoreSettingsContainer {
     @ConfigEntry.Gui.CollapsibleObject
     public CoreSettings coreSettings = new CoreSettings("Reach HUD", true, 0, 30, ElementAnchor.CENTER);
-    public int decimalPlaces = 2;
+    @ConfigEntry.BoundedDiscrete(min = 0, max = MathUtils.MAX_DECIMAL_PLACES) public int decimalPlaces = 2;
     public boolean showName = true;
     public boolean showCoordinates = true;
     public boolean updateOnAttackClick = false;

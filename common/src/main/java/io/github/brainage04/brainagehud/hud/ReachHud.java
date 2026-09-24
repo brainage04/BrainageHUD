@@ -58,8 +58,10 @@ public class ReachHud implements BasicCoreHudElement<ReachHudConfig> {
                 BlockHitResult blockHitResult = (BlockHitResult) hitResult;
                 Block block = world.getBlockState(blockHitResult.getBlockPos()).getBlock();
 
-                if (block != null && block != Blocks.AIR && config.showName) {
-                    lines.add(block.getName().getString());
+                if (block != null && block != Blocks.AIR) {
+                    if (config.showName) {
+                        lines.add(block.getName().getString());
+                    }
 
                     if (config.showCoordinates) {
                         lines.add(blockHitResult.getBlockPos().toShortString());
@@ -71,10 +73,10 @@ public class ReachHud implements BasicCoreHudElement<ReachHudConfig> {
 
                 if (config.showName) {
                     lines.add(entity.getName().getString());
+                }
 
-                    if (config.showCoordinates) {
-                        lines.add(entity.blockPosition().toShortString());
-                    }
+                if (config.showCoordinates) {
+                    lines.add(entity.blockPosition().toShortString());
                 }
             }
 

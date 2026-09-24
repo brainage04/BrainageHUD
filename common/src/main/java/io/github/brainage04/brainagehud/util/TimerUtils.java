@@ -3,36 +3,38 @@ package io.github.brainage04.brainagehud.util;
 import java.time.Duration;
 import net.minecraft.client.Minecraft;
 
+/** Throttled GPU and CPU usage readings. Used only on the render thread. */
 public class TimerUtils {
-    public static long GPU_USAGE = 0;
-    public static long GPU_LAST_UPDATED = System.currentTimeMillis();
+    private static long gpuUsage = 0;
+    private static long gpuLastUpdated = System.currentTimeMillis();
 
-    public static long CPU_USAGE = 0;
-    public static long CPU_LAST_UPDATED = System.currentTimeMillis();
+    private static long cpuUsage = 0;
+    private static long cpuLastUpdated = System.currentTimeMillis();
     private static long cpuTimeNanos = getProcessCpuTimeNanos();
 
-    public static volatile long ping = 0;
-    public static volatile double tps = 0;
-
-    public static void updateGpuUsage(int millisecondsBetweenUpdates) {
+    /** The GPU usage percentage, refreshed at most once per {@code millisecondsBetweenUpdates}. */
+    public static long getGpuUsage(int millisecondsBetweenUpdates) {
         long now = System.currentTimeMillis();
-        if (now - GPU_LAST_UPDATED <= millisecondsBetweenUpdates) return;
+        if (now - gpuLastUpdated > millisecondsBetweenUpdates) {
+            gpuUsage = (long) Minecraft.getInstance().getGpuUtilization();
+            gpuLastUpdated = now;
+        }
 
-        GPU_USAGE = (long) Minecraft.getInstance().getGpuUtilization();
-        GPU_LAST_UPDATED = now;
+        return gpuUsage;
     }
 
-    public static void updateCpuUsage(int millisecondsBetweenUpdates) {
+    /** The process CPU usage percentage, refreshed at most once per {@code millisecondsBetweenUpdates}. */
+    public static long getCpuUsage(int millisecondsBetweenUpdates) {
         long now = System.currentTimeMillis();
-        if (now - CPU_LAST_UPDATED <= millisecondsBetweenUpdates) return;
-
-        long currentCpuTimeNanos = getProcessCpuTimeNanos();
-        long elapsedNanos = (now - CPU_LAST_UPDATED) * 1_000_000L;
-        if (elapsedNanos > 0L) {
-            CPU_USAGE = (currentCpuTimeNanos - cpuTimeNanos) * 100L / (elapsedNanos * Runtime.getRuntime().availableProcessors());
+        if (now - cpuLastUpdated > millisecondsBetweenUpdates) {
+            long currentCpuTimeNanos = getProcessCpuTimeNanos();
+            long elapsedNanos = (now - cpuLastUpdated) * 1_000_000L;
+            cpuUsage = (currentCpuTimeNanos - cpuTimeNanos) * 100L / (elapsedNanos * Runtime.getRuntime().availableProcessors());
+            cpuTimeNanos = currentCpuTimeNanos;
+            cpuLastUpdated = now;
         }
-        cpuTimeNanos = currentCpuTimeNanos;
-        CPU_LAST_UPDATED = now;
+
+        return cpuUsage;
     }
 
     private static long getProcessCpuTimeNanos() {

@@ -32,15 +32,11 @@ public class PerformanceHud implements BasicCoreHudElement<PerformanceHudConfig>
         }
 
         if (getElementConfig().showGpuUsage) {
-            TimerUtils.updateGpuUsage(500);
-
-            lines.add("GPU: %d%%".formatted(TimerUtils.GPU_USAGE));
+            lines.add("GPU: %d%%".formatted(TimerUtils.getGpuUsage(500)));
         }
 
         if (getElementConfig().showCpuUsage) {
-            TimerUtils.updateCpuUsage(500);
-
-            lines.add("CPU: %d%%".formatted(TimerUtils.CPU_USAGE));
+            lines.add("CPU: %d%%".formatted(TimerUtils.getCpuUsage(500)));
         }
 
         return lines;

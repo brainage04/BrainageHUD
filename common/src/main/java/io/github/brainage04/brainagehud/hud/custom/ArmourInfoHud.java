@@ -4,7 +4,6 @@ import io.github.brainage04.brainagehud.config.hud.custom.armour_info.ArmourInfo
 import io.github.brainage04.brainagehud.config.hud.custom.armour_info.DurabilityFormat;
 import io.github.brainage04.brainagehud.util.MathUtils;
 import io.github.brainage04.hudrendererlib.HudRendererLib;
-import io.github.brainage04.hudrendererlib.config.core.ElementCorners;
 import io.github.brainage04.hudrendererlib.hud.core.CoreHudElement;
 import io.github.brainage04.hudrendererlib.hud.core.HudRenderer;
 import java.util.ArrayList;
@@ -17,9 +16,7 @@ import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.util.CommonColors;
 import net.minecraft.world.entity.EquipmentSlot;
-import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
 
 import static io.github.brainage04.brainagehud.util.ConfigUtils.getConfig;
 
@@ -42,7 +39,7 @@ public class ArmourInfoHud implements CoreHudElement<ArmourInfoHudConfig> {
                 case NONE -> "";
                 case FIRST_NUMBER -> "%d".formatted(currentDurability);
                 case BOTH_NUMBERS -> "%d / %d".formatted(currentDurability, itemStack.getMaxDamage());
-                case PERCENTAGE -> "%s%%".formatted(MathUtils.roundDecimalPlaces(((float) currentDurability) / itemStack.getMaxDamage() * 100, settings.durabilityDecimalPlaces));
+                case PERCENTAGE -> "%s%%".formatted(MathUtils.roundDecimalPlaces((double) currentDurability / itemStack.getMaxDamage() * 100, settings.durabilityDecimalPlaces));
             };
         }
 
@@ -65,11 +62,10 @@ public class ArmourInfoHud implements CoreHudElement<ArmourInfoHudConfig> {
             addItem(items, player.getMainHandItem(), config, renderer);
         }
         if (config.showArmour) {
-            Inventory inventory = player.getInventory();
-            addItem(items, inventory.getItem(EquipmentSlot.HEAD.getIndex(Inventory.INVENTORY_SIZE)), config, renderer);
-            addItem(items, inventory.getItem(EquipmentSlot.CHEST.getIndex(Inventory.INVENTORY_SIZE)), config, renderer);
-            addItem(items, inventory.getItem(EquipmentSlot.LEGS.getIndex(Inventory.INVENTORY_SIZE)), config, renderer);
-            addItem(items, inventory.getItem(EquipmentSlot.FEET.getIndex(Inventory.INVENTORY_SIZE)), config, renderer);
+            addItem(items, player.getItemBySlot(EquipmentSlot.HEAD), config, renderer);
+            addItem(items, player.getItemBySlot(EquipmentSlot.CHEST), config, renderer);
+            addItem(items, player.getItemBySlot(EquipmentSlot.LEGS), config, renderer);
+            addItem(items, player.getItemBySlot(EquipmentSlot.FEET), config, renderer);
         }
         if (items.isEmpty()) return;
 
@@ -82,23 +78,9 @@ public class ArmourInfoHud implements CoreHudElement<ArmourInfoHudConfig> {
         int itemTextOffset = 16 + elementPadding * 2;
         int elementWidth = itemTextOffset + maxLineWidth;
         int elementHeight = 16 * items.size() + elementPadding * (items.size() - 1);
-        int posX = HudRenderer.getPosX(config.coreSettings, elementWidth);
-        int posY = HudRenderer.getPosY(config.coreSettings, elementHeight);
-        switch (config.coreSettings.elementAnchor) {
-            case BOTTOM_LEFT, BOTTOM, BOTTOM_RIGHT -> posY -= elementPadding * 2;
-            case LEFT, CENTER, RIGHT -> posY -= elementPadding;
-        }
-
-        ElementCorners corners = HudRenderer.getCornersWithPadding(
-                posX,
-                posY,
-                posX + elementWidth,
-                posY + elementHeight,
-                config.coreSettings
-        );
-        corners.bottom += elementPadding * 2;
-        HudRenderer.setElementBounds(config.coreSettings, corners);
-        HudRenderer.renderBackdrop(drawContext, corners, config.coreSettings);
+        CustomHudLayout.Origin origin = CustomHudLayout.place(drawContext, config.coreSettings, elementWidth, elementHeight);
+        int posX = origin.x();
+        int posY = origin.y();
 
         for (int i = 0; i < items.size(); i++) {
             ItemInfo item = items.get(i);
@@ -130,7 +112,7 @@ public class ArmourInfoHud implements CoreHudElement<ArmourInfoHudConfig> {
     }
 
     private static void addItem(List<ItemInfo> items, ItemStack stack, ArmourInfoHudConfig config, Font renderer) {
-        if (stack.getItem() == Items.AIR) return;
+        if (stack.isEmpty()) return;
 
         String text = generateItemInfo(stack, config);
         items.add(new ItemInfo(stack, text, renderer.width(text)));

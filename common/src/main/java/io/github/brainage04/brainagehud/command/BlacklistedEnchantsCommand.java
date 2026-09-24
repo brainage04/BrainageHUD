@@ -1,34 +1,29 @@
 package io.github.brainage04.brainagehud.command;
 
+import static io.github.brainage04.brainagehud.command.core.ModCommands.feedback;
+
 import io.github.brainage04.brainagehud.util.ConfigUtils;
 import io.github.brainage04.brainagehud.util.EnchantmentUtils;
-import java.util.LinkedHashSet;
-import java.util.Set;
+import java.util.List;
 import net.minecraft.client.Minecraft;
-import net.minecraft.commands.SharedSuggestionProvider;
 import net.minecraft.core.Holder;
-import net.minecraft.core.Registry;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.item.enchantment.Enchantment;
 
 /**
  * Ported from GetEnchantInfo's {@code io.github.brainage04.commands.BlacklistedEnchantsCommand}.
+ *
+ * <p>The blacklist is stored as enchantment IDs in the config, which is the only source of truth.
  */
 public class BlacklistedEnchantsCommand {
-    private static final Set<Enchantment> blacklistedEnchants = new LinkedHashSet<>();
+    public static int executeAdd(Holder<Enchantment> enchantmentHolder) {
+        List<String> blacklist = getBlacklist();
+        String enchantmentId = EnchantmentUtils.getEnchantmentId(enchantmentHolder);
 
-    public static Set<Enchantment> getBlacklistedEnchants() {
-        return blacklistedEnchants;
-    }
-
-    public static int executeAdd(
-            SharedSuggestionProvider source, Holder<Enchantment> enchantmentHolder) {
-        synchronizeBlacklist();
-        Enchantment enchantment = enchantmentHolder.value();
-
-        if (blacklistedEnchants.contains(enchantment)) {
+        if (blacklist.contains(enchantmentId)) {
             feedback(
                     EnchantmentUtils.getEnchantmentName(enchantmentHolder)
                             .append(" is already blacklisted!"));
@@ -36,28 +31,19 @@ public class BlacklistedEnchantsCommand {
             return 0;
         }
 
-        blacklistedEnchants.add(enchantment);
-        ConfigUtils.getConfig()
-                .enchantInfoConfig
-                .blacklistedEnchantmentIds
-                .add(EnchantmentUtils.getEnchantmentId(enchantmentHolder));
+        blacklist.add(enchantmentId);
+        ConfigUtils.saveConfig();
 
         feedback(
                 Component.empty()
                         .append(EnchantmentUtils.getEnchantmentName(enchantmentHolder))
                         .append(" is now blacklisted."));
 
-        ConfigUtils.saveConfig();
-
         return 1;
     }
 
-    public static int executeRemove(
-            SharedSuggestionProvider source, Holder<Enchantment> enchantmentHolder) {
-        synchronizeBlacklist();
-        Enchantment enchantment = enchantmentHolder.value();
-
-        if (!blacklistedEnchants.contains(enchantment)) {
+    public static int executeRemove(Holder<Enchantment> enchantmentHolder) {
+        if (!getBlacklist().remove(EnchantmentUtils.getEnchantmentId(enchantmentHolder))) {
             feedback(
                     EnchantmentUtils.getEnchantmentName(enchantmentHolder)
                             .append(" is not blacklisted!"));
@@ -65,31 +51,25 @@ public class BlacklistedEnchantsCommand {
             return 0;
         }
 
-        blacklistedEnchants.remove(enchantment);
-        ConfigUtils.getConfig()
-                .enchantInfoConfig
-                .blacklistedEnchantmentIds
-                .remove(EnchantmentUtils.getEnchantmentId(enchantmentHolder));
+        ConfigUtils.saveConfig();
 
         feedback(
                 Component.empty()
                         .append(EnchantmentUtils.getEnchantmentName(enchantmentHolder))
                         .append(" is no longer blacklisted."));
 
-        ConfigUtils.saveConfig();
-
         return 1;
     }
 
-    public static int executeQuery(SharedSuggestionProvider source) {
-        synchronizeBlacklist();
-        if (blacklistedEnchants.isEmpty()) {
+    public static int executeQuery() {
+        List<String> blacklist = getBlacklist();
+        if (blacklist.isEmpty()) {
             feedback(Component.literal("No blacklisted enchantments."));
 
             return 1;
         }
 
-        Registry<Enchantment> enchantmentRegistry =
+        var enchantmentRegistry =
                 Minecraft.getInstance()
                         .level
                         .registryAccess()
@@ -97,37 +77,24 @@ public class BlacklistedEnchantsCommand {
 
         feedback(Component.literal("Enchantment blacklist:"));
 
-        for (Enchantment enchantment : blacklistedEnchants) {
-            feedback(
-                    Component.literal(" - ")
-                            .append(
-                                    EnchantmentUtils.getEnchantmentName(
-                                            enchantmentRegistry.wrapAsHolder(enchantment))));
+        for (String enchantmentId : blacklist) {
+            Identifier identifier = Identifier.tryParse(enchantmentId);
+            // IDs of enchantments this world does not have are listed verbatim
+            Component name =
+                    identifier == null
+                            ? Component.literal(enchantmentId)
+                            : enchantmentRegistry
+                                    .get(ResourceKey.create(Registries.ENCHANTMENT, identifier))
+                                    .<Component>map(EnchantmentUtils::getEnchantmentName)
+                                    .orElseGet(() -> Component.literal(enchantmentId));
+
+            feedback(Component.literal(" - ").append(name));
         }
 
         return 1;
     }
 
-    public static void synchronizeBlacklist(Registry<Enchantment> enchantmentRegistry) {
-        blacklistedEnchants.clear();
-        for (String enchantmentId :
-                ConfigUtils.getConfig().enchantInfoConfig.blacklistedEnchantmentIds) {
-            enchantmentRegistry
-                    .getOptional(Identifier.parse(enchantmentId))
-                    .ifPresent(blacklistedEnchants::add);
-        }
-    }
-
-    private static void synchronizeBlacklist() {
-        synchronizeBlacklist(
-                Minecraft.getInstance()
-                        .level
-                        .registryAccess()
-                        .lookupOrThrow(Registries.ENCHANTMENT));
-    }
-
-    private static void feedback(Component message) {
-        Minecraft minecraft = Minecraft.getInstance();
-        if (minecraft.player != null) minecraft.player.sendSystemMessage(message);
+    private static List<String> getBlacklist() {
+        return ConfigUtils.getConfig().enchantInfoConfig.blacklistedEnchantmentIds;
     }
 }

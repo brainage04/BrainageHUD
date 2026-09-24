@@ -1,15 +1,15 @@
 package io.github.brainage04.brainagehud.command;
 
-import com.mojang.datafixers.util.Pair;
+import static io.github.brainage04.brainagehud.command.core.ModCommands.feedback;
+
+import io.github.brainage04.brainagehud.util.ConfigUtils;
 import io.github.brainage04.brainagehud.util.EnchantmentUtils;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
-import net.minecraft.commands.SharedSuggestionProvider;
 import net.minecraft.core.Holder;
-import net.minecraft.core.Registry;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.Item;
@@ -18,108 +18,74 @@ import net.minecraft.world.item.enchantment.Enchantment;
 
 /** Ported from GetEnchantInfo's {@code io.github.brainage04.commands.GetEnchantsCommand}. */
 public class GetEnchantsCommand {
-    public static int execute(SharedSuggestionProvider source, ItemStack itemStack) {
-        Registry<Enchantment> enchantmentRegistry =
+    public static int execute(ItemStack itemStack) {
+        HolderLookup.RegistryLookup<Enchantment> enchantmentRegistry =
                 Minecraft.getInstance()
                         .level
                         .registryAccess()
                         .lookupOrThrow(Registries.ENCHANTMENT);
-        BlacklistedEnchantsCommand.synchronizeBlacklist(enchantmentRegistry);
+        List<String> blacklist = ConfigUtils.getConfig().enchantInfoConfig.blacklistedEnchantmentIds;
 
-        List<Enchantment> acceptableEnchantments = new ArrayList<>();
-        for (Enchantment enchantment : enchantmentRegistry) {
-            if (BlacklistedEnchantsCommand.getBlacklistedEnchants().contains(enchantment)) continue;
+        List<Holder.Reference<Enchantment>> acceptableEnchantments = new ArrayList<>();
+        enchantmentRegistry
+                .listElements()
+                .filter(enchantment -> !blacklist.contains(EnchantmentUtils.getEnchantmentId(enchantment)))
+                .filter(enchantment -> enchantment.value().canEnchant(itemStack))
+                .forEach(acceptableEnchantments::add);
 
-            if (enchantment.canEnchant(itemStack)) {
-                acceptableEnchantments.add(enchantment);
-            }
-        }
-
-        List<Pair<Enchantment, Enchantment>> conflicts = new ArrayList<>();
-        int n = acceptableEnchantments.size();
-        for (int i = 0; i < n; i++) {
-            Enchantment a = acceptableEnchantments.get(i);
-
-            for (int j = i + 1; j < n; j++) {
-                Enchantment b = acceptableEnchantments.get(j);
-
-                if (!Enchantment.areCompatible(
-                        enchantmentRegistry.wrapAsHolder(a), enchantmentRegistry.wrapAsHolder(b))) {
-                    conflicts.add(new Pair<>(a, b));
-                }
-            }
-        }
-        List<Set<Enchantment>> conflictPairs = EnchantmentUtils.conflictPairs(conflicts);
-
-        for (Set<Enchantment> enchantmentSet : conflictPairs) {
-            for (Enchantment enchantment : enchantmentSet) {
-                acceptableEnchantments.remove(enchantment);
-            }
-        }
-
-        if (conflictPairs.isEmpty() && acceptableEnchantments.isEmpty()) {
+        if (acceptableEnchantments.isEmpty()) {
             feedback(Component.literal("No acceptable enchantments found!"));
-        } else {
-            feedback(
-                    Component.literal("Acceptable enchants for ")
-                            .append(itemStack.getHoverName())
-                            .append(":")
-                            .withStyle(ChatFormatting.BOLD));
 
-            if (!conflictPairs.isEmpty()) {
-                feedback(
-                        Component.literal(
-                                "Conflicting enchantment pairs (choose at most one per pair):"));
+            return 1;
+        }
 
-                for (Set<Enchantment> conflictSet : conflictPairs) {
-                    feedback(
-                            Component.literal(" - ")
-                                    .append(
-                                            EnchantmentUtils.joinEnchantmentNames(
-                                                    enchantmentRegistry, conflictSet, itemStack)));
-                }
+        List<List<Holder.Reference<Enchantment>>> conflictGroups = new ArrayList<>();
+        List<Holder.Reference<Enchantment>> unconflictedEnchantments = new ArrayList<>();
+        for (List<Holder.Reference<Enchantment>> group :
+                EnchantmentUtils.groupConflictingEnchantments(acceptableEnchantments)) {
+            if (group.size() == 1) {
+                unconflictedEnchantments.add(group.getFirst());
+            } else {
+                conflictGroups.add(group);
             }
+        }
 
-            if (!acceptableEnchantments.isEmpty()) {
-                sendEnchantmentMessage(
-                        source,
-                        itemStack,
-                        acceptableEnchantments,
-                        enchantmentRegistry,
-                        Component.literal("Enchantments with no conflicts:"));
+        feedback(
+                Component.literal("Acceptable enchants for ")
+                        .append(itemStack.getHoverName())
+                        .append(":")
+                        .withStyle(ChatFormatting.BOLD));
+
+        if (!conflictGroups.isEmpty()) {
+            // groups are linked by conflicts, not necessarily all mutually exclusive: riptide
+            // excludes both loyalty and channeling, which can still be combined with each other
+            feedback(Component.literal("Enchantments that conflict within each group:"));
+
+            for (List<Holder.Reference<Enchantment>> group : conflictGroups) {
+                feedback(
+                        Component.literal(" - ")
+                                .append(EnchantmentUtils.joinEnchantmentNames(group, itemStack)));
+            }
+        }
+
+        if (!unconflictedEnchantments.isEmpty()) {
+            feedback(Component.literal("Enchantments with no conflicts:"));
+
+            for (Holder<Enchantment> enchantment : unconflictedEnchantments) {
+                feedback(
+                        Component.literal(" - ")
+                                .append(EnchantmentUtils.getEnchantmentName(enchantment, itemStack)));
             }
         }
 
         return 1;
     }
 
-    private static void sendEnchantmentMessage(
-            SharedSuggestionProvider source,
-            ItemStack itemStack,
-            List<Enchantment> acceptableEnchantments,
-            Registry<Enchantment> enchantmentRegistry,
-            Component prefix) {
-        feedback(prefix);
-
-        for (Enchantment enchantment : acceptableEnchantments) {
-            feedback(
-                    Component.literal(" - ")
-                            .append(
-                                    EnchantmentUtils.getEnchantmentName(
-                                            enchantmentRegistry, enchantment, itemStack)));
-        }
+    public static int execute(Holder<Item> item) {
+        return execute(item.value().getDefaultInstance());
     }
 
-    public static int execute(SharedSuggestionProvider source, Holder<Item> item) {
-        return execute(source, item.value().getDefaultInstance());
-    }
-
-    public static int execute(SharedSuggestionProvider source) {
-        return execute(source, Minecraft.getInstance().player.getInventory().getSelectedItem());
-    }
-
-    private static void feedback(Component message) {
-        Minecraft minecraft = Minecraft.getInstance();
-        if (minecraft.player != null) minecraft.player.sendSystemMessage(message);
+    public static int execute() {
+        return execute(Minecraft.getInstance().player.getInventory().getSelectedItem());
     }
 }

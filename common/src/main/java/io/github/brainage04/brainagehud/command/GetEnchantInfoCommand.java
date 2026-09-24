@@ -1,31 +1,26 @@
 package io.github.brainage04.brainagehud.command;
 
+import static io.github.brainage04.brainagehud.command.core.ModCommands.feedback;
+
 import io.github.brainage04.brainagehud.util.EnchantmentUtils;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
-import net.minecraft.commands.SharedSuggestionProvider;
 import net.minecraft.core.Holder;
-import net.minecraft.core.Registry;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.resources.Identifier;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.item.enchantment.Enchantment;
 
 /** Ported from GetEnchantInfo's {@code io.github.brainage04.commands.GetEnchantInfoCommand}. */
 public class GetEnchantInfoCommand {
     public static void sendEnchantmentInfo(
-            SharedSuggestionProvider source,
-            Registry<Enchantment> enchantmentRegistry,
-            Enchantment enchantment) {
-        Identifier enchantmentId = enchantmentRegistry.getKey(enchantment);
-        if (enchantmentId == null) return;
-
-        Holder<Enchantment> enchantmentHolder = enchantmentRegistry.wrapAsHolder(enchantment);
+            HolderLookup.RegistryLookup<Enchantment> enchantmentRegistry,
+            Holder<Enchantment> enchantmentHolder) {
+        Enchantment enchantment = enchantmentHolder.value();
 
         feedback(
                 Component.literal("Enchant info for ")
@@ -33,65 +28,59 @@ public class GetEnchantInfoCommand {
                         .append(":")
                         .withStyle(ChatFormatting.BOLD));
 
-        feedback(Component.literal("ID: %s".formatted(enchantmentId)));
+        feedback(Component.literal("ID: %s".formatted(EnchantmentUtils.getEnchantmentId(enchantmentHolder))));
         feedback(Component.literal("Max level: %d".formatted(enchantment.getMaxLevel())));
         feedback(
                 Component.literal("Incompatible with: ")
-                        .append(
-                                joinIncompatibleEnchantmentNames(
-                                        enchantmentRegistry, enchantment)));
+                        .append(joinIncompatibleEnchantmentNames(enchantmentRegistry, enchantmentHolder)));
         feedback(
                 Component.literal("Applied to: ")
                         .append(
-                                joinItemNames(
+                                joinNames(
                                         enchantment.getSupportedItems().stream()
-                                                .map(Holder::value)
+                                                .map(item -> item.value().getName(item.value().getDefaultInstance()))
                                                 .toList())));
     }
 
-    public static int execute(SharedSuggestionProvider source, String desiredEnchantmentString) {
-        Registry<Enchantment> enchantmentRegistry =
-                Minecraft.getInstance()
-                        .level
-                        .registryAccess()
-                        .lookupOrThrow(Registries.ENCHANTMENT);
+    /**
+     * The enchantments whose name matches {@code query}, ignoring case: the exact match alone if
+     * there is one, otherwise every enchantment whose name contains the query.
+     */
+    public static List<Holder.Reference<Enchantment>> findMatches(
+            HolderLookup.RegistryLookup<Enchantment> enchantmentRegistry, String query) {
+        String normalisedQuery = query.toLowerCase(Locale.ROOT);
+        List<Holder.Reference<Enchantment>> potentialMatches = new ArrayList<>();
 
-        Enchantment exactMatch = null;
-        List<Enchantment> potentialMatches = new ArrayList<>();
-        for (Enchantment enchantment : enchantmentRegistry) {
-            String enchantmentString =
-                    EnchantmentUtils.getEnchantmentName(
-                                    enchantmentRegistry.wrapAsHolder(enchantment))
+        for (Holder.Reference<Enchantment> enchantment : enchantmentRegistry.listElements().toList()) {
+            String name =
+                    EnchantmentUtils.getEnchantmentName(enchantment)
                             .getString()
-                            .toLowerCase();
+                            .toLowerCase(Locale.ROOT);
 
-            if (enchantmentString.equals(desiredEnchantmentString)) {
-                exactMatch = enchantment;
-                break;
-            }
+            if (name.equals(normalisedQuery)) return List.of(enchantment);
 
-            if (enchantmentString.contains(desiredEnchantmentString)) {
-                potentialMatches.add(enchantment);
-            }
+            if (name.contains(normalisedQuery)) potentialMatches.add(enchantment);
         }
 
-        if (exactMatch == null && potentialMatches.size() == 1) {
-            exactMatch = potentialMatches.getFirst();
-        }
+        return potentialMatches;
+    }
 
-        if (exactMatch != null) {
+    public static int execute(String desiredEnchantmentString) {
+        HolderLookup.RegistryLookup<Enchantment> enchantmentRegistry = getEnchantmentRegistry();
+        List<Holder.Reference<Enchantment>> matches = findMatches(enchantmentRegistry, desiredEnchantmentString);
+
+        if (matches.size() == 1) {
+            Holder.Reference<Enchantment> match = matches.getFirst();
             feedback(
                     Component.literal("Exact match found - ")
-                            .append(
-                                    EnchantmentUtils.getEnchantmentName(
-                                            enchantmentRegistry.wrapAsHolder(exactMatch))));
+                            .append(EnchantmentUtils.getEnchantmentName(match)));
 
-            sendEnchantmentInfo(source, enchantmentRegistry, exactMatch);
+            sendEnchantmentInfo(enchantmentRegistry, match);
 
             return 1;
         }
 
-        if (potentialMatches.isEmpty()) {
+        if (matches.isEmpty()) {
             feedback(Component.literal("No potential matches found!"));
 
             return 0;
@@ -99,85 +88,53 @@ public class GetEnchantInfoCommand {
 
         feedback(Component.literal("No exact match found. Potential matches:"));
 
-        for (Enchantment enchantment : potentialMatches) {
-            Identifier enchantmentId = enchantmentRegistry.getKey(enchantment);
-
-            if (enchantmentId == null) continue;
-
+        for (Holder.Reference<Enchantment> enchantment : matches) {
             feedback(
                     Component.empty()
-                            .append(
-                                    EnchantmentUtils.getEnchantmentName(
-                                            enchantmentRegistry.wrapAsHolder(enchantment)))
+                            .append(EnchantmentUtils.getEnchantmentName(enchantment))
                             .append(" - ")
-                            .append(enchantmentId.toString()));
+                            .append(EnchantmentUtils.getEnchantmentId(enchantment)));
         }
 
         return 1;
     }
 
-    public static int execute(
-            SharedSuggestionProvider source, Holder<Enchantment> enchantmentHolder) {
-        Registry<Enchantment> enchantmentRegistry =
-                Minecraft.getInstance()
-                        .level
-                        .registryAccess()
-                        .lookupOrThrow(Registries.ENCHANTMENT);
-
-        sendEnchantmentInfo(source, enchantmentRegistry, enchantmentHolder.value());
+    public static int execute(Holder<Enchantment> enchantmentHolder) {
+        sendEnchantmentInfo(getEnchantmentRegistry(), enchantmentHolder);
 
         return 1;
     }
 
-    public static Component joinItemNames(List<Item> items) {
-        MutableComponent text = Component.empty();
-
-        Iterator<Item> iterator = items.iterator();
-        while (iterator.hasNext()) {
-            Item item = iterator.next();
-
-            text = text.append(item.getName(item.getDefaultInstance()));
-
-            if (iterator.hasNext()) text = text.append(", ");
-        }
-
-        return text;
-    }
-
-    public static Component joinIncompatibleEnchantmentNames(
-            Registry<Enchantment> enchantmentRegistry, Enchantment baseEnchantment) {
-        MutableComponent text = Component.empty();
-        Holder<Enchantment> first = enchantmentRegistry.wrapAsHolder(baseEnchantment);
-
-        List<Enchantment> conflicts =
-                enchantmentRegistry.stream()
-                        .filter(
-                                enchantment -> {
-                                    Holder<Enchantment> second =
-                                            enchantmentRegistry.wrapAsHolder(enchantment);
-                                    if (first.equals(second)) return false;
-                                    return !Enchantment.areCompatible(first, second);
-                                })
+    private static Component joinIncompatibleEnchantmentNames(
+            HolderLookup.RegistryLookup<Enchantment> enchantmentRegistry,
+            Holder<Enchantment> baseEnchantment) {
+        List<Component> conflicts =
+                enchantmentRegistry
+                        .listElements()
+                        .filter(enchantment -> enchantment.value() != baseEnchantment.value())
+                        .filter(enchantment -> !Enchantment.areCompatible(baseEnchantment, enchantment))
+                        .<Component>map(EnchantmentUtils::getEnchantmentName)
                         .toList();
 
-        if (conflicts.isEmpty()) return Component.literal("N/A");
+        return conflicts.isEmpty() ? Component.literal("N/A") : joinNames(conflicts);
+    }
 
-        Iterator<Enchantment> iterator = conflicts.iterator();
-        while (iterator.hasNext()) {
-            Enchantment enchantment = iterator.next();
+    private static Component joinNames(List<Component> names) {
+        MutableComponent text = Component.empty();
 
-            text.append(
-                    EnchantmentUtils.getEnchantmentName(
-                            enchantmentRegistry.wrapAsHolder(enchantment)));
+        for (int i = 0; i < names.size(); i++) {
+            if (i > 0) text.append(", ");
 
-            if (iterator.hasNext()) text.append(", ");
+            text.append(names.get(i));
         }
 
         return text;
     }
 
-    private static void feedback(Component message) {
-        Minecraft minecraft = Minecraft.getInstance();
-        if (minecraft.player != null) minecraft.player.sendSystemMessage(message);
+    private static HolderLookup.RegistryLookup<Enchantment> getEnchantmentRegistry() {
+        return Minecraft.getInstance()
+                .level
+                .registryAccess()
+                .lookupOrThrow(Registries.ENCHANTMENT);
     }
 }

@@ -26,6 +26,14 @@ import net.minecraft.world.item.enchantment.ItemEnchantments;
  * blacklisted enchantments are never shown as missing.
  */
 public class EnchantInfoHud implements BasicCoreHudElement<EnchantInfoHudConfig> {
+    // the lines only change with their inputs, so they are rebuilt only when an input changes
+    // rather than walking the enchantment registry every frame
+    private TextList cachedLines;
+    private HolderLookup.RegistryLookup<Enchantment> cachedRegistry;
+    private ItemStack cachedStack = ItemStack.EMPTY;
+    private int cachedConfigFlags;
+    private List<String> cachedBlacklist = List.of();
+
     @Override
     public TextList getLines() {
         Minecraft minecraft = Minecraft.getInstance();
@@ -34,11 +42,34 @@ public class EnchantInfoHud implements BasicCoreHudElement<EnchantInfoHudConfig>
 
         if (player == null || level == null) return new TextList();
 
-        return getLines(
-                level.registryAccess().lookupOrThrow(Registries.ENCHANTMENT),
-                player.getMainHandItem(),
-                getElementConfig(),
-                getConfig().enchantInfoConfig.blacklistedEnchantmentIds);
+        HolderLookup.RegistryLookup<Enchantment> registry =
+                level.registryAccess().lookupOrThrow(Registries.ENCHANTMENT);
+        ItemStack stack = player.getMainHandItem();
+        EnchantInfoHudConfig config = getElementConfig();
+        int configFlags = configFlags(config);
+        List<String> blacklist = getConfig().enchantInfoConfig.blacklistedEnchantmentIds;
+
+        if (cachedLines == null
+                || registry != cachedRegistry
+                || configFlags != cachedConfigFlags
+                || !ItemStack.matches(stack, cachedStack)
+                || !blacklist.equals(cachedBlacklist)) {
+            cachedLines = getLines(registry, stack, config, blacklist);
+            cachedRegistry = registry;
+            cachedStack = stack.copy();
+            cachedConfigFlags = configFlags;
+            cachedBlacklist = List.copyOf(blacklist);
+        }
+
+        return cachedLines;
+    }
+
+    private static int configFlags(EnchantInfoHudConfig config) {
+        return (config.showItemName ? 1 : 0)
+                | (config.showEnchantments ? 2 : 0)
+                | (config.showMaxLevels ? 4 : 0)
+                | (config.showMissingEnchantments ? 8 : 0)
+                | (config.showMissingHeader ? 16 : 0);
     }
 
     public static TextList getLines(

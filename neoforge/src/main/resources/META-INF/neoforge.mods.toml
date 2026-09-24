@@ -1,6 +1,7 @@
 modLoader="javafml"
 loaderVersion="[11,)"
 license="MIT"
+issueTrackerURL="https://github.com/brainage04/BrainageHUD/issues"
 
 [[mods]]
 modId="brainagehud"
@@ -8,6 +9,8 @@ version="${version}"
 displayName="BrainageHUD"
 description="A mod that adds useful HUD elements to Minecraft."
 logoFile="assets/brainagehud/icon.png"
+authors="brainage04"
+displayURL="https://github.com/brainage04/BrainageHUD"
 
 [[mixins]]
 config="brainagehud.client.mixins.json"
@@ -22,7 +25,7 @@ side="CLIENT"
 [[dependencies.brainagehud]]
 modId="minecraft"
 type="required"
-versionRange="[${minecraft_version}]"
+versionRange="${neoforge_minecraft_version_range}"
 ordering="NONE"
 side="CLIENT"
 

@@ -5,7 +5,7 @@ workspaceDependencies {
 	}
 }
 
-fabricApi { configureDataGeneration { client = true } }
+fabricApi { configureDataGeneration { client = true; modId = rootProject.mod_id } }
 
 dependencies {
 	implementation("me.shedaniel.cloth:cloth-config-fabric:${project.cloth_config_version}") { exclude(group: 'net.fabricmc.fabric-api') }
