@@ -8,6 +8,7 @@ import io.github.brainage04.brainagehud.hud.FoodHud;
 import io.github.brainage04.brainagehud.hud.NetworkHud;
 import io.github.brainage04.brainagehud.hud.PositionHud;
 import io.github.brainage04.brainagehud.hud.ProjectileHud;
+import io.github.brainage04.brainagehud.hud.StatusEffectHud;
 import io.github.brainage04.brainagehud.hud.custom.EnchantInfoHud;
 import io.github.brainage04.brainagehud.screen.WaypointsScreen;
 import io.github.brainage04.brainagehud.util.ConfigUtils;
@@ -17,6 +18,8 @@ import io.github.brainage04.brainagehud.waypoint.WaypointStore;
 import io.github.brainage04.hudrendererlib.HudRendererLib;
 import io.github.brainage04.hudrendererlib.hud.core.HudElementEditor;
 import io.github.brainage04.hudrendererlib.hud.core.HudRenderer;
+import io.github.brainage04.hudrendererlib.config.core.CoreSettings;
+import io.github.brainage04.hudrendererlib.config.core.HudRendererLibConfig;
 import io.github.brainage04.fabricmoddingconventions.ClientGameTestRecorder;
 import io.github.brainage04.fabricmoddingconventions.ClientGameTestServers;
 import net.fabricmc.fabric.api.client.gametest.v1.FabricClientGameTest;
@@ -36,6 +39,8 @@ import net.minecraft.network.chat.TextColor;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -115,6 +120,38 @@ public final class BrainageHUDClientGameTest implements FabricClientGameTest {
 				System.out.println("[STDOUT]: Enchant info HUD screenshot: " + context.takeScreenshot("enchant-info-hud"));
 
 				context.runOnClient(client -> assertModKeysHaveTheirOwnCategory());
+
+				ClientGameTestRecorder.showStep(
+						context,
+						"status-effects",
+						"Status Effect HUD",
+						"The Status Effect HUD lists Speed II with its time left and the infinite Regeneration, each with its effect icon to the left; with Show Vanilla Status Effects off the game's icons disappear and the top-right HUDs move back up."
+				);
+				context.runOnClient(client -> assertHudLines("Status Effect", new StatusEffectHud().getLines(), List.of()));
+				server.runOnServer(minecraftServer -> {
+					ServerPlayer player = minecraftServer.getPlayerList().getPlayers().getFirst();
+					// just under 84 seconds, so it reads 1:23 for the next 19 ticks
+					player.addEffect(new MobEffectInstance(MobEffects.SPEED, 1679, 1));
+					player.addEffect(new MobEffectInstance(MobEffects.REGENERATION, MobEffectInstance.INFINITE_DURATION));
+				});
+				context.waitTicks(5);
+				context.runOnClient(client -> {
+					assertHudLines("Status Effect", new StatusEffectHud().getLines(), List.of("Speed II: 1:23", "Regeneration: Infinite"));
+					assertTopRightShift(libraryConfig().adjustTopRightElementsWithStatusEffectsAmount);
+				});
+				System.out.println("[STDOUT]: Status Effect HUD screenshot: " + context.takeScreenshot("status-effect-hud"));
+				context.runOnClient(client -> {
+					ModConfig config = ConfigUtils.getConfig();
+					config.statusEffectHudConfig.showDurations = false;
+					assertHudLines("Status Effect", new StatusEffectHud().getLines(), List.of("Speed II", "Regeneration"));
+					config.statusEffectHudConfig.showDurations = true;
+					libraryConfig().showVanillaStatusEffects = false;
+					assertTopRightShift(0);
+				});
+				System.out.println("[STDOUT]: Vanilla status effects hidden screenshot: " + context.takeScreenshot("vanilla-status-effects-hidden"));
+				context.runOnClient(client -> libraryConfig().showVanillaStatusEffects = true);
+				server.runOnServer(minecraftServer -> minecraftServer.getPlayerList().getPlayers().getFirst().removeAllEffects());
+				context.waitTicks(5);
 
 				ClientGameTestRecorder.showStep(
 						context,
@@ -489,6 +526,21 @@ public final class BrainageHUDClientGameTest implements FabricClientGameTest {
 		List<String> lines = actual.stream().map(Component::getString).toList();
 		if (!lines.equals(expected)) {
 			throw new AssertionError("Expected the " + hud + " HUD to show " + expected + ", but got " + lines + ".");
+		}
+	}
+
+	private static HudRendererLibConfig libraryConfig() {
+		return io.github.brainage04.hudrendererlib.util.ConfigUtils.getConfig();
+	}
+
+	/** Asserts that a top-right element (the Keystrokes HUD) sits {@code expectedShift} pixels below its configured place. */
+	private static void assertTopRightShift(int expectedShift) {
+		CoreSettings keystrokes = ConfigUtils.getConfig().keystrokesHudConfig.coreSettings;
+		int unshifted = keystrokes.y + HudRenderer.getYOffset(keystrokes, 0);
+		int shift = HudRenderer.getPosY(keystrokes, 0) - unshifted;
+		if (shift != expectedShift) {
+			throw new AssertionError("Expected top-right elements to be shifted down by " + expectedShift + " with Show Vanilla Status Effects "
+					+ (libraryConfig().showVanillaStatusEffects ? "on" : "off") + ", but they are shifted by " + shift + ".");
 		}
 	}
 

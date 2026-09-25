@@ -9,7 +9,7 @@ import me.shedaniel.autoconfig.annotation.ConfigEntry;
 public class EnchantInfoHudConfig implements ICoreSettingsContainer {
     @ConfigEntry.Gui.CollapsibleObject
     public CoreSettings coreSettings =
-            new CoreSettings("Enchant Info HUD", true, 5, 0, ElementAnchor.LEFT);
+            new CoreSettings("Enchant Info HUD", true, 150, 5, ElementAnchor.TOP_LEFT);
 
     public boolean showItemName = true;
     @ConfigEntry.Gui.Tooltip public boolean showEnchantments = true;

@@ -43,6 +43,7 @@ public final class BrainageHUD {
         HudRendererLib.registerHudElement(new PositionHud());
         HudRendererLib.registerHudElement(new ProjectileHud());
         HudRendererLib.registerHudElement(new ReachHud());
+        HudRendererLib.registerHudElement(new StatusEffectHud());
         HudRendererLib.registerHudElement(new ToggleSprintHud());
 
         initialized = true;

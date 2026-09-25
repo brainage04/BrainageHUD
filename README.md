@@ -17,11 +17,12 @@ BrainageHUD is a client-side Fabric and NeoForge mod that adds useful heads-up d
 - **Armour Info HUD**: durability, names and icons of your armour and the items in your hands.
 - **Keystrokes HUD**: WASD, Space and the mouse buttons as they are pressed, and your clicks per second.
 - **Enchant Info HUD**: the held item's enchantments and the enchantments it could still get (see [Enchant Info](#enchant-info)).
+- **Status Effect HUD**: your active status effects with their icons, levels and how long each has left.
 - **Fishing HUD**: while your bobber is out, whether it is in open water, which decides whether treasure can be caught.
 
 Motion, Entity and Fishing are off by default; turn them on in the config editor. Every element can be configured to show as little or as much as you like.
 
-HUD elements take the vanilla HUD into account: elements anchored to the top right move down when the potion effect icons are showing, so the two don't overlap.
+HUD elements take the vanilla HUD into account: elements anchored to the top right move down when the vanilla status effect icons are showing, so the two don't overlap. The vanilla icons can be turned off with Show Vanilla Status Effects in HudRendererLib's config editor; top-right elements then stay where they are.
 
 ## Waypoints
 Waypoints are saved per world (singleplayer save or server address) in `config/brainagehud/waypoints.json`. Each visible waypoint in your current dimension is drawn in the world, in its own colour:

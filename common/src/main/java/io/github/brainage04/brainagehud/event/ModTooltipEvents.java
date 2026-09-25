@@ -40,8 +40,9 @@ public class ModTooltipEvents {
         if (maxedEnchantmentLines.isEmpty()) return;
 
         // vanilla renders each enchantment as a line of exactly its full name, so exact matching
-        // leaves lore and other mods' lines that merely start with an enchantment name untouched
-        for (int i = 0; i < lines.size(); i++) {
+        // leaves lore and other mods' lines that merely start with an enchantment name untouched;
+        // the first line is the item's name, which may itself read like an enchantment
+        for (int i = 1; i < lines.size(); i++) {
             Component line = lines.get(i);
 
             if (maxedEnchantmentLines.contains(line.getString())) {

@@ -56,6 +56,9 @@ public class ModConfig implements ConfigData {
     @ConfigEntry.Gui.CollapsibleObject public ReachHudConfig reachHudConfig = new ReachHudConfig();
 
     @ConfigEntry.Gui.CollapsibleObject
+    public StatusEffectHudConfig statusEffectHudConfig = new StatusEffectHudConfig();
+
+    @ConfigEntry.Gui.CollapsibleObject
     public ToggleSprintHudConfig toggleSprintHudConfig = new ToggleSprintHudConfig();
 
     // custom

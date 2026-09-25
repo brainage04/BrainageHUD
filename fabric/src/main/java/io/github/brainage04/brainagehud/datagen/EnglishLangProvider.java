@@ -138,6 +138,8 @@ public class EnglishLangProvider extends FabricLanguageProvider {
                 {"projectileHudConfig.showSlotCounts", slotCounts},
                 {"reachHudConfig.decimalPlaces", decimalPlaces},
                 {"reachHudConfig.updateOnAttackClick", "Refresh only when attack changes from released to pressed."},
+                {"statusEffectHudConfig.showDurations", "Also show how long each effect has left."},
+                {"statusEffectHudConfig.showIcons", "Draw each effect's icon next to its line."},
                 {"toggleSprintHudConfig.showInternalValues", "Also show the game's toggle setting and the key's state for sprint and sneak, for debugging."},
                 {"armourInfoHudConfig.showDurabilityBar", "Display the durability bar of the item."},
                 {"armourInfoHudConfig.durabilityFormat", "Switch between displaying the durability as a percentage, fraction or number (fraction without the denominator)."},
