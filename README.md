@@ -22,7 +22,7 @@ BrainageHUD is a client-side Fabric and NeoForge mod that adds useful heads-up d
 
 Motion, Entity and Fishing are off by default; turn them on in the config editor. Every element can be configured to show as little or as much as you like.
 
-HUD elements take the vanilla HUD into account: elements anchored to the top right move down when the vanilla status effect icons are showing, so the two don't overlap. The vanilla icons can be turned off with Show Vanilla Status Effects in HudRendererLib's config editor; top-right elements then stay where they are.
+While the Status Effect HUD is on, the game's own status effect icons in the top right are hidden (Hide Vanilla Status Effects, on by default in its settings). Whenever those icons are showing, elements anchored to the top right move down so the two don't overlap. Show Vanilla Status Effects in HudRendererLib's config editor turns the vanilla icons off everywhere.
 
 ## Waypoints
 Waypoints are saved per world (singleplayer save or server address) in `config/brainagehud/waypoints.json`. Each visible waypoint in your current dimension is drawn in the world, in its own colour:

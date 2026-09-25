@@ -8,9 +8,10 @@ import me.shedaniel.autoconfig.annotation.ConfigEntry;
 @SuppressWarnings("CanBeFinal")
 public class StatusEffectHudConfig implements ICoreSettingsContainer {
     @ConfigEntry.Gui.CollapsibleObject
-    public CoreSettings coreSettings = new CoreSettings("Status Effect HUD", true, 5, 0, ElementAnchor.LEFT);
+    public CoreSettings coreSettings = new CoreSettings("Status Effect HUD", true, 5, 144, ElementAnchor.TOP_LEFT);
     @ConfigEntry.Gui.Tooltip public boolean showDurations = true;
     @ConfigEntry.Gui.Tooltip public boolean showIcons = true;
+    @ConfigEntry.Gui.Tooltip public boolean hideVanillaStatusEffects = true;
 
     @Override
     public CoreSettings getCoreSettings() {

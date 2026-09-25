@@ -127,7 +127,7 @@ public final class BrainageHUDClientGameTest implements FabricClientGameTest {
 						context,
 						"status-effects",
 						"Status Effect HUD",
-						"The Status Effect HUD lists Speed II with its time left and the infinite Regeneration, each with its full-size effect icon on the left and the name above the time left; with Show Vanilla Status Effects off the game's icons disappear and the top-right HUDs move back up."
+						"The Status Effect HUD lists Speed II with its time left and the infinite Regeneration, each with its full-size effect icon on the left and the name above the time left. By default the game's own icons are hidden while the HUD is on and the top-right HUDs stay put; with Hide Vanilla Status Effects off the icons return and the top-right HUDs move down; with Show Vanilla Status Effects off the icons disappear again and the top-right HUDs move back up."
 				);
 				context.runOnClient(client -> assertHudLines("Status Effect", new StatusEffectHud().getLines(), List.of()));
 				server.runOnServer(minecraftServer -> {
@@ -139,7 +139,7 @@ public final class BrainageHUDClientGameTest implements FabricClientGameTest {
 				context.waitTicks(5);
 				context.runOnClient(client -> {
 					assertHudLines("Status Effect", new StatusEffectHud().getLines(), List.of("Speed II: 1:23", "Regeneration: Infinite"));
-					assertTopRightShift(libraryConfig().adjustTopRightElementsWithStatusEffectsAmount);
+					assertTopRightShift(0);
 				});
 				System.out.println("[STDOUT]: Status Effect HUD screenshot: " + context.takeScreenshot("status-effect-hud"));
 				System.out.println("[STDOUT]: Status Effect HUD large screenshot: " + takeLargeScreenshot(context, "status-effect-hud-large"));
@@ -150,11 +150,19 @@ public final class BrainageHUDClientGameTest implements FabricClientGameTest {
 				System.out.println("[STDOUT]: Status Effect HUD without durations large screenshot: " + takeLargeScreenshot(context, "status-effect-hud-no-durations-large"));
 				context.runOnClient(client -> {
 					ConfigUtils.getConfig().statusEffectHudConfig.showDurations = true;
+					ConfigUtils.getConfig().statusEffectHudConfig.hideVanillaStatusEffects = false;
+					assertTopRightShift(libraryConfig().adjustTopRightElementsWithStatusEffectsAmount);
+				});
+				System.out.println("[STDOUT]: Vanilla status effects shown screenshot: " + context.takeScreenshot("vanilla-status-effects-shown"));
+				context.runOnClient(client -> {
 					libraryConfig().showVanillaStatusEffects = false;
 					assertTopRightShift(0);
 				});
 				System.out.println("[STDOUT]: Vanilla status effects hidden screenshot: " + context.takeScreenshot("vanilla-status-effects-hidden"));
-				context.runOnClient(client -> libraryConfig().showVanillaStatusEffects = true);
+				context.runOnClient(client -> {
+					libraryConfig().showVanillaStatusEffects = true;
+					ConfigUtils.getConfig().statusEffectHudConfig.hideVanillaStatusEffects = true;
+				});
 				server.runOnServer(minecraftServer -> minecraftServer.getPlayerList().getPlayers().getFirst().removeAllEffects());
 				context.waitTicks(5);
 
@@ -579,7 +587,8 @@ public final class BrainageHUDClientGameTest implements FabricClientGameTest {
 		int shift = HudRenderer.getPosY(keystrokes, 0) - unshifted;
 		if (shift != expectedShift) {
 			throw new AssertionError("Expected top-right elements to be shifted down by " + expectedShift + " with Show Vanilla Status Effects "
-					+ (libraryConfig().showVanillaStatusEffects ? "on" : "off") + ", but they are shifted by " + shift + ".");
+					+ (libraryConfig().showVanillaStatusEffects ? "on" : "off") + " and the Status Effect HUD's Hide Vanilla Status Effects "
+					+ (ConfigUtils.getConfig().statusEffectHudConfig.hideVanillaStatusEffects ? "on" : "off") + ", but they are shifted by " + shift + ".");
 		}
 	}
 

@@ -1,11 +1,13 @@
 package io.github.brainage04.brainagehud;
 
 import io.github.brainage04.brainagehud.config.core.ModConfig;
+import io.github.brainage04.brainagehud.config.hud.basic.StatusEffectHudConfig;
 import io.github.brainage04.brainagehud.hud.*;
 import io.github.brainage04.brainagehud.hud.custom.ArmourInfoHud;
 import io.github.brainage04.brainagehud.hud.custom.EnchantInfoHud;
 import io.github.brainage04.brainagehud.hud.custom.KeystrokesHud;
 import io.github.brainage04.brainagehud.keys.ModKeys;
+import io.github.brainage04.brainagehud.util.ConfigUtils;
 import io.github.brainage04.hudrendererlib.HudRendererLib;
 import me.shedaniel.autoconfig.serializer.GsonConfigSerializer;
 import org.lwjgl.glfw.GLFW;
@@ -45,6 +47,10 @@ public final class BrainageHUD {
         HudRendererLib.registerHudElement(new ReachHud());
         HudRendererLib.registerHudElement(new StatusEffectHud());
         HudRendererLib.registerHudElement(new ToggleSprintHud());
+        HudRendererLib.registerVanillaStatusEffectsHider(() -> {
+            StatusEffectHudConfig config = ConfigUtils.getConfig().statusEffectHudConfig;
+            return config.coreSettings.enabled && config.hideVanillaStatusEffects;
+        });
 
         initialized = true;
 

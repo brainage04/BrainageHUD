@@ -447,6 +447,8 @@
   "text.autoconfig.brainagehud.option.statusEffectHudConfig.coreSettings.enabled": "Enabled",
   "text.autoconfig.brainagehud.option.statusEffectHudConfig.coreSettings.x": "X Coordinate",
   "text.autoconfig.brainagehud.option.statusEffectHudConfig.coreSettings.y": "Y Coordinate",
+  "text.autoconfig.brainagehud.option.statusEffectHudConfig.hideVanillaStatusEffects": "Hide Vanilla Status Effects",
+  "text.autoconfig.brainagehud.option.statusEffectHudConfig.hideVanillaStatusEffects.@Tooltip": "Hide the game's status effect icons in the top right while this HUD is on.",
   "text.autoconfig.brainagehud.option.statusEffectHudConfig.showDurations": "Show Durations",
   "text.autoconfig.brainagehud.option.statusEffectHudConfig.showDurations.@Tooltip": "Also show how long each effect has left.",
   "text.autoconfig.brainagehud.option.statusEffectHudConfig.showIcons": "Show Icons",

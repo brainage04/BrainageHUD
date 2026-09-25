@@ -33,7 +33,7 @@ import static io.github.brainage04.brainagehud.util.ConfigUtils.getConfig;
 public class StatusEffectHud implements CoreHudElement<StatusEffectHudConfig> {
     /** The vanilla effect sprite's size: exactly two text lines, so the name and time left span the icon. */
     private static final int ICON_SIZE = 18;
-    private static final int ICON_TEXT_OFFSET = ICON_SIZE + 2;
+    private static final int ICON_TEXT_OFFSET = ICON_SIZE + 4;
     /** The sprite's art sits a pixel low in its 18x18 frame, so drawing it this much higher centres the art on the text. */
     private static final int ICON_RAISE = 1;
 
