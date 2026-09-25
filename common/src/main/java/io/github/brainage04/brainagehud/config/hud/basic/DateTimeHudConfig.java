@@ -8,11 +8,11 @@ import me.shedaniel.autoconfig.annotation.ConfigEntry;
 @SuppressWarnings("CanBeFinal")
 public class DateTimeHudConfig implements ICoreSettingsContainer {
     @ConfigEntry.Gui.CollapsibleObject
-    public CoreSettings coreSettings = new CoreSettings("Date Time HUD", true, -77, 5, ElementAnchor.TOP_RIGHT);
-    public boolean showDate = true;
+    public CoreSettings coreSettings = new CoreSettings("Date/Time HUD", true, -77, 5, ElementAnchor.TOP_RIGHT);
+    @ConfigEntry.Gui.Tooltip public boolean showDate = true;
     public boolean showTime = true;
-    public boolean twelveHourFormat = true;
-    public boolean showTimezone = true;
+    @ConfigEntry.Gui.Tooltip public boolean twelveHourFormat = true;
+    @ConfigEntry.Gui.Tooltip public boolean showTimezone = true;
 
     @Override
     public CoreSettings getCoreSettings() {

@@ -10,13 +10,13 @@ import io.github.brainage04.brainagehud.command.GetEnchantInfoCommand;
 import io.github.brainage04.brainagehud.command.GetEnchantsCommand;
 import io.github.brainage04.brainagehud.command.WaypointsCommand;
 import io.github.brainage04.brainagehud.command.core.argument.ClientHolderReferenceArgumentType;
+import io.github.brainage04.brainagehud.util.ChatFeedback;
 import io.github.brainage04.brainagehud.util.ConfigUtils;
-import net.minecraft.client.Minecraft;
+import java.math.BigDecimal;
 import net.minecraft.commands.CommandBuildContext;
 import net.minecraft.commands.SharedSuggestionProvider;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.enchantment.Enchantment;
 
@@ -30,12 +30,6 @@ import net.minecraft.world.item.enchantment.Enchantment;
  */
 public final class ModCommands {
     private ModCommands() {}
-
-    /** Shows a command's output in the local player's chat. */
-    public static void feedback(Component message) {
-        Minecraft minecraft = Minecraft.getInstance();
-        if (minecraft.player != null) minecraft.player.sendSystemMessage(message);
-    }
 
     public static <S extends SharedSuggestionProvider> void registerClientCommands(
             CommandDispatcher<S> dispatcher, CommandBuildContext registryAccess) {
@@ -135,8 +129,13 @@ public final class ModCommands {
         ConfigUtils.getConfig().qualityOfLifeConfig.fullbright = amount;
         ConfigUtils.saveConfig();
 
-        feedback(Component.literal("Fullbright set to %s.".formatted(amount)));
+        ChatFeedback.success("Fullbright set to %s.".formatted(formatFullbright(amount)));
 
         return 1;
+    }
+
+    /** The amount without trailing zeros: "0.5", "1", "-0.25". */
+    static String formatFullbright(float amount) {
+        return new BigDecimal(Float.toString(amount)).stripTrailingZeros().toPlainString();
     }
 }

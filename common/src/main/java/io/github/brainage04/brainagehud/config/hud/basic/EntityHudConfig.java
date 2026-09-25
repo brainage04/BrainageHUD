@@ -9,10 +9,10 @@ import me.shedaniel.autoconfig.annotation.ConfigEntry;
 public class EntityHudConfig implements ICoreSettingsContainer {
     @ConfigEntry.Gui.CollapsibleObject
     public CoreSettings coreSettings = new CoreSettings("Entity HUD", false, -5, 125, ElementAnchor.TOP_RIGHT);
-    public boolean showCreatures = true;
+    @ConfigEntry.Gui.Tooltip public boolean showCreatures = true;
     @ConfigEntry.Gui.Tooltip public boolean showWaterCreatures = true;
     @ConfigEntry.Gui.Tooltip public boolean showAmbient = true;
-    public boolean showMonsters = true;
+    @ConfigEntry.Gui.Tooltip public boolean showMonsters = true;
     @ConfigEntry.Gui.Tooltip public boolean showOthers = true;
 
     @Override

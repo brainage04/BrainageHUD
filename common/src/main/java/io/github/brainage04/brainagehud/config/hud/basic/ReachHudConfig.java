@@ -10,10 +10,10 @@ import me.shedaniel.autoconfig.annotation.ConfigEntry;
 public class ReachHudConfig implements ICoreSettingsContainer {
     @ConfigEntry.Gui.CollapsibleObject
     public CoreSettings coreSettings = new CoreSettings("Reach HUD", true, 0, 30, ElementAnchor.CENTER);
-    @ConfigEntry.BoundedDiscrete(min = 0, max = MathUtils.MAX_DECIMAL_PLACES) public int decimalPlaces = 2;
+    @ConfigEntry.Gui.Tooltip @ConfigEntry.BoundedDiscrete(min = 0, max = MathUtils.MAX_DECIMAL_PLACES) public int decimalPlaces = 2;
     public boolean showName = true;
     public boolean showCoordinates = true;
-    public boolean updateOnAttackClick = false;
+    @ConfigEntry.Gui.Tooltip public boolean updateOnAttackClick = false;
 
     @Override
     public CoreSettings getCoreSettings() {

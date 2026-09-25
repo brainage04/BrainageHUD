@@ -1,7 +1,6 @@
 package io.github.brainage04.brainagehud.command;
 
-import static io.github.brainage04.brainagehud.command.core.ModCommands.feedback;
-
+import io.github.brainage04.brainagehud.util.ChatFeedback;
 import io.github.brainage04.brainagehud.util.ConfigUtils;
 import io.github.brainage04.brainagehud.util.EnchantmentUtils;
 import java.util.List;
@@ -24,8 +23,9 @@ public class BlacklistedEnchantsCommand {
         String enchantmentId = EnchantmentUtils.getEnchantmentId(enchantmentHolder);
 
         if (blacklist.contains(enchantmentId)) {
-            feedback(
-                    EnchantmentUtils.getEnchantmentName(enchantmentHolder)
+            ChatFeedback.warning(
+                    Component.empty()
+                            .append(EnchantmentUtils.getEnchantmentName(enchantmentHolder))
                             .append(" is already blacklisted!"));
 
             return 0;
@@ -34,7 +34,7 @@ public class BlacklistedEnchantsCommand {
         blacklist.add(enchantmentId);
         ConfigUtils.saveConfig();
 
-        feedback(
+        ChatFeedback.success(
                 Component.empty()
                         .append(EnchantmentUtils.getEnchantmentName(enchantmentHolder))
                         .append(" is now blacklisted."));
@@ -44,8 +44,9 @@ public class BlacklistedEnchantsCommand {
 
     public static int executeRemove(Holder<Enchantment> enchantmentHolder) {
         if (!getBlacklist().remove(EnchantmentUtils.getEnchantmentId(enchantmentHolder))) {
-            feedback(
-                    EnchantmentUtils.getEnchantmentName(enchantmentHolder)
+            ChatFeedback.warning(
+                    Component.empty()
+                            .append(EnchantmentUtils.getEnchantmentName(enchantmentHolder))
                             .append(" is not blacklisted!"));
 
             return 0;
@@ -53,7 +54,7 @@ public class BlacklistedEnchantsCommand {
 
         ConfigUtils.saveConfig();
 
-        feedback(
+        ChatFeedback.success(
                 Component.empty()
                         .append(EnchantmentUtils.getEnchantmentName(enchantmentHolder))
                         .append(" is no longer blacklisted."));
@@ -64,7 +65,7 @@ public class BlacklistedEnchantsCommand {
     public static int executeQuery() {
         List<String> blacklist = getBlacklist();
         if (blacklist.isEmpty()) {
-            feedback(Component.literal("No blacklisted enchantments."));
+            ChatFeedback.info("No blacklisted enchantments.");
 
             return 1;
         }
@@ -75,7 +76,7 @@ public class BlacklistedEnchantsCommand {
                         .registryAccess()
                         .lookupOrThrow(Registries.ENCHANTMENT);
 
-        feedback(Component.literal("Enchantment blacklist:"));
+        ChatFeedback.info("Enchantment blacklist:");
 
         for (String enchantmentId : blacklist) {
             Identifier identifier = Identifier.tryParse(enchantmentId);
@@ -88,7 +89,7 @@ public class BlacklistedEnchantsCommand {
                                     .<Component>map(EnchantmentUtils::getEnchantmentName)
                                     .orElseGet(() -> Component.literal(enchantmentId));
 
-            feedback(Component.literal(" - ").append(name));
+            ChatFeedback.detail(Component.literal(" - ").append(name));
         }
 
         return 1;

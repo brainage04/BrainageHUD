@@ -2,6 +2,7 @@ package io.github.brainage04.brainagehud.config.other;
 
 import java.util.ArrayList;
 import java.util.List;
+import me.shedaniel.autoconfig.annotation.ConfigEntry;
 
 /**
  * Enchantment information settings ported from GetEnchantInfo's {@code config/getenchantinfo.json}.
@@ -12,7 +13,7 @@ import java.util.List;
  */
 @SuppressWarnings("CanBeFinal")
 public class EnchantInfoConfig {
-    public boolean highlightMaxLevelEnchants = true;
+    @ConfigEntry.Gui.Tooltip public boolean highlightMaxLevelEnchants = true;
 
     public List<String> blacklistedEnchantmentIds =
             new ArrayList<>(

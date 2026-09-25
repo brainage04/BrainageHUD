@@ -8,7 +8,7 @@ import me.shedaniel.autoconfig.annotation.ConfigEntry;
 @SuppressWarnings("CanBeFinal")
 public class ProjectileHudConfig implements ICoreSettingsContainer {
     @ConfigEntry.Gui.CollapsibleObject
-    public CoreSettings coreSettings = new CoreSettings("Projectile HUD", false, -5, -5, ElementAnchor.BOTTOM_RIGHT);
+    public CoreSettings coreSettings = new CoreSettings("Projectile HUD", true, -5, -5, ElementAnchor.BOTTOM_RIGHT);
     public boolean showArrows = true;
     public boolean showSnowballs = true;
     public boolean showEggs = true;

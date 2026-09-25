@@ -3,6 +3,7 @@ package io.github.brainage04.brainagehud.keys;
 import com.mojang.blaze3d.platform.InputConstants;
 import io.github.brainage04.brainagehud.BrainageHUD;
 import io.github.brainage04.brainagehud.screen.WaypointsScreen;
+import io.github.brainage04.brainagehud.util.ChatFeedback;
 import io.github.brainage04.brainagehud.util.InventoryCounter;
 import io.github.brainage04.brainagehud.waypoint.WaypointActions;
 import io.github.brainage04.hudrendererlib.HudRendererLib;
@@ -11,11 +12,8 @@ import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
 import org.lwjgl.glfw.GLFW;
-
-import static io.github.brainage04.brainagehud.command.core.ModCommands.feedback;
 
 /**
  * BrainageHUD's keys, listed under its own category: Create Waypoint and Manage Waypoints (B and U
@@ -52,13 +50,19 @@ public final class ModKeys {
         if (player == null) return;
 
         List<ItemStack> slots = InventoryCounter.slots(player);
+        if (slots.stream().allMatch(ItemStack::isEmpty)) {
+            ChatFeedback.warning("Your inventory is empty.");
+            return;
+        }
+
+        ChatFeedback.info("Inventory stats:");
         for (int slot = 0; slot < slots.size(); slot++) {
             ItemStack stack = slots.get(slot);
             if (stack.isEmpty()) continue;
             String where = slot == slots.size() - 1 ? "Off hand" : "Slot " + slot;
             String line = "%s: %d × %s".formatted(where, stack.getCount(), BuiltInRegistries.ITEM.getKey(stack.getItem()));
             if (!stack.getComponentsPatch().isEmpty()) line += " " + stack.getComponentsPatch();
-            feedback(Component.literal(line));
+            ChatFeedback.detail(line);
         }
     }
 

@@ -6,7 +6,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.function.Predicate;
+import net.minecraft.ChatFormatting;
 import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
 
@@ -57,6 +60,13 @@ public final class InventoryCounter {
             }
         }
         return counts;
+    }
+
+    /** A tracker's bold header, e.g. "Food:", followed by a red "N/A" when the player carries none. */
+    public static Component header(String title, boolean none) {
+        MutableComponent header = Component.empty().append(Component.literal(title).withStyle(ChatFormatting.BOLD));
+        if (none) header.append(Component.literal(" N/A").withStyle(ChatFormatting.RED));
+        return header;
     }
 
     /** "Arrows: 96", or "Arrows: 96 [64, 32]" when the items are split over several slots. */

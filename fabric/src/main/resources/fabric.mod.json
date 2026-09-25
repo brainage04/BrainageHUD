@@ -3,7 +3,7 @@
 	"id": "${mod_id}",
 	"version": "${mod_version}",
 	"name": "${mod_name}",
-	"description": "A mod that adds useful HUD elements to Minecraft.",
+	"description": "A Fabric mod that adds useful HUD elements to Minecraft.",
 	"authors": [
 		"brainage04"
 	],

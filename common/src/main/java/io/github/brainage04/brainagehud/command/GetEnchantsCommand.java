@@ -1,7 +1,6 @@
 package io.github.brainage04.brainagehud.command;
 
-import static io.github.brainage04.brainagehud.command.core.ModCommands.feedback;
-
+import io.github.brainage04.brainagehud.util.ChatFeedback;
 import io.github.brainage04.brainagehud.util.ConfigUtils;
 import io.github.brainage04.brainagehud.util.EnchantmentUtils;
 import java.util.ArrayList;
@@ -34,7 +33,7 @@ public class GetEnchantsCommand {
                 .forEach(acceptableEnchantments::add);
 
         if (acceptableEnchantments.isEmpty()) {
-            feedback(Component.literal("No acceptable enchantments found!"));
+            ChatFeedback.info("No acceptable enchantments found!");
 
             return 1;
         }
@@ -50,7 +49,7 @@ public class GetEnchantsCommand {
             }
         }
 
-        feedback(
+        ChatFeedback.info(
                 Component.literal("Acceptable enchants for ")
                         .append(itemStack.getHoverName())
                         .append(":")
@@ -59,20 +58,20 @@ public class GetEnchantsCommand {
         if (!conflictGroups.isEmpty()) {
             // groups are linked by conflicts, not necessarily all mutually exclusive: riptide
             // excludes both loyalty and channeling, which can still be combined with each other
-            feedback(Component.literal("Enchantments that conflict within each group:"));
+            ChatFeedback.detail("Enchantments that conflict within each group:");
 
             for (List<Holder.Reference<Enchantment>> group : conflictGroups) {
-                feedback(
+                ChatFeedback.detail(
                         Component.literal(" - ")
                                 .append(EnchantmentUtils.joinEnchantmentNames(group, itemStack)));
             }
         }
 
         if (!unconflictedEnchantments.isEmpty()) {
-            feedback(Component.literal("Enchantments with no conflicts:"));
+            ChatFeedback.detail("Enchantments with no conflicts:");
 
             for (Holder<Enchantment> enchantment : unconflictedEnchantments) {
-                feedback(
+                ChatFeedback.detail(
                         Component.literal(" - ")
                                 .append(EnchantmentUtils.getEnchantmentName(enchantment, itemStack)));
             }

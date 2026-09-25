@@ -98,7 +98,7 @@ public final class WaypointRenderer {
         float markerSize = (float) Math.max(1.0D, distance / MARKER_GROWTH_START);
         float bob = 0.12F * Mth.sin(frame.time * 0.08F);
         float gemHalfHeight = 0.36F * markerSize;
-        float gemCentre = 1.1F + (1.3F + bob) * markerSize;
+        float gemCentre = 0.1F + (1.3F + bob) * markerSize;
 
         poseStack.pushPose();
         float projection = distance > frame.projectionDistance ? (float) (frame.projectionDistance / distance) : 1.0F;

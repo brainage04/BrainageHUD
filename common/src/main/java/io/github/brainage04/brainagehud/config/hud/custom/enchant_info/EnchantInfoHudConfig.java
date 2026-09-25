@@ -12,10 +12,10 @@ public class EnchantInfoHudConfig implements ICoreSettingsContainer {
             new CoreSettings("Enchant Info HUD", true, 5, 0, ElementAnchor.LEFT);
 
     public boolean showItemName = true;
-    public boolean showEnchantments = true;
-    public boolean showMaxLevels = true;
-    public boolean showMissingEnchantments = true;
-    public boolean showMissingHeader = true;
+    @ConfigEntry.Gui.Tooltip public boolean showEnchantments = true;
+    @ConfigEntry.Gui.Tooltip public boolean showMaxLevels = true;
+    @ConfigEntry.Gui.Tooltip public boolean showMissingEnchantments = true;
+    @ConfigEntry.Gui.Tooltip public boolean showMissingHeader = true;
 
     @Override
     public CoreSettings getCoreSettings() {

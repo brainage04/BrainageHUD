@@ -11,17 +11,17 @@ public class PositionHudConfig implements ICoreSettingsContainer {
     @ConfigEntry.Gui.CollapsibleObject
     public CoreSettings coreSettings = new CoreSettings("Position HUD", true, 5, 5, ElementAnchor.TOP_LEFT);
     public boolean showPosition = true;
-    @ConfigEntry.BoundedDiscrete(min = 0, max = MathUtils.MAX_DECIMAL_PLACES) public int positionDecimalPlaces = 1;
-    public boolean showChunkPosition = true;
-    public boolean cCounter = true;
-    public boolean eCounter = true;
-    public boolean showDirection = true;
+    @ConfigEntry.Gui.Tooltip @ConfigEntry.BoundedDiscrete(min = 0, max = MathUtils.MAX_DECIMAL_PLACES) public int positionDecimalPlaces = 1;
+    @ConfigEntry.Gui.Tooltip public boolean showChunkPosition = true;
+    @ConfigEntry.Gui.Tooltip public boolean cCounter = true;
+    @ConfigEntry.Gui.Tooltip public boolean eCounter = true;
+    @ConfigEntry.Gui.Tooltip public boolean showDirection = true;
     public boolean showRotation = true;
     @ConfigEntry.Gui.Tooltip public boolean showTrueYaw = false;
     @ConfigEntry.Gui.Tooltip public boolean rotationOnlyWithFarmingTool = false;
-    @ConfigEntry.BoundedDiscrete(min = 0, max = MathUtils.MAX_DECIMAL_PLACES) public int rotationDecimalPlaces = 2;
-    public boolean showLight = true;
-    public boolean showBiome = true;
+    @ConfigEntry.Gui.Tooltip @ConfigEntry.BoundedDiscrete(min = 0, max = MathUtils.MAX_DECIMAL_PLACES) public int rotationDecimalPlaces = 2;
+    @ConfigEntry.Gui.Tooltip public boolean showLight = true;
+    @ConfigEntry.Gui.Tooltip public boolean showBiome = true;
 
     @Override
     public CoreSettings getCoreSettings() {

@@ -8,7 +8,7 @@ import me.shedaniel.autoconfig.annotation.ConfigEntry;
 @SuppressWarnings("CanBeFinal")
 public class FoodHudConfig implements ICoreSettingsContainer {
     @ConfigEntry.Gui.CollapsibleObject
-    public CoreSettings coreSettings = new CoreSettings("Food HUD", false, -5, -70, ElementAnchor.BOTTOM_RIGHT);
+    public CoreSettings coreSettings = new CoreSettings("Food HUD", true, -5, -70, ElementAnchor.BOTTOM_RIGHT);
     @ConfigEntry.Gui.Tooltip public boolean showSlotCounts = false;
 
     @Override

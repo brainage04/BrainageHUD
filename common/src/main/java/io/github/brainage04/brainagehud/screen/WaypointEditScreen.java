@@ -40,7 +40,7 @@ public class WaypointEditScreen extends Screen {
         int left = (width - FIELD_WIDTH) / 2;
 
         nameBox = addRenderableWidget(new EditBox(font, left, 60, FIELD_WIDTH, 20, Component.literal("Name")));
-        nameBox.setMaxLength(64);
+        nameBox.setMaxLength(WaypointActions.MAX_NAME_LENGTH);
         xBox = addRenderableWidget(new EditBox(font, left, 104, COORDINATE_WIDTH, 20, Component.literal("X")));
         yBox = addRenderableWidget(new EditBox(font, left + (FIELD_WIDTH - COORDINATE_WIDTH) / 2, 104, COORDINATE_WIDTH, 20, Component.literal("Y")));
         zBox = addRenderableWidget(new EditBox(font, left + FIELD_WIDTH - COORDINATE_WIDTH, 104, COORDINATE_WIDTH, 20, Component.literal("Z")));
@@ -86,8 +86,9 @@ public class WaypointEditScreen extends Screen {
     private void save() {
         String name = nameBox.getValue().strip();
         Optional<BlockPos> pos = parsePosition();
-        if (name.isEmpty()) {
-            error = "Enter a name.";
+        Optional<String> problem = WaypointActions.validateName(name);
+        if (problem.isPresent()) {
+            error = problem.get();
             return;
         }
         if (pos.isEmpty()) {

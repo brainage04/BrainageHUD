@@ -14,9 +14,9 @@ public class ArmourInfoHudConfig implements ICoreSettingsContainer {
     public boolean showMainHand = false;
     public boolean showOffHand = false;
     public boolean showItemNames = false;
-    public boolean showDurabilityBar = true;
-    public DurabilityFormat durabilityFormat = DurabilityFormat.FIRST_NUMBER;
-    @ConfigEntry.BoundedDiscrete(min = 0, max = MathUtils.MAX_DECIMAL_PLACES) public int durabilityDecimalPlaces = 1;
+    @ConfigEntry.Gui.Tooltip public boolean showDurabilityBar = true;
+    @ConfigEntry.Gui.Tooltip public DurabilityFormat durabilityFormat = DurabilityFormat.FIRST_NUMBER;
+    @ConfigEntry.Gui.Tooltip @ConfigEntry.BoundedDiscrete(min = 0, max = MathUtils.MAX_DECIMAL_PLACES) public int durabilityDecimalPlaces = 1;
 
     @Override
     public CoreSettings getCoreSettings() {

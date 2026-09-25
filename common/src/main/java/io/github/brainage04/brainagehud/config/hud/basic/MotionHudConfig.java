@@ -10,7 +10,7 @@ import me.shedaniel.autoconfig.annotation.ConfigEntry;
 public class MotionHudConfig implements ICoreSettingsContainer {
     @ConfigEntry.Gui.CollapsibleObject
     public CoreSettings coreSettings = new CoreSettings("Motion HUD", false, 5, 140, ElementAnchor.TOP_LEFT);
-    @ConfigEntry.BoundedDiscrete(min = 0, max = MathUtils.MAX_DECIMAL_PLACES) public int decimalPlaces = 2;
+    @ConfigEntry.Gui.Tooltip @ConfigEntry.BoundedDiscrete(min = 0, max = MathUtils.MAX_DECIMAL_PLACES) public int decimalPlaces = 2;
     public boolean showAxes = true;
     public boolean showHorizontalSpeed = true;
     @ConfigEntry.Gui.Tooltip public boolean showBlocksPerTick = false;

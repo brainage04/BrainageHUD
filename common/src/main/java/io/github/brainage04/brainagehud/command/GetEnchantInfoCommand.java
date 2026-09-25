@@ -1,7 +1,6 @@
 package io.github.brainage04.brainagehud.command;
 
-import static io.github.brainage04.brainagehud.command.core.ModCommands.feedback;
-
+import io.github.brainage04.brainagehud.util.ChatFeedback;
 import io.github.brainage04.brainagehud.util.EnchantmentUtils;
 import java.util.ArrayList;
 import java.util.List;
@@ -22,18 +21,18 @@ public class GetEnchantInfoCommand {
             Holder<Enchantment> enchantmentHolder) {
         Enchantment enchantment = enchantmentHolder.value();
 
-        feedback(
+        ChatFeedback.info(
                 Component.literal("Enchant info for ")
                         .append(EnchantmentUtils.getEnchantmentName(enchantmentHolder))
                         .append(":")
                         .withStyle(ChatFormatting.BOLD));
 
-        feedback(Component.literal("ID: %s".formatted(EnchantmentUtils.getEnchantmentId(enchantmentHolder))));
-        feedback(Component.literal("Max level: %d".formatted(enchantment.getMaxLevel())));
-        feedback(
+        ChatFeedback.detail(Component.literal("ID: %s".formatted(EnchantmentUtils.getEnchantmentId(enchantmentHolder))));
+        ChatFeedback.detail(Component.literal("Max level: %d".formatted(enchantment.getMaxLevel())));
+        ChatFeedback.detail(
                 Component.literal("Incompatible with: ")
                         .append(joinIncompatibleEnchantmentNames(enchantmentRegistry, enchantmentHolder)));
-        feedback(
+        ChatFeedback.detail(
                 Component.literal("Applied to: ")
                         .append(
                                 joinNames(
@@ -70,26 +69,21 @@ public class GetEnchantInfoCommand {
         List<Holder.Reference<Enchantment>> matches = findMatches(enchantmentRegistry, desiredEnchantmentString);
 
         if (matches.size() == 1) {
-            Holder.Reference<Enchantment> match = matches.getFirst();
-            feedback(
-                    Component.literal("Exact match found - ")
-                            .append(EnchantmentUtils.getEnchantmentName(match)));
-
-            sendEnchantmentInfo(enchantmentRegistry, match);
+            sendEnchantmentInfo(enchantmentRegistry, matches.getFirst());
 
             return 1;
         }
 
         if (matches.isEmpty()) {
-            feedback(Component.literal("No potential matches found!"));
+            ChatFeedback.error("No potential matches found!");
 
             return 0;
         }
 
-        feedback(Component.literal("No exact match found. Potential matches:"));
+        ChatFeedback.info("No exact match found. Potential matches:");
 
         for (Holder.Reference<Enchantment> enchantment : matches) {
-            feedback(
+            ChatFeedback.detail(
                     Component.empty()
                             .append(EnchantmentUtils.getEnchantmentName(enchantment))
                             .append(" - ")

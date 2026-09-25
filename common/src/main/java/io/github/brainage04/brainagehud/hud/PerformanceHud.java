@@ -1,9 +1,12 @@
 package io.github.brainage04.brainagehud.hud;
 
 import io.github.brainage04.brainagehud.config.hud.basic.PerformanceHudConfig;
+import io.github.brainage04.brainagehud.util.MathUtils;
 import io.github.brainage04.brainagehud.util.TimerUtils;
 import io.github.brainage04.hudrendererlib.hud.core.BasicCoreHudElement;
 import io.github.brainage04.hudrendererlib.util.TextList;
+import java.util.OptionalDouble;
+import java.util.OptionalLong;
 import net.minecraft.client.Minecraft;
 
 import static io.github.brainage04.brainagehud.util.ConfigUtils.getConfig;
@@ -32,7 +35,13 @@ public class PerformanceHud implements BasicCoreHudElement<PerformanceHudConfig>
         }
 
         if (getElementConfig().showGpuUsage) {
-            lines.add("GPU: %d%%".formatted(TimerUtils.getGpuUsage(500)));
+            OptionalLong usage = TimerUtils.getGpuUsage(500);
+            lines.add(usage.isPresent() ? "GPU: %d%%".formatted(usage.getAsLong()) : "GPU: -");
+        }
+
+        if (getElementConfig().showGpuFrameTime) {
+            OptionalDouble frameTime = TimerUtils.getGpuFrameTimeMillis(500);
+            lines.add(frameTime.isPresent() ? "GPU Time: %s ms".formatted(MathUtils.roundDecimalPlaces(frameTime.getAsDouble(), 1)) : "GPU Time: -");
         }
 
         if (getElementConfig().showCpuUsage) {
@@ -42,9 +51,10 @@ public class PerformanceHud implements BasicCoreHudElement<PerformanceHudConfig>
         return lines;
     }
 
-    public static boolean isGpuUsageEnabled() {
+    /** Whether a GPU line is shown, which needs the game to keep measuring the GPU. */
+    public static boolean isGpuProfilingEnabled() {
         PerformanceHudConfig config = getConfig().performanceHudConfig;
-        return config.coreSettings.enabled && config.showGpuUsage;
+        return config.coreSettings.enabled && (config.showGpuUsage || config.showGpuFrameTime);
     }
 
     @Override

@@ -22,6 +22,7 @@ import io.github.brainage04.fabricmoddingconventions.ClientGameTestServers;
 import net.fabricmc.fabric.api.client.gametest.v1.FabricClientGameTest;
 import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext;
 
+import net.minecraft.ChatFormatting;
 import net.minecraft.client.KeyMapping;
 import org.lwjgl.glfw.GLFW;
 import net.minecraft.client.gui.components.Button;
@@ -30,6 +31,8 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.Style;
+import net.minecraft.network.chat.TextColor;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerPlayer;
@@ -39,9 +42,12 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.level.block.Blocks;
 
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Properties;
+import java.util.Set;
 
 @SuppressWarnings("UnstableApiUsage")
 public final class BrainageHUDClientGameTest implements FabricClientGameTest {
@@ -114,11 +120,11 @@ public final class BrainageHUDClientGameTest implements FabricClientGameTest {
 						context,
 						"inventory-trackers",
 						"Motion, entity and inventory trackers",
-						"The Projectile HUD counts 96 arrows over two slots and 16 ender pearls, and the Food HUD lists the bread and steak in inventory order."
+						"Under their bold headers, the Projectile HUD counts 96 arrows over two slots and 16 ender pearls, and the Food HUD lists the bread and steak in inventory order."
 				);
 				context.runOnClient(client -> {
-					assertHudLines("Projectile", new ProjectileHud().getLines(), List.of("Arrows: 96 [64, 32]", "Ender Pearls: 16"));
-					assertHudLines("Food", new FoodHud().getLines(), List.of("Bread: 12", "Steak: 5"));
+					assertHudLines("Projectile", new ProjectileHud().getLines(), List.of("Projectiles:", "Arrows: 96 [64, 32]", "Ender Pearls: 16"));
+					assertHudLines("Food", new FoodHud().getLines(), List.of("Food:", "Bread: 12", "Steak: 5"));
 				});
 				System.out.println("[STDOUT]: Inventory trackers screenshot: " + context.takeScreenshot("inventory-trackers"));
 
@@ -157,6 +163,32 @@ public final class BrainageHUDClientGameTest implements FabricClientGameTest {
 				});
 				context.runOnClient(client -> client.gui.setScreen(null));
 				context.waitTicks(20);
+
+				ClientGameTestRecorder.showStep(
+						context,
+						"chat-feedback",
+						"Chat feedback",
+						"Every message starts with a grey [BrainageHUD] prefix: the Create Waypoint key's confirmation is green, wrong /waypoints input gets a red usage error, and /waypoints list sends one white header followed by unprefixed lines."
+				);
+				Set<Component> chat = new LinkedHashSet<>();
+				// the filter sees every chat message, including those already shown, whenever the chat is laid out again
+				context.runOnClient(client -> client.gui.hud.getChat().setVisibleMessageFilter(message -> {
+					chat.add(message.content());
+					return true;
+				}));
+				runClientCommand(context, "waypoints add");
+				runClientCommand(context, "waypoints add Base 1 two 3");
+				runClientCommand(context, "waypoints list");
+				context.waitTicks(10);
+				context.runOnClient(client -> {
+					client.gui.hud.getChat().setVisibleMessageFilter(message -> true);
+					assertChatMessage(chat, "[BrainageHUD] Created waypoint Waypoint 1 at 12, -60, -9.", "Created waypoint ", ChatFormatting.GREEN);
+					assertChatMessage(chat, "[BrainageHUD] Usage: /waypoints add <name> [<x> <y> <z>]", "Usage: ", ChatFormatting.RED);
+					assertChatMessage(chat, "[BrainageHUD] X, Y and Z must be whole numbers.", "X, Y and Z", ChatFormatting.RED);
+					assertChatMessage(chat, "[BrainageHUD] Waypoints:", "Waypoints:", ChatFormatting.WHITE);
+					assertChatMessage(chat, " - Waypoint 1 12, -60, -9 (Overworld)", " - ", ChatFormatting.WHITE);
+				});
+				System.out.println("[STDOUT]: Chat feedback screenshot: " + context.takeScreenshot("chat-feedback"));
 
 				ClientGameTestRecorder.showStep(
 						context,
@@ -426,6 +458,30 @@ public final class BrainageHUDClientGameTest implements FabricClientGameTest {
 		BlockPos pos = waypoints.getFirst().pos();
 		if (!pos.equals(new BlockPos(12, -60, -9))) {
 			throw new AssertionError("Expected \"Waypoint 1\" where the player stands, at 12, -60, -9, but it is at " + pos.toShortString() + ".");
+		}
+	}
+
+	/** Runs a command as if typed in chat; Fabric runs client commands without sending them to the server. */
+	private static void runClientCommand(ClientGameTestContext context, String command) {
+		context.runOnClient(client -> client.getConnection().sendCommand(command));
+	}
+
+	/** Asserts that the chat shows {@code expected} and that its part starting with {@code bodyStart} has {@code colour}. */
+	private static void assertChatMessage(Set<Component> chat, String expected, String bodyStart, ChatFormatting colour) {
+		Component message = chat.stream()
+				.filter(line -> line.getString().equals(expected))
+				.findFirst()
+				.orElseThrow(() -> new AssertionError("Expected the chat to show \"" + expected + "\", but it shows " + chat.stream().map(Component::getString).toList() + "."));
+		TextColor[] bodyColour = new TextColor[1];
+		message.visit((style, text) -> {
+			if (text.startsWith(bodyStart)) {
+				bodyColour[0] = style.getColor();
+				return Optional.of(true);
+			}
+			return Optional.empty();
+		}, Style.EMPTY);
+		if (!TextColor.fromLegacyFormat(colour).equals(bodyColour[0])) {
+			throw new AssertionError("Expected \"" + expected + "\" in " + colour + ", but its colour is " + bodyColour[0] + ".");
 		}
 	}
 

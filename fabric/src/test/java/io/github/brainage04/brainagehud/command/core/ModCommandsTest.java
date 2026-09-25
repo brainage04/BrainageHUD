@@ -58,6 +58,22 @@ class ModCommandsTest {
         assertFalse(isExecutable("blacklistedenchants add brainagehud_test:protection"));
     }
 
+    @Test
+    void wrongWaypointsInputStillRunsTheUsageMessage() {
+        for (String command : List.of("waypoints add", "waypoints remove", "waypoints remove Base extra", "waypoints list extra", "waypoints teleport Base")) {
+            assertTrue(isExecutable(command), command);
+        }
+        assertEquals(List.of("waypoints", "add", "name", "coordinates"), parsedNodes("waypoints add \"My Base\" 1 2 3"));
+    }
+
+    @Test
+    void fullbrightAmountsDropTrailingZeros() {
+        assertEquals("0.5", ModCommands.formatFullbright(0.5F));
+        assertEquals("1", ModCommands.formatFullbright(1.0F));
+        assertEquals("0", ModCommands.formatFullbright(0.0F));
+        assertEquals("-0.25", ModCommands.formatFullbright(-0.25F));
+    }
+
     private static List<String> parsedNodes(String command) {
         ParseResults<SharedSuggestionProvider> parse = dispatcher.parse(command, null);
         assertTrue(parse.getExceptions().isEmpty() && !parse.getReader().canRead(), () -> command + " did not parse: " + parse.getExceptions());

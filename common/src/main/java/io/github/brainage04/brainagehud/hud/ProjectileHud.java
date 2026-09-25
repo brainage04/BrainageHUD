@@ -14,7 +14,7 @@ import net.minecraft.world.item.Items;
 
 import static io.github.brainage04.brainagehud.util.ConfigUtils.getConfig;
 
-/** How many of each throwable or shootable item the player carries. Kinds they have none of are left out. */
+/** How many of each throwable or shootable item the player carries. Kinds they have none of are left out; with none at all, the header shows N/A. */
 public class ProjectileHud implements BasicCoreHudElement<ProjectileHudConfig> {
     @Override
     public TextList getLines() {
@@ -24,11 +24,15 @@ public class ProjectileHud implements BasicCoreHudElement<ProjectileHudConfig> {
 
         ProjectileHudConfig config = getElementConfig();
         List<ItemStack> slots = InventoryCounter.slots(player);
-        add(lines, slots, config, config.showArrows, "Arrows", stack -> stack.is(ItemTags.ARROWS));
-        add(lines, slots, config, config.showSnowballs, "Snowballs", stack -> stack.is(Items.SNOWBALL));
-        add(lines, slots, config, config.showEggs, "Eggs", stack -> stack.is(ItemTags.EGGS));
-        add(lines, slots, config, config.showEnderPearls, "Ender Pearls", stack -> stack.is(Items.ENDER_PEARL));
-        add(lines, slots, config, config.showWindCharges, "Wind Charges", stack -> stack.is(Items.WIND_CHARGE));
+        TextList rows = new TextList();
+        add(rows, slots, config, config.showArrows, "Arrows", stack -> stack.is(ItemTags.ARROWS));
+        add(rows, slots, config, config.showSnowballs, "Snowballs", stack -> stack.is(Items.SNOWBALL));
+        add(rows, slots, config, config.showEggs, "Eggs", stack -> stack.is(ItemTags.EGGS));
+        add(rows, slots, config, config.showEnderPearls, "Ender Pearls", stack -> stack.is(Items.ENDER_PEARL));
+        add(rows, slots, config, config.showWindCharges, "Wind Charges", stack -> stack.is(Items.WIND_CHARGE));
+
+        lines.add(InventoryCounter.header("Projectiles:", rows.isEmpty()));
+        lines.addAll(rows);
         return lines;
     }
 

@@ -12,7 +12,8 @@ public class PerformanceHudConfig implements ICoreSettingsContainer {
     public boolean showFps = true;
     public boolean showRamUsage = false;
     public boolean showCpuUsage = false;
-    @ConfigEntry.Gui.Tooltip(count = 3) public boolean showGpuUsage = false;
+    @ConfigEntry.Gui.Tooltip public boolean showGpuUsage = false;
+    @ConfigEntry.Gui.Tooltip public boolean showGpuFrameTime = false;
 
     @Override
     public CoreSettings getCoreSettings() {

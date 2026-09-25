@@ -171,7 +171,7 @@ public class WaypointsScreen extends Screen {
             if (!waypoint.visible) {
                 graphics.text(font, "(hidden)", x + font.width(waypoint.name) + 6, y, GREY);
             }
-            String where = builtIn ? "every dimension" : waypoint.dimension;
+            String where = builtIn ? "every dimension" : WaypointActions.dimensionName(waypoint.dimension);
             graphics.text(font, "%s  %s".formatted(waypoint.pos().toShortString(), where), x, y + 11, GREY);
         }
 

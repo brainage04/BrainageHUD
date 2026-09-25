@@ -9,6 +9,7 @@
     "MixinClientPlayNetworkHandler",
     "MixinDebugScreenEntryList",
     "MixinKeyMapping",
+    "MixinMinecraft",
     "MixinPingMeasurer"
   ],
   "mixins": [

@@ -15,7 +15,7 @@ public class NetworkHudConfig implements ICoreSettingsContainer {
     @ConfigEntry.BoundedDiscrete(min = 1, max = 30) public int pingIntervalsTracked = 3;
     public boolean showTps = true;
     @ConfigEntry.Gui.Tooltip public boolean colourValues = true;
-    @ConfigEntry.BoundedDiscrete(min = 1, max = 30) public int tpsIntervalsTracked = 3;
+    @ConfigEntry.Gui.Tooltip @ConfigEntry.BoundedDiscrete(min = 1, max = 30) public int tpsIntervalsTracked = 3;
     @ConfigEntry.BoundedDiscrete(min = 0, max = MathUtils.MAX_DECIMAL_PLACES) public int tpsDecimalPlaces = 1;
 
     @Override
