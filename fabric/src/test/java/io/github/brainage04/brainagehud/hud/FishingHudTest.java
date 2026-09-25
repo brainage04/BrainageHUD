@@ -1,5 +1,7 @@
 package io.github.brainage04.brainagehud.hud;
 
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -91,6 +93,36 @@ class FishingHudTest {
 
         scene.fill(1, 1, Blocks.AIR.defaultBlockState(), 2);
         assertFalse(FishingHud.isOpenWater(scene, HOOK));
+    }
+
+    @Test
+    void chancesInOpenWaterWithoutLuckAreTheLootTableWeights() {
+        // fish 85, treasure 5, junk 10 out of 100
+        assertArrayEquals(new int[] {85, 5, 10}, FishingHud.getChances(true, 0));
+    }
+
+    @Test
+    void chancesOutsideOpenWaterLeaveOutTreasure() {
+        // fish 85 and junk 10 out of 95: 89.47% and 10.53%, so the leftover point goes to junk
+        assertArrayEquals(new int[] {89, 0, 11}, FishingHud.getChances(false, 0));
+    }
+
+    @Test
+    void luckOfTheSeaThreeShiftsWeightFromFishAndJunkToTreasure() {
+        // fish 82, treasure 11, junk 4 out of 97: 84.54%, 11.34% and 4.12%
+        assertArrayEquals(new int[] {85, 11, 4}, FishingHud.getChances(true, 3));
+        // fish 82 and junk 4 out of 86: 95.35% and 4.65%
+        assertArrayEquals(new int[] {95, 0, 5}, FishingHud.getChances(false, 3));
+    }
+
+    @Test
+    void chancesAlwaysAddUpToOneHundred() {
+        for (int tenths = -100; tenths <= 400; tenths++) {
+            for (boolean openWater : new boolean[] {true, false}) {
+                int[] chances = FishingHud.getChances(openWater, tenths / 10.0F);
+                assertEquals(100, chances[0] + chances[1] + chances[2], "luck " + tenths / 10.0F + ", open water " + openWater);
+            }
+        }
     }
 
     /** Air everywhere except the blocks set. */

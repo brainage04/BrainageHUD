@@ -18,7 +18,7 @@ BrainageHUD is a client-side Fabric and NeoForge mod that adds useful heads-up d
 - **Keystrokes HUD**: WASD, Space and the mouse buttons as they are pressed, and your clicks per second.
 - **Enchant Info HUD**: the held item's enchantments and the enchantments it could still get (see [Enchant Info](#enchant-info)).
 - **Status Effect HUD**: your active status effects with their icons, levels and how long each has left.
-- **Fishing HUD**: while your bobber is out, whether it is in open water, which decides whether treasure can be caught.
+- **Fishing HUD**: while your bobber is out, whether it is in open water (which decides whether treasure can be caught) and the chance of catching a fish, treasure or junk.
 
 Motion, Entity and Fishing are off by default; turn them on in the config editor. Every element can be configured to show as little or as much as you like.
 

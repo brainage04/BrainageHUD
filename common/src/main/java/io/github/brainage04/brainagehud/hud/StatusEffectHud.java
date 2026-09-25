@@ -34,6 +34,8 @@ public class StatusEffectHud implements CoreHudElement<StatusEffectHudConfig> {
     /** The vanilla effect sprite's size: exactly two text lines, so the name and time left span the icon. */
     private static final int ICON_SIZE = 18;
     private static final int ICON_TEXT_OFFSET = ICON_SIZE + 2;
+    /** The sprite's art sits a pixel low in its 18x18 frame, so drawing it this much higher centres the art on the text. */
+    private static final int ICON_RAISE = 1;
 
     public TextList getLines() {
         LocalPlayer player = Minecraft.getInstance().player;
@@ -85,10 +87,10 @@ public class StatusEffectHud implements CoreHudElement<StatusEffectHudConfig> {
         int posX = HudRenderer.getPosX(coreSettings, elementWidth);
         int posY = HudRenderer.getPosY(coreSettings, elementHeight);
 
-        ElementCorners corners = HudRenderer.setElementBounds(
-                coreSettings,
-                HudRenderer.getCornersWithPadding(posX, posY, posX + elementWidth, posY + elementHeight, coreSettings)
-        );
+        ElementCorners paddedCorners = HudRenderer.getCornersWithPadding(posX, posY, posX + elementWidth, posY + elementHeight, coreSettings);
+        // with too little padding the raised first icon would stick out above the backdrop, so the top then covers it
+        paddedCorners.top = Math.min(paddedCorners.top, posY - ICON_RAISE);
+        ElementCorners corners = HudRenderer.setElementBounds(coreSettings, paddedCorners);
         HudRenderer.renderBackdrop(drawContext, corners, coreSettings);
 
         int textColour = HudRendererLib.getTextColour(coreSettings);
@@ -102,7 +104,7 @@ public class StatusEffectHud implements CoreHudElement<StatusEffectHudConfig> {
                         RenderPipelines.GUI_TEXTURED,
                         Hud.getMobEffectSprite(entry.effect().getEffect()),
                         entryPosX,
-                        entryPosY,
+                        entryPosY - ICON_RAISE,
                         ICON_SIZE,
                         ICON_SIZE
                 );

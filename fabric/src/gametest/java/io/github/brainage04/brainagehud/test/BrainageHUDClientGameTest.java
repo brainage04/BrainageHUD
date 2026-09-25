@@ -255,14 +255,14 @@ public final class BrainageHUDClientGameTest implements FabricClientGameTest {
 						context,
 						"fishing",
 						"Fishing HUD",
-						"The Fishing HUD stays empty until the bobber is cast, then reports open water and possible treasure for a bobber in a wide, deep pool."
+						"The Fishing HUD stays empty until the bobber is cast, then reports open water, possible treasure and the chances of fish, treasure and junk for a bobber in a wide, deep pool."
 				);
 				context.runOnClient(client -> assertFishingHudLines(List.of()));
 				context.getInput().pressKey(options -> options.keyHotbarSlots[1]);
 				context.waitTicks(5);
 				context.getInput().pressKey(options -> options.keyUse);
 				context.waitTicks(60);
-				context.runOnClient(client -> assertFishingHudLines(List.of("Open water: yes", "Treasure: possible")));
+				context.runOnClient(client -> assertFishingHudLines(List.of("Open water: yes", "Treasure: possible", "Chances: Fish 85%, Treasure 5%, Junk 10%")));
 				System.out.println("[STDOUT]: Fishing HUD screenshot: " + context.takeScreenshot("fishing-hud"));
 			} finally {
 				if (configSnapshot != null) {
