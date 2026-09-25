@@ -450,7 +450,7 @@
   "text.autoconfig.brainagehud.option.statusEffectHudConfig.showDurations": "Show Durations",
   "text.autoconfig.brainagehud.option.statusEffectHudConfig.showDurations.@Tooltip": "Also show how long each effect has left.",
   "text.autoconfig.brainagehud.option.statusEffectHudConfig.showIcons": "Show Icons",
-  "text.autoconfig.brainagehud.option.statusEffectHudConfig.showIcons.@Tooltip": "Draw each effect's icon next to its line.",
+  "text.autoconfig.brainagehud.option.statusEffectHudConfig.showIcons.@Tooltip": "Draw each effect's icon on the left, with its name above its time left.",
   "text.autoconfig.brainagehud.option.toggleSprintHudConfig": "Toggle Sprint HUD",
   "text.autoconfig.brainagehud.option.toggleSprintHudConfig.coreSettings": "Core Settings",
   "text.autoconfig.brainagehud.option.toggleSprintHudConfig.coreSettings.elementAnchor": "Element Anchor",

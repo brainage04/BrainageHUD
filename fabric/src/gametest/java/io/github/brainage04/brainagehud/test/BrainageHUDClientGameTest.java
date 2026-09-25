@@ -27,6 +27,7 @@ import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.KeyMapping;
+import com.mojang.blaze3d.platform.Window;
 import org.lwjgl.glfw.GLFW;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.Minecraft;
@@ -47,6 +48,7 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.level.block.Blocks;
 
+import java.nio.file.Path;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -125,7 +127,7 @@ public final class BrainageHUDClientGameTest implements FabricClientGameTest {
 						context,
 						"status-effects",
 						"Status Effect HUD",
-						"The Status Effect HUD lists Speed II with its time left and the infinite Regeneration, each with its effect icon to the left; with Show Vanilla Status Effects off the game's icons disappear and the top-right HUDs move back up."
+						"The Status Effect HUD lists Speed II with its time left and the infinite Regeneration, each with its full-size effect icon on the left and the name above the time left; with Show Vanilla Status Effects off the game's icons disappear and the top-right HUDs move back up."
 				);
 				context.runOnClient(client -> assertHudLines("Status Effect", new StatusEffectHud().getLines(), List.of()));
 				server.runOnServer(minecraftServer -> {
@@ -140,11 +142,14 @@ public final class BrainageHUDClientGameTest implements FabricClientGameTest {
 					assertTopRightShift(libraryConfig().adjustTopRightElementsWithStatusEffectsAmount);
 				});
 				System.out.println("[STDOUT]: Status Effect HUD screenshot: " + context.takeScreenshot("status-effect-hud"));
+				System.out.println("[STDOUT]: Status Effect HUD large screenshot: " + takeLargeScreenshot(context, "status-effect-hud-large"));
 				context.runOnClient(client -> {
-					ModConfig config = ConfigUtils.getConfig();
-					config.statusEffectHudConfig.showDurations = false;
+					ConfigUtils.getConfig().statusEffectHudConfig.showDurations = false;
 					assertHudLines("Status Effect", new StatusEffectHud().getLines(), List.of("Speed II", "Regeneration"));
-					config.statusEffectHudConfig.showDurations = true;
+				});
+				System.out.println("[STDOUT]: Status Effect HUD without durations large screenshot: " + takeLargeScreenshot(context, "status-effect-hud-no-durations-large"));
+				context.runOnClient(client -> {
+					ConfigUtils.getConfig().statusEffectHudConfig.showDurations = true;
 					libraryConfig().showVanillaStatusEffects = false;
 					assertTopRightShift(0);
 				});
@@ -265,6 +270,40 @@ public final class BrainageHUDClientGameTest implements FabricClientGameTest {
 					context.runOnClient(client -> snapshotToRestore.restore());
 				}
 			} });
+	}
+
+	/**
+	 * The current GUI at GUI scale 4 in a window four times the GUI's size, so the HUDs sit where they do in the
+	 * normal screenshots and every GUI pixel is a 4x4 block that can be checked when zoomed in; the window size and
+	 * GUI scale are put back afterwards.
+	 */
+	private static Path takeLargeScreenshot(ClientGameTestContext context, String name) {
+		int[] original = context.computeOnClient(client -> new int[] {
+				client.getWindow().getWidth(),
+				client.getWindow().getHeight(),
+				client.options.guiScale().get(),
+				client.getWindow().getGuiScaledWidth(),
+				client.getWindow().getGuiScaledHeight()
+		});
+		// the GUI scale option only accepts scales the current window fits, so the window grows first
+		context.getInput().resizeWindow(original[3] * 4, original[4] * 4);
+		context.runOnClient(client -> {
+			client.options.guiScale().set(4);
+			client.resizeGui();
+			Window window = client.getWindow();
+			if (window.getGuiScale() != 4 || window.getGuiScaledWidth() != original[3] || window.getGuiScaledHeight() != original[4]) {
+				throw new AssertionError("Expected a %dx%d GUI at scale 4 for the large screenshot, got %dx%d at scale %d".formatted(
+						original[3], original[4], window.getGuiScaledWidth(), window.getGuiScaledHeight(), window.getGuiScale()));
+			}
+		});
+		context.waitTick();
+		try {
+			return context.takeScreenshot(name);
+		} finally {
+			context.runOnClient(client -> client.options.guiScale().set(original[2]));
+			context.getInput().resizeWindow(original[0], original[1]);
+			context.waitTick();
+		}
 	}
 
 	private static void preparePlayer(ServerPlayer player) {
