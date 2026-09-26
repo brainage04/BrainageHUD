@@ -20,7 +20,7 @@ BrainageHUD is a client-side Fabric and NeoForge mod that adds useful heads-up d
 - **Status Effect HUD**: your active status effects with their icons, levels and how long each has left.
 - **Fishing HUD**: while your bobber is out, whether it is in open water (which decides whether treasure can be caught) and the chance of catching a fish, treasure or junk.
 
-Motion, Entity and Fishing are off by default; turn them on in the config editor. Every element can be configured to show as little or as much as you like.
+Motion and Entity are off by default; turn them on in the config editor. Every element can be configured to show as little or as much as you like.
 
 While the Status Effect HUD is on, the game's own status effect icons in the top right are hidden (Hide Vanilla Status Effects, on by default in its settings). Whenever those icons are showing, elements anchored to the top right move down so the two don't overlap. Show Vanilla Status Effects in HudRendererLib's config editor turns the vanilla icons off everywhere.
 
