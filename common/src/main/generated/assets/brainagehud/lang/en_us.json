@@ -392,7 +392,7 @@
   "text.autoconfig.brainagehud.option.projectileHudConfig.showWindCharges": "Show Wind Charges",
   "text.autoconfig.brainagehud.option.qualityOfLifeConfig": "Quality of Life",
   "text.autoconfig.brainagehud.option.qualityOfLifeConfig.fullbright": "Fullbright",
-  "text.autoconfig.brainagehud.option.qualityOfLifeConfig.fullbright.@Tooltip": "Overrides the dimension's ambient light. Set to 0 to disable.",
+  "text.autoconfig.brainagehud.option.qualityOfLifeConfig.fullbright.@Tooltip": "Brightens every light level towards fully lit (1) or darkens it towards black (-1). Set to 0 to disable.",
   "text.autoconfig.brainagehud.option.reachHudConfig": "Reach HUD",
   "text.autoconfig.brainagehud.option.reachHudConfig.coreSettings": "Core Settings",
   "text.autoconfig.brainagehud.option.reachHudConfig.coreSettings.elementAnchor": "Element Anchor",

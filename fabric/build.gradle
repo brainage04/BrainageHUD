@@ -5,7 +5,14 @@ workspaceDependencies {
 	}
 }
 
-fabricApi { configureDataGeneration { client = true; modId = rootProject.mod_id } }
+fabricApi {
+	configureDataGeneration {
+		client = true
+		modId = rootProject.mod_id
+		// Both loaders ship the generated assets, so they live in common's resources.
+		outputDirectory.set(project(':common').layout.projectDirectory.file('src/main/generated'))
+	}
+}
 
 dependencies {
 	implementation("me.shedaniel.cloth:cloth-config-fabric:${project.cloth_config_version}") { exclude(group: 'net.fabricmc.fabric-api') }

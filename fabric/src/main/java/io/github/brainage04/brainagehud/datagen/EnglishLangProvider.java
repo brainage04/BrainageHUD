@@ -101,7 +101,7 @@ public class EnglishLangProvider extends FabricLanguageProvider {
         String decimalPlaces = "The number of decimal places displayed.";
         String slotCounts = "When the items are spread over several slots, also list the count in each slot (hotbar left to right, then the inventory rows, then the off hand).";
         String[][] tooltips = {
-                {"qualityOfLifeConfig.fullbright", "Overrides the dimension's ambient light. Set to 0 to disable."},
+                {"qualityOfLifeConfig.fullbright", "Brightens every light level towards fully lit (1) or darkens it towards black (-1). Set to 0 to disable."},
                 {"enchantInfoConfig.highlightMaxLevelEnchants", "Makes enchantments at their maximum level bold in item tooltips."},
                 {"waypointConfig.showInWorld", "Draws the current dimension's visible waypoints in the world."},
                 {"waypointConfig.showWorldCentre", "A built-in waypoint at 0, 63, 0 in every dimension."},

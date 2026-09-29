@@ -47,7 +47,7 @@ Tooltip lines of enchantments at their maximum level are shown in bold (Enchant 
 - `/getenchants [<item>]` lists every enchantment the held item (or the given item) can get, grouping enchantments that conflict with each other.
 - `/getenchantinfo <enchantment>` shows an enchantment's ID, maximum level, conflicts and the items it applies to. It accepts an ID (`minecraft:fortune` or `fortune`) or a name, ignoring case; a partial name lists every match.
 - `/blacklistedenchants add <enchantment>`, `/blacklistedenchants remove <enchantment>` and `/blacklistedenchants query` edit and show the Enchant Info blacklist, which is also editable in the config editor.
-- `/fullbright <amount>` sets the ambient light from -1 to 1; 0 turns it off.
+- `/fullbright <amount>` brightens every light level from 0 to 1 (1 lights caves and night-time terrain fully) or darkens it from 0 to -1 (-1 is black); 0 turns it off.
 - `/brainagehudconfig` opens the config editor.
 
 ## Controls

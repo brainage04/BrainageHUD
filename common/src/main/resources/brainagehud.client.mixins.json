@@ -9,10 +9,8 @@
     "MixinClientPlayNetworkHandler",
     "MixinDebugScreenEntryList",
     "MixinKeyMapping",
+    "MixinLightmapRenderStateExtractor",
     "MixinMinecraft",
     "MixinPingMeasurer"
-  ],
-  "mixins": [
-    "MixinDimensionType"
   ]
 }
