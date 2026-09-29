@@ -8,7 +8,7 @@ modId="brainagehud"
 version="${version}"
 displayName="BrainageHUD"
 description="A NeoForge mod that adds useful HUD elements to Minecraft."
-logoFile="assets/brainagehud/icon.png"
+iconFile="assets/brainagehud/icon.png"
 authors="brainage04"
 displayURL="https://github.com/brainage04/BrainageHUD"
 
