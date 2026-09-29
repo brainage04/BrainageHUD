@@ -1,0 +1,19 @@
+[17:43:02] [Test worker/INFO]: [STDOUT]: diamond sword: sharpness V + unbreaking III + mending + looting III, fire aspect blacklisted
+[17:43:02] [Test worker/INFO]: [STDOUT]:   Diamond Sword
+[17:43:02] [Test worker/INFO]: [STDOUT]:   Sharpness V
+[17:43:02] [Test worker/INFO]: [STDOUT]:   Unbreaking III
+[17:43:02] [Test worker/INFO]: [STDOUT]:   Mending
+[17:43:02] [Test worker/INFO]: [STDOUT]:   Looting III
+[17:43:02] [Test worker/INFO]: [STDOUT]: mace: no enchantments
+[17:43:02] [Test worker/INFO]: [STDOUT]:   Mace
+[17:43:02] [Test worker/INFO]: [STDOUT]:   Missing:
+[17:43:02] [Test worker/INFO]: [STDOUT]:   Breach IV / Density V
+[17:43:02] [Test worker/INFO]: [STDOUT]:   Wind Burst III
+[17:43:02] [Test worker/INFO]: [STDOUT]:   Mending
+[17:43:02] [Test worker/INFO]: [STDOUT]: diamond sword: sharpness III + unbreaking III, fire aspect blacklisted
+[17:43:02] [Test worker/INFO]: [STDOUT]:   Diamond Sword
+[17:43:02] [Test worker/INFO]: [STDOUT]:   Sharpness III (max 5)
+[17:43:02] [Test worker/INFO]: [STDOUT]:   Unbreaking III
+[17:43:02] [Test worker/INFO]: [STDOUT]:   Missing:
+[17:43:02] [Test worker/INFO]: [STDOUT]:   Mending
+[17:43:02] [Test worker/INFO]: [STDOUT]:   Looting III
