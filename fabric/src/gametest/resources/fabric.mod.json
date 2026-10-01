@@ -1,8 +1,9 @@
 {
 	"schemaVersion": 1,
-	"id": "brainagehud-gametest",
+	"id": "${mod_id}-gametest",
 	"version": "${mod_version}",
-	"name": "BrainageHUD Game Tests",
+	"name": "${mod_name} Game Tests",
+	"icon": "assets/brainagehud/icon.png",
 	"environment": "client",
 	"entrypoints": {
 		"fabric-client-gametest": [

@@ -1,0 +1,6 @@
+{
+  "depends": {
+    "cloth-config": ">=${cloth_config_version}",
+    "hudrendererlib": ">=${hudrendererlib_version}"
+  }
+}

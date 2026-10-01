@@ -4,8 +4,8 @@ repositories {
 		filter { includeGroup "me.shedaniel.cloth" }
 	}
 	exclusiveContent {
-		forRepository { maven { url = "https://api.modrinth.com/maven" } }
-		filter { includeGroup "maven.modrinth" }
+		forRepository { maven { url = "https://maven.terraformersmc.com/releases/" } }
+		filter { includeGroup "com.terraformersmc" }
 	}
 }
 
@@ -30,5 +30,8 @@ dependencies {
 	productionRuntimeMods("me.shedaniel.cloth:cloth-config-fabric:${project.cloth_config_version}") { exclude(group: 'net.fabricmc.fabric-api') }
 	implementation "io.github.brainage04:hudrendererlib:${project.hudrendererlib_version}"
 	productionRuntimeMods "io.github.brainage04:hudrendererlib:${project.hudrendererlib_version}"
-	implementation "maven.modrinth:modmenu:${project.modmenu_version}"
+
+	// ModMenu
+	implementation("com.terraformersmc:modmenu:${rootProject.modmenu_version}") { exclude group: "net.fabricmc.fabric-api" }
+	productionRuntimeMods("com.terraformersmc:modmenu:${rootProject.modmenu_version}") { exclude group: "net.fabricmc.fabric-api" }
 }
