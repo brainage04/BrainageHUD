@@ -168,5 +168,5 @@ The generated `common/src/main/generated/assets/brainagehud/lang/en_us.json` was
 
 The client GameTest run above is the real-client check for this migration: it boots a full client against the fixture
 dedicated server, renders the element, asserts its lines and captures the screenshot listed there. The repository's
-recording workflow (`./gradlew recordClientGameTest`) was not run, so no narrated video exists for the new element yet;
+recording workflow (`./gradlew :fabric:recordClientGameTest`) was not run, so no narrated video exists for the new element yet;
 the GameTest step added for it appears in the recording the next time that task runs.
