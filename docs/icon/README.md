@@ -2,11 +2,15 @@
 
 ## What this is
 
-The mod's icon: `icon.png` — 600x600 RGB PNG, 11 318 bytes,
-sha256 `789acd60d5aaf0f890051e51c1cea9be9d9a792fdd34a7144290a1b40319f591`.
+The mod's icon: `icon.png` — 1024x1024 RGBA PNG, 13 053 bytes,
+sha256 `4ba8579cccc53adcbe21f77ba4ce9f7d4b49ada60a88cb44a261dee18bdc276e`.
 
-It is a real in-game screenshot, cropped to a square. No compositing, no resizing,
-no interpolation, no shader pack and no resource pack were used.
+It is a real in-game screenshot: the 600x600 capture crop `provenance/capture-crop.png`
+(GUI scale 4), reduced to its native 150x150 GUI pixels, enlarged 6x with NEAREST to 900x900
+and centred on a transparent 1024x1024 canvas (62 px margin). No interpolation, no
+compositing, no shader pack and no resource pack. The mod ships 128x128 LANCZOS reductions of
+`icon.png` at `common/src/main/resources/assets/brainagehud/icon.png` and
+`fabric/src/gametest/resources/assets/brainagehud/icon.png`.
 
 ## How it was made
 
@@ -34,20 +38,35 @@ and highlights the BrainageHUD **Position** HUD element (TOP_LEFT, x=5 y=5) — 
 translucent white selection overlay is drawn over the element rectangle and the other HUD
 elements stay visible.
 
-The delivered image is the exact integer crop `(0, 0, 600, 600)` of that F2 frame. The
-selection rectangle measured in the frame is `(20, 20)-(471, 395)`, so the crop keeps it
-whole with margins left 20, top 20, right 129, bottom 205 px.
+The capture crop `provenance/capture-crop.png` (600x600 RGB, 11 318 bytes, sha256
+`789acd60d5aaf0f890051e51c1cea9be9d9a792fdd34a7144290a1b40319f591`; until 2026-10-02 it was
+shipped as `icon.png` itself, moved here unchanged) is the exact integer crop
+`(0, 0, 600, 600)` of that F2 frame. The selection rectangle measured in the frame is
+`(20, 20)-(471, 395)`, so the crop keeps it whole with margins left 20, top 20, right 129,
+bottom 205 px.
+
+**Native-scale enlargement (2026-10-02).** The icon rule is square, a power of two, 512 or
+1024 px; the owner asked for BrainageHUD to be scaled up to 1024. The crop is pixel art: 27
+colours on GUI scale 4's 4x4 grid (aligned with the crop). 21 196 of its 22 500 blocks are a
+single colour; the other 1 304 lie on faint diagonal seams of the sky gradient, where the
+colours differ by at most 1 level per channel. `native_scale.py` takes each block's majority
+colour (72 blocks have no strict majority and go to the colour that dominates the surrounding
+3x3 blocks) to recover the native 150x150 image, enlarges it by the largest integer factor that
+fits 1024 (6x, 900x900) with NEAREST, and centres it on a transparent 1024x1024 canvas. A
+LANCZOS resize was rejected because it blurs every GUI pixel edge.
 
 ## Provenance files
 
 | Path | What it is |
 |---|---|
 | `manifest.json` | The round-3 delivery record for this icon: label, method, source, measured geometry, notes |
+| `capture-crop.png` | **The 600x600 capture crop** (formerly `icon.png`, byte-identical) — the only surviving copy of this crop |
+| `native_scale.py` | **The script that writes `icon.png`** from `capture-crop.png` (native 150x150 recovery, 6x NEAREST, centred on 1024x1024) and the two shipped 128x128 copies |
 | `evidence/crop-report.json` | The measured highlight rectangle and the crop box used by `scripts/make_crops.py` |
 | `evidence/scene.json` | Full scene provenance: display, audio sink, client, mod list, options, world generation, every verified scene command, the BrainageHUD shot description |
-| `evidence/SHA256SUMS.txt` | Checksums of the seven captures-ui deliverables, including this icon |
+| `evidence/SHA256SUMS.txt` | Checksums of the seven captures-ui deliverables, including this capture crop |
 | `evidence/client-log-chat-captures.log` | The client log of the capture session (scene commands, world name, saved screenshots) |
-| `scripts/make_crops.py` | **The script that produced `icon.png`** (function `brainagehud_crop()`) |
+| `scripts/make_crops.py` | **The script that produced the capture crop** (function `brainagehud_crop()`) |
 | `scripts/drive_ui.py` | The verified X11 driver used for every key press, command and screenshot |
 | `scripts/capture_final.py` | The capture pass driver (scene verification, F2 capture, font-metric read-back) |
 | `scripts/collect_autocomplete.py` | Input-line ink measurement helper |
@@ -82,6 +101,13 @@ python3 scripts/drive_ui.py shot hud-editor-selected                # F2 -> rend
 python3 scripts/make_crops.py                                      # writes renders/brainagehud-position-selected-600.png
 ```
 
+`renders/brainagehud-position-selected-600.png` is `capture-crop.png`. Then write `icon.png` and
+the shipped copies (Pillow 12.3.0, from `docs/icon/provenance`):
+
+```sh
+python3 native_scale.py    # prints: native (150, 150), 72 tied blocks, x6 -> (900, 900) centred on 1024x1024
+```
+
 Prerequisites not shipped here: the Minecraft 26.2 client assets and Fabric Loader, the
 mod jars named in `client-ui.args`, and the world save (the void world is rebuilt by
 `tools/setup.py` from a game-written save; see Notes).
@@ -91,8 +117,9 @@ mod jars named in `client-ui.args`, and the world save (the void world is rebuil
 * **The source frame is not preserved.** `scripts/make_crops.py` crops
   `renders/frames/hud-editor-selected.png`, and that directory is empty in the round-3
   tree — the full-resolution F2 frames of the captures-ui session were deleted before the
-  later capture pass. The delivered `icon.png` is intact and is the only surviving copy of
-  that crop; re-running the recipe above is the way to obtain the frame again.
+  later capture pass. The capture crop (`capture-crop.png`, shipped as the icon until
+  2026-10-02) is intact and is the only surviving copy of that crop; re-running the recipe
+  above is the way to obtain the frame again.
 * **This is a recapture, not a crop of an earlier closeup.** The previously approved
   closeup was 590x480, so a 600x600 crop of it was geometrically impossible without
   inventing pixels. The same scene was therefore recaptured: same editor, same element,
