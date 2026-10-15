@@ -84,5 +84,4 @@ Install the BrainageHUD JAR for your loader (Fabric or NeoForge) and its require
 - Licensed under the MIT licence.
 
 ## Upgrade notes
-- **From the Fabric-only release:** install exactly one BrainageHUD JAR, for Fabric or NeoForge; remove the old JAR before switching loaders. The mod ID is still `brainagehud`, so `config/brainagehud.json` carries over.
 - **Enchant Info:** the Enchant Info HUD and the enchant commands replace the separate GetEnchantInfo mod; see [docs/getenchantinfo-migration.md](docs/getenchantinfo-migration.md).
