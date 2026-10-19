@@ -91,5 +91,6 @@ Source and issues: [github.com/brainage04/BrainageHUD](https://github.com/braina
 
 - [GetEnchantInfo port details](docs/getenchantinfo-migration.md) - command, HUD and config differences.
 - [Release procedure](docs/RELEASE.md) - maintainer publishing instructions.
+- [Development](docs/DEVELOPMENT.md) - build, test and headless recording commands.
 - [Modrinth description](docs/MODRINTH.md) - project page text.
 - [Icon](docs/icon/README.md) - artwork source and credits.

@@ -35,3 +35,7 @@ dependencies {
 	implementation("com.terraformersmc:modmenu:${rootProject.modmenu_version}") { exclude group: "net.fabricmc.fabric-api" }
 	productionRuntimeMods("com.terraformersmc:modmenu:${rootProject.modmenu_version}") { exclude group: "net.fabricmc.fabric-api" }
 }
+
+clientGameTestRecorder {
+	guiScale = "2"
+}
