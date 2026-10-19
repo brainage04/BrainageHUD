@@ -1,9 +1,13 @@
 # BrainageHUD
 
-## Overview
-BrainageHUD is a client-side Fabric and NeoForge mod that adds useful heads-up display (HUD) elements to Minecraft, along with waypoints and enchantment tools.
+BrainageHUD is a client-side Fabric and NeoForge mod for Minecraft 26.2 that adds useful heads-up display (HUD) elements, along with waypoints and enchantment tools.
 
-## HUD elements
+Motion and Entity are off by default; turn them on in the config editor. Every element can be configured to show as little or as much as you like.
+
+## Features
+
+### HUD elements
+
 - **Position HUD**: block position, position within the chunk, the C and E counters, the direction you face (including +/- X/Z), rotation, light levels and biome. Rotation can include the unwrapped "true" yaw, or show only while you hold an axe, a hoe or a Hypixel SkyBlock farming tool.
 - **Network HUD**: ping and TPS, each of which can be turned off, optionally coloured from green (good) to red (bad). TPS is measured from the game time the server reports each second.
 - **Performance HUD**: FPS, RAM usage, CPU usage, GPU usage and GPU frame time.
@@ -20,11 +24,8 @@ BrainageHUD is a client-side Fabric and NeoForge mod that adds useful heads-up d
 - **Status Effect HUD**: your active status effects with their icons, levels and how long each has left.
 - **Fishing HUD**: while your bobber is out, whether it is in open water (which decides whether treasure can be caught) and the chance of catching a fish, treasure or junk.
 
-Motion and Entity are off by default; turn them on in the config editor. Every element can be configured to show as little or as much as you like.
+### Waypoints
 
-While the Status Effect HUD is on, the game's own status effect icons in the top right are hidden (Hide Vanilla Status Effects, on by default in its settings). Whenever those icons are showing, elements anchored to the top right move down so the two don't overlap. Show Vanilla Status Effects in HudRendererLib's config editor turns the vanilla icons off everywhere.
-
-## Waypoints
 Waypoints are saved per world (singleplayer save or server address) in `config/brainagehud/waypoints.json`. Each visible waypoint in your current dimension is drawn in the world, in its own colour:
 
 - A beacon beam through the whole height of the dimension, which widens with distance so it can be found from far away.
@@ -33,55 +34,62 @@ Waypoints are saved per world (singleplayer save or server address) in `config/b
 
 Every dimension also has a built-in "World Centre" waypoint at 0, 63, 0, white by default. It is listed first on the Manage Waypoints screen, where it can be hidden or shown but not edited or deleted. Its colour is World Centre Colour in the config.
 
-Each part can be turned off, and the label resized, under Waypoint Config in the config editor.
+Each part can be turned off, and the label resized, under Waypoint Config in the config editor. Waypoint names can be up to 64 characters and can't contain formatting codes, quotes or control characters.
 
-Waypoint names can be up to 64 characters and can't contain formatting codes, quotes or control characters.
+### Enchant Info
 
-## Enchant Info
 The Enchant Info HUD shows the held item's name, its enchantments (with the maximum level after any enchantment below it), then a "Missing:" list of the enchantments it could still get. Enchantments that cannot be combined share one line, e.g. `Fortune III / Silk Touch`. Blacklisted enchantments are never listed as missing; by default the blacklist holds the curses and the enchantments that are usually a worse choice (such as Blast Protection, Smite and Knockback). Each part can be turned off under Enchant Info HUD in the config editor.
 
 Tooltip lines of enchantments at their maximum level are shown in bold (Enchant Info > Highlight Max Level Enchants).
 
-## Commands
-- `/waypoints add <name> [<x> <y> <z>]`, `/waypoints remove <name>` and `/waypoints list` add, remove and list waypoints; `/waypoints` opens the Manage Waypoints screen. Quote names that contain spaces. (Vanilla's `/waypoint` is a server command for the locator bar, so this one is plural.)
-- `/getenchants [<item>]` lists every enchantment the held item (or the given item) can get, grouping enchantments that conflict with each other.
-- `/getenchantinfo <enchantment>` shows an enchantment's ID, maximum level, conflicts and the items it applies to. It accepts an ID (`minecraft:fortune` or `fortune`) or a name, ignoring case; a partial name lists every match.
-- `/blacklistedenchants add <enchantment>`, `/blacklistedenchants remove <enchantment>` and `/blacklistedenchants query` edit and show the Enchant Info blacklist, which is also editable in the config editor.
-- `/fullbright <amount>` brightens every light level from 0 to 1 (1 lights caves and night-time terrain fully) or darkens it from 0 to -1 (-1 is black); 0 turns it off.
-- `/brainagehudconfig` opens the config editor.
+## Getting started
 
-## Controls
-| Key | Default | Action |
-|---|---|---|
-| Open Config | Numpad Minus | Opens the BrainageHUD config editor. |
-| Open Element Editor | Numpad Plus | Opens the HUD element editor. |
-| Create Waypoint | B | Creates a waypoint where you stand, named "Waypoint 1", "Waypoint 2", and so on. |
-| Manage Waypoints | U | Opens a screen to add, edit, hide/show and delete waypoints. |
-| Inventory Stats | Unbound | Lists every occupied inventory slot in chat with its item, count and item data (damage, enchantments, custom name and so on). |
+- Minecraft 26.2; Java 25 or later.
+- Fabric Loader 0.19.3 or later with [Fabric API](https://modrinth.com/mod/fabric-api), or NeoForge 26.2.0.88 or later.
+- [HudRendererLib](https://modrinth.com/mod/hudrendererlib) 1.0.12 or later and [Cloth Config](https://modrinth.com/mod/cloth-config) 26.2.155 or later, for your loader.
+- Recommended on Fabric: [Mod Menu](https://modrinth.com/mod/modmenu), for a config button in the mods list.
+
+Install the BrainageHUD JAR for your loader (Fabric or NeoForge) and its requirements into the client's `mods` folder. BrainageHUD is client-only and isn't needed on servers.
+
+## Commands
+
+- `/waypoints add <name> [<x> <y> <z>]`, `/waypoints remove <name>` and `/waypoints list` - add, remove and list waypoints; `/waypoints` opens the Manage Waypoints screen. Quote names that contain spaces. (Vanilla's `/waypoint` is a server command for the locator bar, so this one is plural.)
+- `/getenchants [<item>]` - lists every enchantment the held item (or the given item) can get, grouping enchantments that conflict with each other.
+- `/getenchantinfo <enchantment>` - shows an enchantment's ID, maximum level, conflicts and the items it applies to. It accepts an ID (`minecraft:fortune` or `fortune`) or a name, ignoring case; a partial name lists every match.
+- `/blacklistedenchants add <enchantment>`, `/blacklistedenchants remove <enchantment>` and `/blacklistedenchants query` - edit and show the Enchant Info blacklist, which is also editable in the config editor.
+- `/fullbright <amount>` - brightens every light level from 0 to 1 (1 lights caves and night-time terrain fully) or darkens it from 0 to -1 (-1 is black); 0 turns it off.
+- `/brainagehudconfig` - opens the config editor.
+- `Numpad Minus` (Open Config) - opens the BrainageHUD config editor.
+- `Numpad Plus` (Open Element Editor) - opens the HUD element editor.
+- `B` (Create Waypoint) - creates a waypoint where you stand, named "Waypoint 1", "Waypoint 2", and so on.
+- `U` (Manage Waypoints) - opens a screen to add, edit, hide/show and delete waypoints.
+- `Inventory Stats` (Unbound) - lists every occupied inventory slot in chat with its item, count and item data (damage, enchantments, custom name and so on).
 
 The element editor key and HudRendererLib's own config key (Numpad Enter) are in the HudRendererLib category of the controls screen; the rest are in the BrainageHUD category.
 
-## Configuration and element editor
+## Configuration
+
 The config editor holds every element's settings. Each element can override the global text colour, text shadows, backdrop opacity, padding and maximum width in its Style Overrides.
 
 The global settings are in HudRendererLib's config editor (Numpad Enter). Screen Margin keeps elements from being moved off-screen or too close to its edge.
 
 In the element editor, drag an element with the mouse or nudge it with the arrow keys (Shift ×10, Ctrl ×5), and press Space to cycle its alignment. Save & Close keeps the changes; Undo & Close or Escape reverts them.
 
-## Installation
-Install the BrainageHUD JAR for your loader (Fabric or NeoForge) and its requirements into the client's `mods` folder. BrainageHUD is client-only and isn't needed on servers.
+While the Status Effect HUD is on, the game's own status effect icons in the top right are hidden (Hide Vanilla Status Effects, on by default in its settings). Whenever those icons are showing, elements anchored to the top right move down so the two don't overlap. Show Vanilla Status Effects in HudRendererLib's config editor turns the vanilla icons off everywhere.
 
-## Requirements
-- Minecraft 26.2.
-- [HudRendererLib](https://modrinth.com/mod/hudrendererlib) and [Cloth Config](https://modrinth.com/mod/cloth-config), for your loader.
-- Fabric only: [Fabric API](https://modrinth.com/mod/fabric-api).
-- Recommended on Fabric: [Mod Menu](https://modrinth.com/mod/modmenu), for a config button in the mods list.
+## Compatibility
 
-## Links and credits
-- Source and issues: [github.com/brainage04/BrainageHUD](https://github.com/brainage04/BrainageHUD).
-- Sister mod for Minecraft 1.8.9 Forge: [Toggle Sprint](https://github.com/brainage04/ToggleSprint).
-- The ping measurement is based on [Better Ping Display](https://github.com/vladmarica/better-ping-display-fabric) by vladmarica.
-- Licensed under the MIT licence.
+The Enchant Info HUD and the enchant commands replace the separate GetEnchantInfo mod; do not install both together.
 
-## Upgrade notes
-- **Enchant Info:** the Enchant Info HUD and the enchant commands replace the separate GetEnchantInfo mod; see [docs/getenchantinfo-migration.md](docs/getenchantinfo-migration.md).
+Sister mod for Minecraft 1.8.9 Forge: [Toggle Sprint](https://github.com/brainage04/ToggleSprint).
+
+The ping measurement is based on [Better Ping Display](https://github.com/vladmarica/better-ping-display-fabric) by vladmarica. Licensed under the MIT licence.
+
+Source and issues: [github.com/brainage04/BrainageHUD](https://github.com/brainage04/BrainageHUD).
+
+## Documentation
+
+- [GetEnchantInfo port details](docs/getenchantinfo-migration.md) - command, HUD and config differences.
+- [Release procedure](docs/RELEASE.md) - maintainer publishing instructions.
+- [Modrinth description](docs/MODRINTH.md) - project page text.
+- [Icon](docs/icon/README.md) - artwork source and credits.
