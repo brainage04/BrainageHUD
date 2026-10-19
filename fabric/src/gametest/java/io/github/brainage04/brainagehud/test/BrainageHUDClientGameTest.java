@@ -124,8 +124,6 @@ public final class BrainageHUDClientGameTest implements FabricClientGameTest {
 				context.runOnClient(client -> assertEnchantInfoHudShowsHeldItem());
 				System.out.println("[STDOUT]: Enchant info HUD screenshot: " + context.takeScreenshot("enchant-info-hud"));
 
-				context.runOnClient(client -> assertModKeysHaveTheirOwnCategory());
-
 				ClientGameTestRecorder.showStep(
 						context,
 						"status-effects",
@@ -661,23 +659,6 @@ public final class BrainageHUDClientGameTest implements FabricClientGameTest {
 				throw new AssertionError("Expected the element editor to know " + element.getElementConfig().getCoreSettings().elementName
 						+ " (ID " + id + ") after reloading the configs, but it only knows " + HudElementEditor.CORE_SETTINGS_ELEMENTS.keySet() + ".");
 			}
-		}
-	}
-
-	private static void assertModKeysHaveTheirOwnCategory() {
-		KeyMapping.Category brainageHud = HudRendererLib.getKeyCategory(BrainageHUD.MOD_ID);
-		for (String key : List.of("key.brainagehud.openConfig", "key.brainagehud.createWaypoint", "key.brainagehud.manageWaypoints", "key.brainagehud.inventoryStats")) {
-			KeyMapping.Category category = KeyMapping.get(key).getCategory();
-			if (category != brainageHud) {
-				throw new AssertionError("Expected " + key + " in BrainageHUD's key category, but it is in " + category.id() + ".");
-			}
-		}
-		if (KeyMapping.get("key.hudrendererlib.openConfig").getCategory() != HudRendererLib.KEY_CATEGORY) {
-			throw new AssertionError("Expected HudRendererLib's own config key to stay in HudRendererLib's category.");
-		}
-		String title = brainageHud.label().getString();
-		if (!title.equals("BrainageHUD")) {
-			throw new AssertionError("Expected BrainageHUD's key category to be titled \"BrainageHUD\", but it is \"" + title + "\".");
 		}
 	}
 

@@ -93,3 +93,4 @@ Source and issues: [github.com/brainage04/BrainageHUD](https://github.com/braina
 - [Release procedure](docs/RELEASE.md) - maintainer publishing instructions.
 - [Modrinth description](docs/MODRINTH.md) - project page text.
 - [Icon](docs/icon/README.md) - artwork source and credits.
+- [Test review](docs/TEST-REVIEW.md) - classification, coverage and review decisions.

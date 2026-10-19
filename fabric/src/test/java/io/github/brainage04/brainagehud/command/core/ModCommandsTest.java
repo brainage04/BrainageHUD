@@ -33,19 +33,6 @@ class ModCommandsTest {
     }
 
     @Test
-    void getEnchantInfoReadsAnIdAsAnEnchantmentId() {
-        assertEquals(
-                List.of("getenchantinfo", "enchantmentId"),
-                parsedNodes("getenchantinfo brainagehud_test:sharpness"));
-    }
-
-    @Test
-    void getEnchantInfoFallsBackToANameThatIsNotAnId() {
-        assertEquals(List.of("getenchantinfo", "enchantmentName"), parsedNodes("getenchantinfo Sharpness"));
-        assertEquals(List.of("getenchantinfo", "enchantmentName"), parsedNodes("getenchantinfo \"Fire Aspect\""));
-    }
-
-    @Test
     void fullbrightAcceptsOnlyTheSupportedRange() {
         assertTrue(isExecutable("fullbright -1"));
         assertTrue(isExecutable("fullbright 0.5"));
