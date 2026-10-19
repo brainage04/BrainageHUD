@@ -53,17 +53,17 @@ Install the BrainageHUD JAR for your loader (Fabric or NeoForge) and its require
 
 ## Commands
 
-- `/waypoints add <name> [<x> <y> <z>]`, `/waypoints remove <name>` and `/waypoints list` - add, remove and list waypoints; `/waypoints` opens the Manage Waypoints screen. Quote names that contain spaces. (Vanilla's `/waypoint` is a server command for the locator bar, so this one is plural.)
-- `/getenchants [<item>]` - lists every enchantment the held item (or the given item) can get, grouping enchantments that conflict with each other.
-- `/getenchantinfo <enchantment>` - shows an enchantment's ID, maximum level, conflicts and the items it applies to. It accepts an ID (`minecraft:fortune` or `fortune`) or a name, ignoring case; a partial name lists every match.
-- `/blacklistedenchants add <enchantment>`, `/blacklistedenchants remove <enchantment>` and `/blacklistedenchants query` - edit and show the Enchant Info blacklist, which is also editable in the config editor.
-- `/fullbright <amount>` - brightens every light level from 0 to 1 (1 lights caves and night-time terrain fully) or darkens it from 0 to -1 (-1 is black); 0 turns it off.
-- `/brainagehudconfig` - opens the config editor.
-- `Numpad Minus` (Open Config) - opens the BrainageHUD config editor.
-- `Numpad Plus` (Open Element Editor) - opens the HUD element editor.
-- `B` (Create Waypoint) - creates a waypoint where you stand, named "Waypoint 1", "Waypoint 2", and so on.
-- `U` (Manage Waypoints) - opens a screen to add, edit, hide/show and delete waypoints.
-- `Inventory Stats` (Unbound) - lists every occupied inventory slot in chat with its item, count and item data (damage, enchantments, custom name and so on).
+- `/waypoints add <name> [<x> <y> <z>]`, `/waypoints remove <name>` and `/waypoints list` – add, remove and list waypoints; `/waypoints` opens the Manage Waypoints screen. Quote names that contain spaces. (Vanilla's `/waypoint` is a server command for the locator bar, so this one is plural.)
+- `/getenchants [<item>]` – lists every enchantment the held item (or the given item) can get, grouping enchantments that conflict with each other.
+- `/getenchantinfo <enchantment>` – shows an enchantment's ID, maximum level, conflicts and the items it applies to. It accepts an ID (`minecraft:fortune` or `fortune`) or a name, ignoring case; a partial name lists every match.
+- `/blacklistedenchants add <enchantment>`, `/blacklistedenchants remove <enchantment>` and `/blacklistedenchants query` – edit and show the Enchant Info blacklist, which is also editable in the config editor.
+- `/fullbright <amount>` – brightens every light level from 0 to 1 (1 lights caves and night-time terrain fully) or darkens it from 0 to -1 (-1 is black); 0 turns it off.
+- `/brainagehudconfig` – opens the config editor.
+- `Numpad Minus` (Open Config) – opens the BrainageHUD config editor.
+- `Numpad Plus` (Open Element Editor) – opens the HUD element editor.
+- `B` (Create Waypoint) – creates a waypoint where you stand, named "Waypoint 1", "Waypoint 2", and so on.
+- `U` (Manage Waypoints) – opens a screen to add, edit, hide/show and delete waypoints.
+- `Inventory Stats` (Unbound) – lists every occupied inventory slot in chat with its item, count and item data (damage, enchantments, custom name and so on).
 
 The element editor key and HudRendererLib's own config key (Numpad Enter) are in the HudRendererLib category of the controls screen; the rest are in the BrainageHUD category.
 
@@ -89,8 +89,8 @@ Source and issues: [github.com/brainage04/BrainageHUD](https://github.com/braina
 
 ## Documentation
 
-- [GetEnchantInfo port details](docs/getenchantinfo-migration.md) - command, HUD and config differences.
-- [Release procedure](docs/RELEASE.md) - maintainer publishing instructions.
-- [Development](docs/DEVELOPMENT.md) - build, test and headless recording commands.
-- [Modrinth description](docs/MODRINTH.md) - project page text.
-- [Icon](docs/icon/README.md) - artwork source and credits.
+- [GetEnchantInfo port details](docs/getenchantinfo-migration.md) – command, HUD and config differences.
+- [Release procedure](docs/RELEASE.md) – maintainer publishing instructions.
+- [Development](docs/DEVELOPMENT.md) – build, test and headless recording commands.
+- [Modrinth description](docs/MODRINTH.md) – project page text.
+- [Icon](docs/icon/README.md) – artwork source and credits.
