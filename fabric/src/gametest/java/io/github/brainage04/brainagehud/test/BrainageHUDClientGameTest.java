@@ -20,8 +20,10 @@ import io.github.brainage04.brainagehud.waypoint.WaypointStore;
 import io.github.brainage04.hudrendererlib.hud.core.HudElementEditor;
 import io.github.brainage04.hudrendererlib.hud.core.HudRenderer;
 import io.github.brainage04.hudrendererlib.config.core.CoreSettings;
+import io.github.brainage04.hudrendererlib.config.core.ElementAnchor;
 import io.github.brainage04.hudrendererlib.config.core.HudRendererLibConfig;
 import io.github.brainage04.fabricmoddingconventions.ClientGameTestRecorder;
+import io.github.brainage04.fabricmoddingconventions.ClientGameTestRecordingSession;
 import io.github.brainage04.fabricmoddingconventions.ClientGameTestServers;
 import net.fabricmc.fabric.api.client.gametest.v1.FabricClientGameTest;
 import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext;
@@ -148,22 +150,29 @@ public final class BrainageHUDClientGameTest implements FabricClientGameTest {
 					assertTopRightShift(0);
 				});
 				System.out.println("[STDOUT]: Status Effect HUD screenshot: " + context.takeScreenshot("status-effect-hud"));
-				System.out.println("[STDOUT]: Status Effect HUD large screenshot: " + takeLargeScreenshot(context, "status-effect-hud-large"));
+				if (!ClientGameTestRecordingSession.isEnabled()) {
+					System.out.println("[STDOUT]: Status Effect HUD large screenshot: " + takeLargeScreenshot(context, "status-effect-hud-large"));
+				}
 				context.runOnClient(client -> {
 					ConfigUtils.getConfig().statusEffectHudConfig.showDurations = false;
 					assertHudLines("Status Effect", new StatusEffectHud().getLines(), List.of("Speed II", "Regeneration"));
 				});
-				System.out.println("[STDOUT]: Status Effect HUD without durations large screenshot: " + takeLargeScreenshot(context, "status-effect-hud-no-durations-large"));
+				context.waitTicks(40);
+				if (!ClientGameTestRecordingSession.isEnabled()) {
+					System.out.println("[STDOUT]: Status Effect HUD without durations large screenshot: " + takeLargeScreenshot(context, "status-effect-hud-no-durations-large"));
+				}
 				context.runOnClient(client -> {
 					ConfigUtils.getConfig().statusEffectHudConfig.showDurations = true;
 					ConfigUtils.getConfig().statusEffectHudConfig.hideVanillaStatusEffects = false;
 					assertTopRightShift(libraryConfig().adjustTopRightElementsWithStatusEffectsAmount);
 				});
+				context.waitTicks(40);
 				System.out.println("[STDOUT]: Vanilla status effects shown screenshot: " + context.takeScreenshot("vanilla-status-effects-shown"));
 				context.runOnClient(client -> {
 					libraryConfig().showVanillaStatusEffects = false;
 					assertTopRightShift(0);
 				});
+				context.waitTicks(40);
 				System.out.println("[STDOUT]: Vanilla status effects hidden screenshot: " + context.takeScreenshot("vanilla-status-effects-hidden"));
 				context.runOnClient(client -> {
 					libraryConfig().showVanillaStatusEffects = true;
@@ -183,10 +192,10 @@ public final class BrainageHUDClientGameTest implements FabricClientGameTest {
 					assertHudLines("Food", new FoodHud().getLines(), List.of("Food:", "Bread: 12", "Steak: 5"));
 				});
 				context.waitTicks(60);
+				System.out.println("[STDOUT]: Inventory trackers screenshot: " + context.takeScreenshot("inventory-trackers"));
 
 				exerciseEnchantCommands(context);
 				exerciseInventoryStats(context);
-				System.out.println("[STDOUT]: Inventory trackers screenshot: " + context.takeScreenshot("inventory-trackers"));
 
 				ClientGameTestRecorder.showStep(
 						context,
@@ -402,10 +411,12 @@ public final class BrainageHUDClientGameTest implements FabricClientGameTest {
 					}
 				}
 			});
+			context.getInput().pressKey(options -> options.keyChat);
 			context.waitTicks(60);
 			context.takeScreenshot("inventory-stats-armour");
 		} finally {
 			context.runOnClient(client -> {
+				client.gui.setScreen(null);
 				key.setKey(InputConstants.getKey(previousKey));
 				KeyMapping.resetMapping();
 				client.gui.hud.getChat().setVisibleMessageFilter(message -> true);
@@ -415,6 +426,9 @@ public final class BrainageHUDClientGameTest implements FabricClientGameTest {
 
 	private static void exerciseFullbright(ClientGameTestContext context,
 			net.fabricmc.fabric.api.client.gametest.v1.context.TestDedicatedServerContext server) {
+		context.getInput().pressKey(options -> options.keyUse);
+		context.getInput().pressKey(options -> options.keyHotbarSlots[0]);
+		context.waitTicks(5);
 		server.runOnServer(minecraftServer -> {
 			ServerPlayer player = minecraftServer.getPlayerList().getPlayers().getFirst();
 			for (BlockPos pos : BlockPos.betweenClosed(37, -53, -3, 43, -47, 3)) {
@@ -645,6 +659,17 @@ public final class BrainageHUDClientGameTest implements FabricClientGameTest {
 			config.waypointConfig.showWorldCentre = true;
 			config.qualityOfLifeConfig.fullbright = 0;
 			config.foodHudConfig.showSlotCounts = false;
+			// Leave the recorder's top-right title card clear without hiding any showcased element.
+			config.dateTimeHudConfig.coreSettings.elementAnchor = ElementAnchor.TOP_LEFT;
+			config.dateTimeHudConfig.coreSettings.x = 150;
+			config.dateTimeHudConfig.coreSettings.y = 85;
+			config.entityHudConfig.coreSettings.elementAnchor = ElementAnchor.TOP_LEFT;
+			config.entityHudConfig.coreSettings.x = 5;
+			config.entityHudConfig.coreSettings.y = 195;
+			config.motionHudConfig.coreSettings.elementAnchor = ElementAnchor.TOP_LEFT;
+			config.motionHudConfig.coreSettings.x = 5;
+			config.motionHudConfig.coreSettings.y = 265;
+			config.keystrokesHudConfig.coreSettings.y = 130;
 
 			assertPositionHudShowsFixture();
 			return snapshot;
@@ -654,8 +679,21 @@ public final class BrainageHUDClientGameTest implements FabricClientGameTest {
 		}
 	}
 
+	private record HudPlacement(CoreSettings settings, int x, int y, ElementAnchor anchor) {
+		private HudPlacement(CoreSettings settings) {
+			this(settings, settings.x, settings.y, settings.elementAnchor);
+		}
+
+		private void restore() {
+			settings.x = x;
+			settings.y = y;
+			settings.elementAnchor = anchor;
+		}
+	}
+
 	private static final class ShowcaseConfigSnapshot {
 		private final ModConfig config;
+		private final List<HudPlacement> placements;
 		private final boolean positionEnabled;
 		private final boolean showPosition;
 		private final boolean showChunkPosition;
@@ -692,6 +730,10 @@ public final class BrainageHUDClientGameTest implements FabricClientGameTest {
 
 		private ShowcaseConfigSnapshot(ModConfig config) {
 			this.config = config;
+			placements = List.of(new HudPlacement(config.dateTimeHudConfig.coreSettings),
+					new HudPlacement(config.entityHudConfig.coreSettings),
+					new HudPlacement(config.motionHudConfig.coreSettings),
+					new HudPlacement(config.keystrokesHudConfig.coreSettings));
 			positionEnabled = config.positionHudConfig.coreSettings.enabled;
 			showPosition = config.positionHudConfig.showPosition;
 			showChunkPosition = config.positionHudConfig.showChunkPosition;
@@ -761,6 +803,7 @@ public final class BrainageHUDClientGameTest implements FabricClientGameTest {
 			config.waypointConfig.showWorldCentre = worldCentre;
 			config.qualityOfLifeConfig.fullbright = fullbright;
 			config.foodHudConfig.showSlotCounts = foodSlotCounts;
+			placements.forEach(HudPlacement::restore);
 			ConfigUtils.saveConfig();
 		}
 	}
