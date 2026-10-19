@@ -379,6 +379,9 @@ public final class BrainageHUDClientGameTest implements FabricClientGameTest {
 	}
 
 	private static void commandAndCheck(ClientGameTestContext context, Set<Component> chat, String command, String expected) {
+		String screenshotName = command.replaceAll("[^a-zA-Z0-9]+", "-");
+		ClientGameTestRecorder.showStep(context, "command-" + screenshotName, "/" + command,
+				"Expanded chat shows the complete command response.");
 		context.runOnClient(client -> {
 			chat.clear();
 			client.gui.hud.getChat().clearMessages(false);
@@ -390,8 +393,13 @@ public final class BrainageHUDClientGameTest implements FabricClientGameTest {
 				throw new AssertionError("Command /" + command + " did not print " + expected + "; got " + chat);
 			}
 		});
-		context.waitTicks(35);
-		context.takeScreenshot(command.replaceAll("[^a-zA-Z0-9]+", "-"));
+		context.getInput().pressKey(options -> options.keyChat);
+		try {
+			context.waitTicks(35);
+			context.takeScreenshot(screenshotName);
+		} finally {
+			context.runOnClient(client -> client.gui.setScreen(null));
+		}
 	}
 
 	private static void exerciseInventoryStats(ClientGameTestContext context) {
