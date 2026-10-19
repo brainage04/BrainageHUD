@@ -343,7 +343,7 @@ public final class BrainageHUDClientGameTest implements FabricClientGameTest {
 			commandAndCheck(context, chat, "getenchants minecraft:mace", "[BrainageHUD] Acceptable enchants for Mace:");
 			commandAndCheck(context, chat, "getenchantinfo minecraft:fortune", "ID: minecraft:fortune");
 			commandAndCheck(context, chat, "getenchantinfo \"Fortune\"", "[BrainageHUD] Enchant info for Fortune:");
-			commandAndCheck(context, chat, "getenchantinfo \"protection\"", "[BrainageHUD] No exact match found. Potential matches:");
+			commandAndCheck(context, chat, "getenchantinfo \"protect\"", "[BrainageHUD] No exact match found. Potential matches:");
 			commandAndCheck(context, chat, "getenchantinfo \"not an enchantment\"", "[BrainageHUD] No potential matches found!");
 			context.runOnClient(client -> ConfigUtils.getConfig().enchantInfoConfig.blacklistedEnchantmentIds.remove("minecraft:unbreaking"));
 			commandAndCheck(context, chat, "blacklistedenchants add minecraft:unbreaking", "[BrainageHUD] Unbreaking is now blacklisted.");
