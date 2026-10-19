@@ -37,6 +37,10 @@ public class WaypointEditScreen extends Screen {
 
     @Override
     protected void init() {
+        String name = nameBox == null ? null : nameBox.getValue();
+        String x = xBox == null ? null : xBox.getValue();
+        String y = yBox == null ? null : yBox.getValue();
+        String z = zBox == null ? null : zBox.getValue();
         int left = (width - FIELD_WIDTH) / 2;
 
         nameBox = addRenderableWidget(new EditBox(font, left, 60, FIELD_WIDTH, 20, Component.literal("Name")));
@@ -45,7 +49,14 @@ public class WaypointEditScreen extends Screen {
         yBox = addRenderableWidget(new EditBox(font, left + (FIELD_WIDTH - COORDINATE_WIDTH) / 2, 104, COORDINATE_WIDTH, 20, Component.literal("Y")));
         zBox = addRenderableWidget(new EditBox(font, left + FIELD_WIDTH - COORDINATE_WIDTH, 104, COORDINATE_WIDTH, 20, Component.literal("Z")));
 
-        if (nameBox.getValue().isEmpty()) fillInitialValues();
+        if (name == null) {
+            fillInitialValues();
+        } else {
+            nameBox.setValue(name);
+            xBox.setValue(x);
+            yBox.setValue(y);
+            zBox.setValue(z);
+        }
 
         addRenderableWidget(Button.builder(Component.literal("Save"), button -> save())
                 .bounds(width / 2 - 102, height - 28, 100, 20).build());

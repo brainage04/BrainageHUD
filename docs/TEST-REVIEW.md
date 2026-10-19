@@ -66,3 +66,20 @@ Nine new unit tests cover the deterministic branches:
 - `NetworkHudTest.pingColourChangesAtEachLatencyThreshold` and `tpsColourDistinguishesHealthyAndLaggingRates`: keep, exact user-visible boundary colours.
 
 No gamerules are registered. Remaining gaps: NeoForge has no automated client runner in the shared conventions; its event wiring, rendering, shutdown and config screen are reviewed in code but are not exercised by the Fabric client suite. Fine-grained visual layout, every element style override, moving/vehicle collision scenarios, GPU timing on different drivers, waypoint dimension changes/reconnects and damaged/corrupt waypoint files are not fully automated. Screenshots and recordings are evidence of the shown scenarios, not proof of all rendering branches.
+
+## Code review
+
+Fixed a shared-loader bug: resizing the Create/Edit Waypoint screen recreated its text boxes from the saved waypoint and discarded unsubmitted edits. `assertWaypointEditSurvivesResize` now changes all four fields, including an invalid coordinate and an intentionally blank name, resizes the real window twice and checks that the fields survive without saving.
+
+The client fixture now snapshots and restores status-effect options, vanilla icon visibility, World Centre visibility, fullbright and food slot formatting, including saving the restored mod config after command scenarios. This keeps those scenarios from leaving altered settings for later tests.
+
+`ModConfigTest.handEditedValuesCannotCreateZeroDivisorsOrInvalidRenderingRanges` and `validCustomSettingsSurvivePostLoadValidation` are kept: they exercise existing post-load sanitisation and preservation of valid player settings. The resulting suite has 61 unit tests.
+
+Reviewed both loader initializers, packet/render-thread handoff, ping synchronisation, click expiry, element caching, tooltip changes, waypoint rendering and persistence, screens, commands and config validation. Both loaders call the same command, tooltip and waypoint-rendering implementations. No mod-owned thread, process or closeable runtime resource was found that needs a shutdown hook.
+
+Judgement calls left unchanged:
+
+- Conflict groups are connected components, not necessarily pairwise-incompatible sets. The command wording already says conflicts occur within each group; the HUD's compact slash line can still be read as mutually exclusive. Changing that presentation needs an owner decision.
+- Waypoint JSON has parse-error backup handling but does not validate every structurally valid malformed record. A wider recovery policy, especially preserving partial data, needs a separate decision rather than silently discarding records.
+- English HUD, waypoint-screen and chat literals are not fully localised. Existing config labels have English translations; this pass does not invent translations.
+- There is no NeoForge client test harness in the conventions used here. Shared code and both-loader compilation do not substitute for a real NeoForge rendering/lifecycle run.

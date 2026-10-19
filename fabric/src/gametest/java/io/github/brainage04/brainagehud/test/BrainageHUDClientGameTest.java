@@ -12,6 +12,7 @@ import io.github.brainage04.brainagehud.hud.ProjectileHud;
 import io.github.brainage04.brainagehud.hud.StatusEffectHud;
 import io.github.brainage04.brainagehud.hud.custom.EnchantInfoHud;
 import io.github.brainage04.brainagehud.screen.WaypointsScreen;
+import io.github.brainage04.brainagehud.screen.WaypointEditScreen;
 import io.github.brainage04.brainagehud.util.ConfigUtils;
 import io.github.brainage04.brainagehud.waypoint.Waypoint;
 import io.github.brainage04.brainagehud.waypoint.WaypointActions;
@@ -32,6 +33,7 @@ import net.minecraft.client.KeyMapping;
 import com.mojang.blaze3d.platform.Window;
 import org.lwjgl.glfw.GLFW;
 import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
@@ -498,6 +500,7 @@ public final class BrainageHUDClientGameTest implements FabricClientGameTest {
 	}
 
 	private static void exerciseWaypointCommands(ClientGameTestContext context) {
+		assertWaypointEditSurvivesResize(context);
 		ClientGameTestRecorder.showStep(context, "waypoint-commands", "Waypoint command persistence",
 				"A quoted name and explicit coordinates are saved, a case-insensitive duplicate is rejected, and removal updates the file.");
 		Set<Component> chat = new LinkedHashSet<>();
@@ -535,6 +538,38 @@ public final class BrainageHUDClientGameTest implements FabricClientGameTest {
 			if (found != present) throw new AssertionError("Saved waypoint presence was " + found + ", expected " + present);
 		} catch (IOException exception) {
 			throw new AssertionError("Cannot read saved waypoints", exception);
+		}
+	}
+
+	private static void assertWaypointEditSurvivesResize(ClientGameTestContext context) {
+		int[] original = context.computeOnClient(client -> new int[] {client.getWindow().getWidth(), client.getWindow().getHeight()});
+		List<String> values = List.of("Unsubmitted Base", "123", "bad input", "-456");
+		context.runOnClient(client -> {
+			client.gui.setScreen(new WaypointEditScreen(null, null));
+			var boxes = client.gui.screen().children().stream().filter(EditBox.class::isInstance).map(EditBox.class::cast).toList();
+			for (int index = 0; index < values.size(); index++) boxes.get(index).setValue(values.get(index));
+		});
+		try {
+			context.getInput().resizeWindow(original[0] + 80, original[1] + 40);
+			context.waitTicks(2);
+			context.runOnClient(client -> {
+				var boxes = client.gui.screen().children().stream().filter(EditBox.class::isInstance).map(EditBox.class::cast).toList();
+				if (!boxes.stream().map(EditBox::getValue).toList().equals(values)) {
+					throw new AssertionError("Resizing discarded unsubmitted waypoint edits.");
+				}
+				boxes.getFirst().setValue("");
+			});
+			context.getInput().resizeWindow(original[0], original[1]);
+			context.waitTicks(2);
+			context.runOnClient(client -> {
+				var boxes = client.gui.screen().children().stream().filter(EditBox.class::isInstance).map(EditBox.class::cast).toList();
+				if (!boxes.stream().map(EditBox::getValue).toList().equals(List.of("", "123", "bad input", "-456"))) {
+					throw new AssertionError("Resizing replaced an intentionally blank waypoint name.");
+				}
+			});
+		} finally {
+			context.runOnClient(client -> client.gui.setScreen(null));
+			context.getInput().resizeWindow(original[0], original[1]);
 		}
 	}
 
@@ -604,6 +639,13 @@ public final class BrainageHUDClientGameTest implements FabricClientGameTest {
 			config.projectileHudConfig.showSlotCounts = true;
 			config.foodHudConfig.coreSettings.enabled = true;
 			config.waypointConfig.showInWorld = true;
+			config.statusEffectHudConfig.coreSettings.enabled = true;
+			config.statusEffectHudConfig.showDurations = true;
+			config.statusEffectHudConfig.hideVanillaStatusEffects = true;
+			libraryConfig().showVanillaStatusEffects = true;
+			config.waypointConfig.showWorldCentre = true;
+			config.qualityOfLifeConfig.fullbright = 0;
+			config.foodHudConfig.showSlotCounts = false;
 
 			assertPositionHudShowsFixture();
 			return snapshot;
@@ -641,6 +683,13 @@ public final class BrainageHUDClientGameTest implements FabricClientGameTest {
 		private final boolean projectileSlotCounts;
 		private final boolean foodEnabled;
 		private final boolean waypointEnabled;
+		private final boolean statusEnabled;
+		private final boolean statusDurations;
+		private final boolean hideVanillaEffects;
+		private final boolean showVanillaEffects;
+		private final boolean worldCentre;
+		private final float fullbright;
+		private final boolean foodSlotCounts;
 
 		private ShowcaseConfigSnapshot(ModConfig config) {
 			this.config = config;
@@ -670,6 +719,13 @@ public final class BrainageHUDClientGameTest implements FabricClientGameTest {
 			projectileSlotCounts = config.projectileHudConfig.showSlotCounts;
 			foodEnabled = config.foodHudConfig.coreSettings.enabled;
 			waypointEnabled = config.waypointConfig.showInWorld;
+			statusEnabled = config.statusEffectHudConfig.coreSettings.enabled;
+			statusDurations = config.statusEffectHudConfig.showDurations;
+			hideVanillaEffects = config.statusEffectHudConfig.hideVanillaStatusEffects;
+			showVanillaEffects = libraryConfig().showVanillaStatusEffects;
+			worldCentre = config.waypointConfig.showWorldCentre;
+			fullbright = config.qualityOfLifeConfig.fullbright;
+			foodSlotCounts = config.foodHudConfig.showSlotCounts;
 		}
 
 		private void restore() {
@@ -699,6 +755,14 @@ public final class BrainageHUDClientGameTest implements FabricClientGameTest {
 			config.projectileHudConfig.showSlotCounts = projectileSlotCounts;
 			config.foodHudConfig.coreSettings.enabled = foodEnabled;
 			config.waypointConfig.showInWorld = waypointEnabled;
+			config.statusEffectHudConfig.coreSettings.enabled = statusEnabled;
+			config.statusEffectHudConfig.showDurations = statusDurations;
+			config.statusEffectHudConfig.hideVanillaStatusEffects = hideVanillaEffects;
+			libraryConfig().showVanillaStatusEffects = showVanillaEffects;
+			config.waypointConfig.showWorldCentre = worldCentre;
+			config.qualityOfLifeConfig.fullbright = fullbright;
+			config.foodHudConfig.showSlotCounts = foodSlotCounts;
+			ConfigUtils.saveConfig();
 		}
 	}
 
