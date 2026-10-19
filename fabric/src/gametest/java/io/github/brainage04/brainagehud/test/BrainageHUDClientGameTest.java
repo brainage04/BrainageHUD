@@ -17,7 +17,6 @@ import io.github.brainage04.brainagehud.util.ConfigUtils;
 import io.github.brainage04.brainagehud.waypoint.Waypoint;
 import io.github.brainage04.brainagehud.waypoint.WaypointActions;
 import io.github.brainage04.brainagehud.waypoint.WaypointStore;
-import io.github.brainage04.hudrendererlib.HudRendererLib;
 import io.github.brainage04.hudrendererlib.hud.core.HudElementEditor;
 import io.github.brainage04.hudrendererlib.hud.core.HudRenderer;
 import io.github.brainage04.hudrendererlib.config.core.CoreSettings;
