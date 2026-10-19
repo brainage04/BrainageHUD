@@ -22,6 +22,6 @@ nix shell nixpkgs#ffmpeg-full nixpkgs#xdpyinfo --command \
   -Pfabricmoddingconventions.devClientOptions=/nonexistent
 ```
 
-Use a private PulseAudio session through `PULSE_SERVER` on a shared host. The recorder creates its own Xvfb display and audio sink without changing the desktop's default sink. Recordings use a 1920x1080 window at GUI scale 2; the fixture temporarily positions HUDs clear of the title card and restores their settings afterwards. The lighting scene temporarily hides the Reach HUD and waypoint labels so its brightness measurement samples terrain, not overlaid text. Large diagnostic screenshots run only outside recordings so resizing does not crop the video.
+Use a private PulseAudio session through `PULSE_SERVER` on a shared host. The recorder creates its own Xvfb display and audio sink without changing the desktop's default sink. Recordings use a 1920x1080 window at GUI scale 2; the fixture temporarily positions HUDs clear of the title card and restores their settings afterwards. The lighting scene temporarily hides the Reach HUD and waypoint labels so its brightness measurement samples terrain, not overlaid text. Window-resize regression checks and large diagnostic screenshots run only outside recordings so resizing does not crop the video.
 
 MP4s, metadata and kept run directories are written to `build/recordings`. `GTR_RECORDING_DIR` selects a different output directory.

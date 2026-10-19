@@ -533,7 +533,9 @@ public final class BrainageHUDClientGameTest implements FabricClientGameTest {
 	}
 
 	private static void exerciseWaypointCommands(ClientGameTestContext context) {
-		assertWaypointEditSurvivesResize(context);
+		if (!ClientGameTestRecordingSession.isEnabled()) {
+			assertWaypointEditSurvivesResize(context);
+		}
 		ClientGameTestRecorder.showStep(context, "waypoint-commands", "Waypoint command persistence",
 				"A quoted name and explicit coordinates are saved, a case-insensitive duplicate is rejected, and removal updates the file.");
 		Set<Component> chat = new LinkedHashSet<>();
