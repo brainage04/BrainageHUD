@@ -112,6 +112,33 @@ class EnchantInfoHudTest {
                         .isEmpty());
     }
 
+    @Test
+    void disabledSectionsDoNotLeaveHeadersOrLevelSuffixes() {
+        ItemStack sword = new ItemStack(Items.DIAMOND_SWORD);
+        sword.enchant(enchantment("sharpness"), 3);
+        EnchantInfoHudConfig config = new EnchantInfoHudConfig();
+        config.showItemName = false;
+        config.showMaxLevels = false;
+        config.showMissingEnchantments = false;
+
+        assertEquals(List.of("Sharpness III"),
+                rendered(EnchantInfoHud.getLines(enchantments, sword, config, List.of())));
+
+        config.showEnchantments = false;
+        assertTrue(EnchantInfoHud.getLines(enchantments, sword, config, List.of()).isEmpty());
+    }
+
+    @Test
+    void missingCandidatesRemainVisibleWithoutTheirHeader() {
+        EnchantInfoHudConfig config = new EnchantInfoHudConfig();
+        config.showItemName = false;
+        config.showEnchantments = false;
+        config.showMissingHeader = false;
+
+        assertEquals(List.of("Breach IV / Density V", "Wind Burst III", "Mending"),
+                rendered(EnchantInfoHud.getLines(enchantments, new ItemStack(Items.MACE), config, List.of())));
+    }
+
     private static List<String> rendered(TextList lines) {
         return lines.stream().map(Component::getString).toList();
     }

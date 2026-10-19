@@ -53,3 +53,16 @@ Retained assertions:
 - `fullbright-0`, `fullbright-1`, `fullbright--1`: screenshots of a sealed unlit room, with a pixel-brightness comparison of actual terrain rather than command acknowledgement.
 
 Removed `assertModKeysHaveTheirOwnCategory`: tautological registration identity plus hard-coded category title. It checked constants and wiring, not whether the keys worked. Create/manage waypoint and Inventory Stats input assertions remain.
+
+## Coverage gaps and additions
+
+Player-visible gaps found before additions: enchant command execution and blacklist persistence; Inventory Stats equipment slots; fullbright terrain lighting; tooltip highlighting and its toggle, including enchanted books; enchant HUD section toggles; armour durability formats; movement units; network colour boundaries; waypoint command persistence, duplicate handling and removal. The expanded client scenario covers command execution, equipment slots, lighting, tooltip behaviour and real waypoint-file writes.
+
+Nine new unit tests cover the deterministic branches:
+
+- `EnchantInfoHudTest.disabledSectionsDoNotLeaveHeadersOrLevelSuffixes` and `missingCandidatesRemainVisibleWithoutTheirHeader`: keep, config switches change actual rendered lines.
+- `MotionHudTest.convertsActualDisplacementToBlocksPerSecond` and `optionalTickValueUsesTheSameDisplacement`: keep, signed/zero movement and the optional tick units.
+- `ArmourInfoHudTest.formatsRemainingDurabilityRatherThanDamageTaken`, `hidingDurabilityDoesNotLeaveAPunctuationSuffix` and `nonDamageableItemsHaveOnlyTheirName`: keep, real item components and independent expected text.
+- `NetworkHudTest.pingColourChangesAtEachLatencyThreshold` and `tpsColourDistinguishesHealthyAndLaggingRates`: keep, exact user-visible boundary colours.
+
+No gamerules are registered. Remaining gaps: NeoForge has no automated client runner in the shared conventions; its event wiring, rendering, shutdown and config screen are reviewed in code but are not exercised by the Fabric client suite. Fine-grained visual layout, every element style override, moving/vehicle collision scenarios, GPU timing on different drivers, waypoint dimension changes/reconnects and damaged/corrupt waypoint files are not fully automated. Screenshots and recordings are evidence of the shown scenarios, not proof of all rendering branches.

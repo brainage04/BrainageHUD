@@ -4,6 +4,7 @@ import io.github.brainage04.brainagehud.BrainageHUD;
 import io.github.brainage04.brainagehud.config.core.ModConfig;
 import io.github.brainage04.brainagehud.event.ModClickEvents;
 import io.github.brainage04.brainagehud.hud.FishingHud;
+import io.github.brainage04.brainagehud.event.ModTooltipEvents;
 import io.github.brainage04.brainagehud.hud.FoodHud;
 import io.github.brainage04.brainagehud.hud.NetworkHud;
 import io.github.brainage04.brainagehud.hud.PositionHud;
@@ -34,6 +35,7 @@ import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.Style;
@@ -47,9 +49,11 @@ import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.enchantment.Enchantment;
+import net.minecraft.world.item.enchantment.ItemEnchantments;
 import net.minecraft.world.level.block.Blocks;
 
 import java.nio.file.Path;
+import java.nio.file.Files;
 import java.io.IOException;
 import javax.imageio.ImageIO;
 import java.util.LinkedHashSet;
@@ -244,6 +248,7 @@ public final class BrainageHUDClientGameTest implements FabricClientGameTest {
 					assertChatMessage(chat, " - Waypoint 1 12, -60, -9 (Overworld)", " - ", ChatFormatting.WHITE);
 				});
 				System.out.println("[STDOUT]: Chat feedback screenshot: " + context.takeScreenshot("chat-feedback"));
+				exerciseWaypointCommands(context);
 
 				ClientGameTestRecorder.showStep(
 						context,
@@ -321,6 +326,7 @@ public final class BrainageHUDClientGameTest implements FabricClientGameTest {
 	}
 
 	private static void exerciseEnchantCommands(ClientGameTestContext context) {
+		context.runOnClient(client -> assertTooltipHighlighting(client));
 		ClientGameTestRecorder.showStep(context, "enchant-commands", "Enchantment commands",
 				"The held pickaxe and a named mace list their enchantments; lookup accepts IDs, names and partial names, and blacklist edits give success and duplicate warnings.");
 		Set<Component> chat = new LinkedHashSet<>();
@@ -456,6 +462,79 @@ public final class BrainageHUDClientGameTest implements FabricClientGameTest {
 			return total / 7500.0;
 		} catch (IOException exception) {
 			throw new AssertionError("Could not read lighting screenshot " + screenshot, exception);
+		}
+	}
+
+	private static void assertTooltipHighlighting(Minecraft client) {
+		var registry = client.level.registryAccess().lookupOrThrow(Registries.ENCHANTMENT);
+		var mending = registry.getOrThrow(enchantmentKey("minecraft:mending"));
+		var efficiency = registry.getOrThrow(enchantmentKey("minecraft:efficiency"));
+		var config = ConfigUtils.getConfig().enchantInfoConfig;
+		boolean original = config.highlightMaxLevelEnchants;
+		try {
+			ItemStack pickaxe = client.player.getMainHandItem();
+			List<Component> lines = new java.util.ArrayList<>(List.of(pickaxe.getHoverName(),
+					Enchantment.getFullname(efficiency, 3), Enchantment.getFullname(mending, 1),
+					Component.literal("Mending lore")));
+			config.highlightMaxLevelEnchants = false;
+			ModTooltipEvents.onItemTooltip(pickaxe, lines);
+			if (lines.get(2).getStyle().isBold()) throw new AssertionError("Disabled tooltip highlighting still bolded Mending.");
+			config.highlightMaxLevelEnchants = true;
+			ModTooltipEvents.onItemTooltip(pickaxe, lines);
+			if (!lines.get(2).getStyle().isBold() || lines.get(0).getStyle().isBold()
+					|| lines.get(1).getStyle().isBold() || lines.get(3).getStyle().isBold()) {
+				throw new AssertionError("Tooltip highlighting changed the wrong item lines.");
+			}
+			ItemStack book = new ItemStack(Items.ENCHANTED_BOOK);
+			ItemEnchantments.Mutable stored = new ItemEnchantments.Mutable(ItemEnchantments.EMPTY);
+			stored.set(mending, 1);
+			book.set(DataComponents.STORED_ENCHANTMENTS, stored.toImmutable());
+			List<Component> bookLines = new java.util.ArrayList<>(List.of(book.getHoverName(), Enchantment.getFullname(mending, 1)));
+			ModTooltipEvents.onItemTooltip(book, bookLines);
+			if (!bookLines.get(1).getStyle().isBold()) throw new AssertionError("Stored enchantments in books were not highlighted.");
+		} finally {
+			config.highlightMaxLevelEnchants = original;
+		}
+	}
+
+	private static void exerciseWaypointCommands(ClientGameTestContext context) {
+		ClientGameTestRecorder.showStep(context, "waypoint-commands", "Waypoint command persistence",
+				"A quoted name and explicit coordinates are saved, a case-insensitive duplicate is rejected, and removal updates the file.");
+		Set<Component> chat = new LinkedHashSet<>();
+		context.runOnClient(client -> client.gui.hud.getChat().setVisibleMessageFilter(message -> {
+			chat.add(message.content());
+			return true;
+		}));
+		try {
+			commandAndCheck(context, chat, "waypoints add \"Quoted Base\" 1 -60 3", "[BrainageHUD] Created waypoint Quoted Base at 1, -60, 3.");
+			context.runOnClient(client -> assertSavedWaypoint(client, "Quoted Base", true));
+			commandAndCheck(context, chat, "waypoints add \"quoted base\"", "[BrainageHUD] A waypoint called \"quoted base\" already exists.");
+			commandAndCheck(context, chat, "waypoints remove \"QUOTED BASE\"", "[BrainageHUD] Removed waypoint Quoted Base.");
+			context.runOnClient(client -> assertSavedWaypoint(client, "Quoted Base", false));
+			commandAndCheck(context, chat, "waypoints remove \"Quoted Base\"", "[BrainageHUD] There is no waypoint called \"Quoted Base\".");
+		} finally {
+			context.runOnClient(client -> client.gui.hud.getChat().setVisibleMessageFilter(message -> true));
+		}
+	}
+
+	private static void assertSavedWaypoint(Minecraft client, String name, boolean present) {
+		Path file = client.gameDirectory.toPath().resolve("config/brainagehud/waypoints.json");
+		try {
+			var saved = com.google.gson.JsonParser.parseString(Files.readString(file)).getAsJsonObject()
+					.getAsJsonArray(WaypointStore.currentWorldKey().orElseThrow());
+			boolean found = false;
+			for (var entry : saved) {
+				var waypoint = entry.getAsJsonObject();
+				if (waypoint.get("name").getAsString().equals(name)) {
+					found = true;
+					if (waypoint.get("x").getAsInt() != 1 || waypoint.get("y").getAsInt() != -60 || waypoint.get("z").getAsInt() != 3) {
+						throw new AssertionError("Saved waypoint has the wrong position: " + waypoint);
+					}
+				}
+			}
+			if (found != present) throw new AssertionError("Saved waypoint presence was " + found + ", expected " + present);
+		} catch (IOException exception) {
+			throw new AssertionError("Cannot read saved waypoints", exception);
 		}
 	}
 
