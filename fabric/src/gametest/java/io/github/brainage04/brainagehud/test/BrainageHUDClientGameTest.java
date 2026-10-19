@@ -71,6 +71,16 @@ public final class BrainageHUDClientGameTest implements FabricClientGameTest {
 	@Override
 	public void runTest(ClientGameTestContext context) {
 		Properties serverProperties = ClientGameTestServers.flatServerProperties();
+		context.runOnClient(client -> {
+			boolean recording = ClientGameTestRecordingSession.isEnabled();
+			Window window = client.getWindow();
+			window.setWindowed(recording ? 1920 : 854, recording ? 1080 : 480);
+			GLFW.glfwSetWindowPos(window.handle(), 0, 0);
+			client.options.fullscreen().set(false);
+			client.options.guiScale().set(recording ? 2 : 1);
+			client.resizeGui();
+		});
+		context.waitTicks(5);
 
 		ClientGameTestServers.withDedicatedServer(context, serverProperties, "BrainageHUD visual showcase GameTest", server -> { ShowcaseConfigSnapshot configSnapshot = null;
 			try {
@@ -442,6 +452,14 @@ public final class BrainageHUDClientGameTest implements FabricClientGameTest {
 		});
 		context.waitTicks(60);
 		float original = context.computeOnClient(client -> ConfigUtils.getConfig().qualityOfLifeConfig.fullbright);
+		boolean[] overlays = context.computeOnClient(client -> {
+			ModConfig config = ConfigUtils.getConfig();
+			boolean[] originalOverlays = {config.reachHudConfig.coreSettings.enabled, config.waypointConfig.showInWorld};
+			// Measure the stone wall, not Reach HUD text or a waypoint label over the sampled pixels.
+			config.reachHudConfig.coreSettings.enabled = false;
+			config.waypointConfig.showInWorld = false;
+			return originalOverlays;
+		});
 		try {
 			double[] brightness = new double[3];
 			int[] amounts = {0, 1, -1};
@@ -459,6 +477,8 @@ public final class BrainageHUDClientGameTest implements FabricClientGameTest {
 		} finally {
 			context.runOnClient(client -> {
 				ConfigUtils.getConfig().qualityOfLifeConfig.fullbright = original;
+				ConfigUtils.getConfig().reachHudConfig.coreSettings.enabled = overlays[0];
+				ConfigUtils.getConfig().waypointConfig.showInWorld = overlays[1];
 				ConfigUtils.saveConfig();
 			});
 		}
