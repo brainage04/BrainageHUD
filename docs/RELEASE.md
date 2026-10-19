@@ -16,4 +16,4 @@ The release workflow builds both loader JARs and attaches the Fabric and NeoForg
 If `MODRINTH_TOKEN` is configured, the same workflow creates or updates the Modrinth project and publishes both loader JARs. CurseForge publishing is turned off (`publish_curseforge: false`).
 All destinations use the same tag notes. A missing `MODRINTH_TOKEN` skips only Modrinth; the GitHub Release still proceeds.
 
-The build and release workflows use FabricModdingConventions 2.4.26, matching the workspace template.
+The build and release workflows use MinecraftModConventions 3.0.1, matching the workspace template.

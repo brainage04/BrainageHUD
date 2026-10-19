@@ -22,9 +22,9 @@ import io.github.brainage04.hudrendererlib.hud.core.HudRenderer;
 import io.github.brainage04.hudrendererlib.config.core.CoreSettings;
 import io.github.brainage04.hudrendererlib.config.core.ElementAnchor;
 import io.github.brainage04.hudrendererlib.config.core.HudRendererLibConfig;
-import io.github.brainage04.fabricmoddingconventions.ClientGameTestRecorder;
-import io.github.brainage04.fabricmoddingconventions.ClientGameTestRecordingSession;
-import io.github.brainage04.fabricmoddingconventions.ClientGameTestServers;
+import io.github.brainage04.minecraftmodconventions.ClientGameTestRecorder;
+import io.github.brainage04.minecraftmodconventions.ClientGameTestRecordingSession;
+import io.github.brainage04.minecraftmodconventions.ClientGameTestServers;
 import net.fabricmc.fabric.api.client.gametest.v1.FabricClientGameTest;
 import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext;
 
