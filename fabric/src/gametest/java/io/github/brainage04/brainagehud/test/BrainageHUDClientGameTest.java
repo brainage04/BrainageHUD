@@ -26,6 +26,7 @@ import net.fabricmc.fabric.api.client.gametest.v1.FabricClientGameTest;
 import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext;
 
 import net.minecraft.ChatFormatting;
+import com.mojang.blaze3d.platform.InputConstants;
 import net.minecraft.client.KeyMapping;
 import com.mojang.blaze3d.platform.Window;
 import org.lwjgl.glfw.GLFW;
@@ -49,6 +50,8 @@ import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.level.block.Blocks;
 
 import java.nio.file.Path;
+import java.io.IOException;
+import javax.imageio.ImageIO;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -176,6 +179,10 @@ public final class BrainageHUDClientGameTest implements FabricClientGameTest {
 					assertHudLines("Projectile", new ProjectileHud().getLines(), List.of("Projectiles:", "Arrows: 96 [64, 32]", "Ender Pearls: 16"));
 					assertHudLines("Food", new FoodHud().getLines(), List.of("Food:", "Bread: 12", "Steak: 5"));
 				});
+				context.waitTicks(60);
+
+				exerciseEnchantCommands(context);
+				exerciseInventoryStats(context);
 				System.out.println("[STDOUT]: Inventory trackers screenshot: " + context.takeScreenshot("inventory-trackers"));
 
 				ClientGameTestRecorder.showStep(
@@ -272,6 +279,7 @@ public final class BrainageHUDClientGameTest implements FabricClientGameTest {
 				context.waitTicks(60);
 				context.runOnClient(client -> assertFishingHudLines(List.of("Open water: yes", "Treasure: possible", "Chances: Fish 85%, Treasure 5%, Junk 10%")));
 				System.out.println("[STDOUT]: Fishing HUD screenshot: " + context.takeScreenshot("fishing-hud"));
+				exerciseFullbright(context, server);
 			} finally {
 				if (configSnapshot != null) {
 					ShowcaseConfigSnapshot snapshotToRestore = configSnapshot;
@@ -314,6 +322,145 @@ public final class BrainageHUDClientGameTest implements FabricClientGameTest {
 		}
 	}
 
+	private static void exerciseEnchantCommands(ClientGameTestContext context) {
+		ClientGameTestRecorder.showStep(context, "enchant-commands", "Enchantment commands",
+				"The held pickaxe and a named mace list their enchantments; lookup accepts IDs, names and partial names, and blacklist edits give success and duplicate warnings.");
+		Set<Component> chat = new LinkedHashSet<>();
+		List<String> original = context.computeOnClient(client ->
+				List.copyOf(ConfigUtils.getConfig().enchantInfoConfig.blacklistedEnchantmentIds));
+		context.runOnClient(client -> client.gui.hud.getChat().setVisibleMessageFilter(message -> {
+			chat.add(message.content());
+			return true;
+		}));
+		try {
+			commandAndCheck(context, chat, "getenchants", "[BrainageHUD] Acceptable enchants for Diamond Pickaxe:");
+			commandAndCheck(context, chat, "getenchants minecraft:mace", "[BrainageHUD] Acceptable enchants for Mace:");
+			commandAndCheck(context, chat, "getenchantinfo minecraft:fortune", "ID: minecraft:fortune");
+			commandAndCheck(context, chat, "getenchantinfo \"Fortune\"", "[BrainageHUD] Enchant info for Fortune:");
+			commandAndCheck(context, chat, "getenchantinfo \"protection\"", "[BrainageHUD] No exact match found. Potential matches:");
+			commandAndCheck(context, chat, "getenchantinfo \"not an enchantment\"", "[BrainageHUD] No potential matches found!");
+			context.runOnClient(client -> ConfigUtils.getConfig().enchantInfoConfig.blacklistedEnchantmentIds.remove("minecraft:unbreaking"));
+			commandAndCheck(context, chat, "blacklistedenchants add minecraft:unbreaking", "[BrainageHUD] Unbreaking is now blacklisted.");
+			commandAndCheck(context, chat, "blacklistedenchants add minecraft:unbreaking", "[BrainageHUD] Unbreaking is already blacklisted!");
+			commandAndCheck(context, chat, "blacklistedenchants query", " - Unbreaking");
+			commandAndCheck(context, chat, "blacklistedenchants remove minecraft:unbreaking", "[BrainageHUD] Unbreaking is no longer blacklisted.");
+			commandAndCheck(context, chat, "blacklistedenchants remove minecraft:unbreaking", "[BrainageHUD] Unbreaking is not blacklisted!");
+		} finally {
+			context.runOnClient(client -> {
+				client.gui.hud.getChat().setVisibleMessageFilter(message -> true);
+				ConfigUtils.getConfig().enchantInfoConfig.blacklistedEnchantmentIds = new java.util.ArrayList<>(original);
+				ConfigUtils.saveConfig();
+			});
+		}
+	}
+
+	private static void commandAndCheck(ClientGameTestContext context, Set<Component> chat, String command, String expected) {
+		context.runOnClient(client -> {
+			chat.clear();
+			client.gui.hud.getChat().clearMessages(false);
+		});
+		runClientCommand(context, command);
+		context.waitTicks(5);
+		context.runOnClient(client -> {
+			if (chat.stream().noneMatch(line -> line.getString().equals(expected))) {
+				throw new AssertionError("Command /" + command + " did not print " + expected + "; got " + chat);
+			}
+		});
+		context.waitTicks(35);
+		context.takeScreenshot(command.replaceAll("[^a-zA-Z0-9]+", "-"));
+	}
+
+	private static void exerciseInventoryStats(ClientGameTestContext context) {
+		ClientGameTestRecorder.showStep(context, "inventory-stats", "Inventory Stats includes armour",
+				"The Inventory Stats key lists every occupied slot, including all four armour slots and the off hand.");
+		Set<Component> chat = new LinkedHashSet<>();
+		KeyMapping key = KeyMapping.get("key.brainagehud.inventoryStats");
+		String previousKey = context.computeOnClient(client -> key.saveString());
+		context.runOnClient(client -> {
+			key.setKey(InputConstants.Type.KEYSYM.getOrCreate(GLFW.GLFW_KEY_I));
+			KeyMapping.resetMapping();
+			client.gui.hud.getChat().clearMessages(false);
+			client.gui.hud.getChat().setVisibleMessageFilter(message -> {
+				chat.add(message.content());
+				return true;
+			});
+		});
+		try {
+			context.getInput().pressKey(key);
+			context.waitTicks(10);
+			context.runOnClient(client -> {
+				for (String expected : List.of("Feet: 1 × minecraft:diamond_boots", "Legs: 1 × minecraft:diamond_leggings",
+						"Chest: 1 × minecraft:diamond_chestplate", "Head: 1 × minecraft:diamond_helmet",
+						"Off hand: 1 × minecraft:shield")) {
+					if (chat.stream().noneMatch(line -> line.getString().equals(expected))) {
+						throw new AssertionError("Inventory Stats omitted " + expected + "; got " + chat);
+					}
+				}
+			});
+			context.waitTicks(60);
+			context.takeScreenshot("inventory-stats-armour");
+		} finally {
+			context.runOnClient(client -> {
+				key.setKey(InputConstants.getKey(previousKey));
+				KeyMapping.resetMapping();
+				client.gui.hud.getChat().setVisibleMessageFilter(message -> true);
+			});
+		}
+	}
+
+	private static void exerciseFullbright(ClientGameTestContext context,
+			net.fabricmc.fabric.api.client.gametest.v1.context.TestDedicatedServerContext server) {
+		server.runOnServer(minecraftServer -> {
+			ServerPlayer player = minecraftServer.getPlayerList().getPlayers().getFirst();
+			for (BlockPos pos : BlockPos.betweenClosed(37, -53, -3, 43, -47, 3)) {
+				boolean wall = pos.getX() == 37 || pos.getX() == 43 || pos.getY() == -53 || pos.getY() == -47
+						|| pos.getZ() == -3 || pos.getZ() == 3;
+				player.level().setBlockAndUpdate(pos, wall ? Blocks.STONE.defaultBlockState() : Blocks.AIR.defaultBlockState());
+			}
+			player.teleportTo(40.5, -52, 0.5);
+			player.setYRot(0);
+			player.setXRot(0);
+		});
+		context.waitTicks(60);
+		float original = context.computeOnClient(client -> ConfigUtils.getConfig().qualityOfLifeConfig.fullbright);
+		try {
+			double[] brightness = new double[3];
+			int[] amounts = {0, 1, -1};
+			for (int index = 0; index < amounts.length; index++) {
+				int amount = amounts[index];
+				ClientGameTestRecorder.showStep(context, "fullbright-" + amount, "Fullbright " + amount,
+						"A sealed, unlit stone room shows actual terrain lighting: normal at 0, fully lit at 1, black at -1.");
+				runClientCommand(context, "fullbright " + amount);
+				context.waitTicks(80);
+				brightness[index] = centreBrightness(context.takeScreenshot("fullbright-" + amount));
+			}
+			if (brightness[1] < brightness[0] + 30 || brightness[2] > brightness[1] / 4) {
+				throw new AssertionError("Fullbright did not change terrain lighting: " + java.util.Arrays.toString(brightness));
+			}
+		} finally {
+			context.runOnClient(client -> {
+				ConfigUtils.getConfig().qualityOfLifeConfig.fullbright = original;
+				ConfigUtils.saveConfig();
+			});
+		}
+	}
+
+	private static double centreBrightness(Path screenshot) {
+		try {
+			var image = ImageIO.read(screenshot.toFile());
+			long total = 0;
+			for (int y = image.getHeight() / 2 + 20; y < image.getHeight() / 2 + 70; y++) {
+				for (int x = image.getWidth() / 2 + 20; x < image.getWidth() / 2 + 70; x++) {
+					int pixel = image.getRGB(x, y);
+					total += ((pixel >> 16) & 255) + ((pixel >> 8) & 255) + (pixel & 255);
+				}
+			}
+			return total / 7500.0;
+		} catch (IOException exception) {
+			throw new AssertionError("Could not read lighting screenshot " + screenshot, exception);
+		}
+	}
+
 	private static void preparePlayer(ServerPlayer player) {
 		player.getInventory().clearContent();
 		HolderLookup.RegistryLookup<Enchantment> enchantments = player.level().registryAccess()
@@ -328,6 +475,7 @@ public final class BrainageHUDClientGameTest implements FabricClientGameTest {
 		player.setItemSlot(EquipmentSlot.CHEST, new ItemStack(Items.DIAMOND_CHESTPLATE));
 		player.setItemSlot(EquipmentSlot.LEGS, new ItemStack(Items.DIAMOND_LEGGINGS));
 		player.setItemSlot(EquipmentSlot.FEET, new ItemStack(Items.DIAMOND_BOOTS));
+		player.setItemSlot(EquipmentSlot.OFFHAND, new ItemStack(Items.SHIELD));
 		player.getInventory().setItem(1, new ItemStack(Items.FISHING_ROD));
 		player.getInventory().setItem(2, new ItemStack(Items.ARROW, 64));
 		player.getInventory().setItem(20, new ItemStack(Items.ARROW, 32));

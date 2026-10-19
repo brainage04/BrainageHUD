@@ -10,14 +10,14 @@ under [Not yet equivalent / deliberate differences](#not-yet-equivalent--deliber
 | GetEnchantInfo | BrainageHUD | Notes |
 | --- | --- | --- |
 | `common/.../GetEnchantInfo.java` (mod entry, tooltip callback) | `common/.../event/ModTooltipEvents.java` | Only the tooltip highlighting callback was kept; command/config/loader registration moved to the places BrainageHUD already registers those. |
-| `common/.../commands/GetEnchantInfoCommand.java` | `common/.../command/GetEnchantInfoCommand.java` | Logic unchanged. |
+| `common/.../commands/GetEnchantInfoCommand.java` | `common/.../command/GetEnchantInfoCommand.java` | Registry ID and name lookup are retained; feedback uses BrainageHUD's chat styling. |
 | `common/.../commands/GetEnchantsCommand.java` | `common/.../command/GetEnchantsCommand.java` | Conflicts are listed as groups (`EnchantmentUtils.groupConflictingEnchantments`, shared with the HUD) instead of one line per conflicting pair. |
 | `common/.../commands/BlacklistedEnchantsCommand.java` | `common/.../command/BlacklistedEnchantsCommand.java` | Blacklist is now persisted through BrainageHUD's config (`ConfigUtils.saveConfig()`); `enchantmentId(holder)` was folded into `EnchantmentUtils.getEnchantmentId`. |
 | `common/.../commands/core/ModCommands.java` | `common/.../command/core/ModCommands.java` | Now a static `registerClientCommands(CommandDispatcher<S>, CommandBuildContext)` that both loaders call; no `ClientPlatform` abstraction and no raw `CommandDispatcher` casts, because both loaders' command sources implement `SharedSuggestionProvider`. |
 | `common/.../commands/core/argument/ClientHolderReferenceArgumentType.java` | `common/.../command/core/argument/ClientHolderReferenceArgumentType.java` | The two `getHolder`/`getEnchantment`/`getItem` helpers are generic over the command source type instead of being typed to `SharedSuggestionProvider`. |
 | `common/.../util/EnchantmentUtils.java` | `common/.../util/EnchantmentUtils.java` | Verbatim port plus the new helpers used by the HUD element (`getEnchantmentId`, `getMissingEnchantments`, `groupConflictingEnchantments`). |
 | `common/.../config/ModConfig.java`, `ModConfigManager.java` | `common/.../config/other/EnchantInfoConfig.java` | Blacklist moved into BrainageHUD's Cloth Config file; Gson config manager dropped in favour of Cloth's serializer. |
-| `common/.../platform/ClientPlatform.java` | — | Replaced by direct registration in each loader entrypoint, matching BrainageHUD's existing style. |
+| `common/.../platform/ClientPlatform.java` | None | Replaced by direct registration in each loader entrypoint, matching BrainageHUD's existing style. |
 | `fabric/.../GetEnchantInfoFabric.java` | `fabric/.../fabric/BrainageHUDFabric.java` | Fabric entrypoint now registers the enchant commands and the item tooltip callback. |
 | `neoforge/.../GetEnchantInfoNeoForge.java` | `neoforge/.../neoforge/BrainageHUDNeoForge.java` | NeoForge entrypoint now registers the enchant commands and the item tooltip callback. |
 
@@ -25,7 +25,7 @@ under [Not yet equivalent / deliberate differences](#not-yet-equivalent--deliber
 
 ## Commands
 
-All three commands exist with unchanged names, namespaces and output:
+All three command names are retained; output now uses BrainageHUD's grey prefix and coloured feedback:
 
 - `/getenchantinfo <enchantmentId>` – enchant info for a registry ID (max level, incompatible enchantments, applicable items).
 - `/getenchantinfo <enchantmentName>` – lookup by (case-insensitive, partial) name; exact match wins, a single partial
@@ -34,11 +34,9 @@ All three commands exist with unchanged names, namespaces and output:
 - `/getenchants` – acceptable enchantments for the held item.
 - `/getenchants <item>` – acceptable enchantments for an item ID (groups of conflicting enchantments are listed
   separately from conflict-free enchantments, blacklisted enchantments are filtered out).
-- `/blacklistedenchants query` / `add <enchantmentId>` / `remove <enchantmentId>` – blacklist management, with the same
-  feedback messages; `add`/`remove` write through to `config/brainagehud.json`.
+- `/blacklistedenchants query` / `add <enchantmentId>` / `remove <enchantmentId>` – blacklist management; `add`/`remove` write through to `config/brainagehud.json`.
 
-Command feedback still goes through `Minecraft.getInstance().player.sendSystemMessage`, i.e. exactly the messages
-GetEnchantInfo printed.
+List headers carry the prefix; the detail lines below them do not. Success is green, warnings yellow and errors red.
 
 ## HUD element: Enchant Info
 
@@ -63,8 +61,7 @@ Rules:
   not in the blacklist, and compatible with *every* enchantment already on the item. A missing enchantment is shown at
   its maximum level, e.g. `Mending`, `Fire Aspect II`.
 - **Conflicting enchantments** among the missing ones are collapsed onto a single "choose one" line joined with ` / `,
-  e.g. `Breach IV / Density V` on a mace. Conflicts are computed as connected groups (vanilla exclusivity is clannish,
-  so groups equal the vanilla exclusivity sets), which is the compact form of `/getenchants`'s conflicting-pairs output.
+  e.g. `Breach IV / Density V` on a mace. Both the HUD and `/getenchants` compute connected conflict groups.
 - Blacklisted enchantments are never suggested as missing; the same `enchantInfoConfig.blacklistedEnchantmentIds` list
   drives `/getenchants`, `/blacklistedenchants` and this element.
 
@@ -94,8 +91,8 @@ diamond sword: sharpness V + unbreaking III + mending + looting III, fire aspect
 ```
 
 Element options: `showItemName`, `showEnchantments`, `showMaxLevels`, `showMissingEnchantments`, `showMissingHeader`,
-plus the standard `coreSettings` (enabled, x, y, anchor, overrides). Default position is middle-left
-(`ElementAnchor.LEFT`, 5, 0) and the element is enabled by default, like most BrainageHUD elements.
+plus the standard `coreSettings` (enabled, x, y, anchor, overrides). Default position is top-left
+(`ElementAnchor.TOP_LEFT`, 150, 5) and the element is enabled by default, like most BrainageHUD elements.
 
 ## Config surface
 
@@ -125,10 +122,9 @@ The generated `common/src/main/generated/assets/brainagehud/lang/en_us.json` was
 - **HUD scope is non-book items.** The element uses the item's `enchantments` component. An enchanted book keeps its
   enchantments in `stored_enchantments`, is neither `isEnchantable()` nor `isEnchanted()`, and therefore shows nothing
   (the tooltip highlighting does handle books, as GetEnchantInfo did).
-- **Conflict grouping granularity.** `/getenchants` prints conflicting *pairs*; the HUD groups transitively conflicting
-  enchantments into one line. Vanilla exclusivity sets are cliques so the results agree for vanilla data, but a modded
-  enchantment that only conflicts transitively (A–B, B–C, A compatible with C) is shown as one `A / B / C` line where the
-  command would print two pairs and would not remove `A` or `C` from the acceptable list.
+- **Conflict grouping granularity.** Both `/getenchants` and the HUD group transitively conflicting enchantments.
+  A modded enchantment graph A-B, B-C, with A compatible with C, is shown as one `A / B / C` group; this does not mean
+  every pair in the group conflicts.
 - **Missing-list semantics.** A missing enchantment is filtered only against enchantments already on the item, not
   against the other missing ones, so two mutually exclusive candidates are both listed (as one "choose one" line). That
   is intentional: each candidate is genuinely missing and only one of them can be added.

@@ -28,14 +28,13 @@ public final class InventoryCounter {
         }
     }
 
-    /** The hotbar from left to right, then the three inventory rows, then the off hand. */
+    /** The hotbar, inventory rows, armour (feet to head), then the off hand. */
     public static List<ItemStack> slots(LocalPlayer player) {
         Inventory inventory = player.getInventory();
-        List<ItemStack> slots = new ArrayList<>(Inventory.INVENTORY_SIZE + 1);
-        for (int slot = 0; slot < Inventory.INVENTORY_SIZE; slot++) {
+        List<ItemStack> slots = new ArrayList<>(Inventory.SLOT_OFFHAND + 1);
+        for (int slot = 0; slot <= Inventory.SLOT_OFFHAND; slot++) {
             slots.add(inventory.getItem(slot));
         }
-        slots.add(inventory.getItem(Inventory.SLOT_OFFHAND));
         return slots;
     }
 

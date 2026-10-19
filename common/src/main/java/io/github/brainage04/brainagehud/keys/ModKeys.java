@@ -59,7 +59,14 @@ public final class ModKeys {
         for (int slot = 0; slot < slots.size(); slot++) {
             ItemStack stack = slots.get(slot);
             if (stack.isEmpty()) continue;
-            String where = slot == slots.size() - 1 ? "Off hand" : "Slot " + slot;
+            String where = switch (slot) {
+                case 36 -> "Feet";
+                case 37 -> "Legs";
+                case 38 -> "Chest";
+                case 39 -> "Head";
+                case 40 -> "Off hand";
+                default -> "Slot " + slot;
+            };
             String line = "%s: %d × %s".formatted(where, stack.getCount(), BuiltInRegistries.ITEM.getKey(stack.getItem()));
             if (!stack.getComponentsPatch().isEmpty()) line += " " + stack.getComponentsPatch();
             ChatFeedback.detail(line);
