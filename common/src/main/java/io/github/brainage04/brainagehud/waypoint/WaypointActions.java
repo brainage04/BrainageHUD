@@ -12,13 +12,11 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.TextColor;
 
-/** Waypoint changes shared by the commands, the keys and the screens; each reports in chat. */
 public final class WaypointActions {
     public static final int MAX_NAME_LENGTH = 64;
 
     private WaypointActions() {}
 
-    /** Creates a waypoint at the player's feet, named "Waypoint N" when {@code name} is null. */
     public static Optional<Waypoint> createAtPlayer(String name) {
         LocalPlayer player = Minecraft.getInstance().player;
         if (player == null) return Optional.empty();
@@ -26,9 +24,6 @@ public final class WaypointActions {
         return create(name, player.blockPosition());
     }
 
-    /**
-     * Creates a waypoint in the player's dimension, named "Waypoint N" when {@code name} is null.
-     */
     public static Optional<Waypoint> create(String name, BlockPos pos) {
         Minecraft minecraft = Minecraft.getInstance();
         Optional<List<Waypoint>> waypoints = WaypointStore.current();
@@ -87,7 +82,6 @@ public final class WaypointActions {
         return true;
     }
 
-    /** Why {@code name} cannot be a waypoint name, or empty if it can. */
     public static Optional<String> validateName(String name) {
         if (name.isEmpty()) return Optional.of("A waypoint needs a name.");
         if (name.length() > MAX_NAME_LENGTH)
@@ -104,9 +98,6 @@ public final class WaypointActions {
         return Optional.empty();
     }
 
-    /**
-     * "Overworld", "Nether" or "The End" for the vanilla dimensions, otherwise the dimension's ID.
-     */
     public static String dimensionName(String dimension) {
         return switch (dimension) {
             case "minecraft:overworld" -> "Overworld";
@@ -116,7 +107,6 @@ public final class WaypointActions {
         };
     }
 
-    /** The waypoint's name in its colour. */
     public static MutableComponent name(Waypoint waypoint) {
         return Component.literal(waypoint.name)
                 .withStyle(style -> style.withColor(TextColor.fromRgb(waypoint.colour)));

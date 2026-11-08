@@ -21,10 +21,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.FluidState;
 
 /**
- * Shows whether the thrown bobber is in open water, which decides whether treasure can be caught,
- * and the chance of catching fish, treasure or junk.
- *
- * <p>The server decides open water ({@code FishingHook.calculateOpenWater}) but never sends the
+ * The server decides open water ({@code FishingHook.calculateOpenWater}) but never sends the
  * result, so the client's {@link FishingHook#isOpenWaterFishing()} is always {@code true}. This
  * element repeats the server's check against the client's copy of the world instead.
  */
@@ -56,7 +53,6 @@ public class FishingHud implements BasicCoreHudElement<FishingHudConfig> {
 
         LocalPlayer player = Minecraft.getInstance().player;
         FishingHook hook = player == null ? null : player.fishing;
-        // nothing to report until a bobber is out
         if (hook == null) return lines;
 
         BlockPos hookPos = hook.blockPosition();
@@ -112,9 +108,6 @@ public class FishingHud implements BasicCoreHudElement<FishingHudConfig> {
         int[] chances = new int[weights.length];
         if (totalWeight == 0) return chances;
 
-        // largest remainder rounding: round every share down, then give the leftover points to the
-        // largest
-        // remainders, earlier categories first on a tie
         long[] remainders = new long[weights.length];
         int leftover = 100;
         for (int i = 0; i < weights.length; i++) {

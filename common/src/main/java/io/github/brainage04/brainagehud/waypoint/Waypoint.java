@@ -10,10 +10,8 @@ public final class Waypoint {
     public int y;
     public int z;
 
-    /** The dimension's ID, e.g. {@code minecraft:overworld}. */
     public String dimension;
 
-    /** 0xRRGGBB. */
     public int colour;
 
     public boolean visible = true;
@@ -31,10 +29,6 @@ public final class Waypoint {
         return new BlockPos(x, y, z);
     }
 
-    /**
-     * Where a player standing at the waypoint's block has their feet, which distances and
-     * directions are measured to.
-     */
     public Vec3 standingPosition() {
         return new Vec3(x + 0.5D, y, z + 0.5D);
     }

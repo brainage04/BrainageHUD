@@ -21,17 +21,12 @@ public class EnglishLangProvider extends FabricLanguageProvider {
     private final String autoConfigPrefix =
             "text.autoconfig.%s.option".formatted(BrainageHUD.MOD_ID);
 
-    /**
-     * Titles of the config sections that are not HUD elements; those are titled with their element
-     * name.
-     */
     private static final Map<String, String> SECTION_TITLES =
             Map.of(
                     "qualityOfLifeConfig", "Quality of Life",
                     "enchantInfoConfig", "Enchant Info",
                     "waypointConfig", "Waypoints");
 
-    /** Labels of the core settings that differ from their field names. */
     private static final Map<String, String> CORE_SETTINGS_LABELS =
             Map.of(
                     "x", "X Coordinate",
@@ -87,12 +82,10 @@ public class EnglishLangProvider extends FabricLanguageProvider {
     @Override
     public void generateTranslations(
             HolderLookup.Provider registryLookup, TranslationBuilder translationBuilder) {
-        // element editor
         translationBuilder.add(
                 "text.autoconfig.%s.title".formatted(BrainageHUD.MOD_ID),
                 "BrainageHUD Config Editor");
 
-        // keybinds
         addAutomaticTranslations(
                 new String[] {
                     "openConfig",
@@ -106,10 +99,8 @@ public class EnglishLangProvider extends FabricLanguageProvider {
         translationBuilder.add(
                 "key.category.%s.keys".formatted(BrainageHUD.MOD_ID), BrainageHUD.MOD_NAME);
 
-        // config
         generateReflectedTranslations(new ModConfig(), autoConfigPrefix, translationBuilder);
 
-        // tooltips
         String decimalPlaces = "The number of decimal places displayed.";
         String slotCounts =
                 "When the items are spread over several slots, also list the count in each slot (hotbar left to right, inventory rows, armour from feet to head, then the off hand).";

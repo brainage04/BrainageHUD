@@ -25,12 +25,6 @@ import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.util.Mth;
 import net.minecraft.world.effect.MobEffectInstance;
 
-/**
- * The player's active effects in the order the inventory lists them, with their time left. With
- * Show Icons off each effect is one line, {@code Speed II: 1:23}. With Show Icons on each effect is
- * an entry with the effect's full-size icon on the left and, to its right, the name on one line and
- * the time left on the next.
- */
 public class StatusEffectHud implements CoreHudElement<StatusEffectHudConfig> {
     /**
      * The vanilla effect sprite's size: exactly two text lines, so the name and time left span the
@@ -67,8 +61,6 @@ public class StatusEffectHud implements CoreHudElement<StatusEffectHudConfig> {
         }
         if (effects.isEmpty()) return;
 
-        // laid out like HudRenderer.renderElement, with each effect an icon-high entry instead of a
-        // line
         CoreSettings coreSettings = config.coreSettings;
         int elementPadding = HudRendererLib.getPadding(coreSettings);
         int maxWidth = HudRendererLib.getMaxWidth(coreSettings);
@@ -148,7 +140,6 @@ public class StatusEffectHud implements CoreHudElement<StatusEffectHudConfig> {
         }
     }
 
-    /** One effect's icon entry: its text rows, name first, and the widest row's width. */
     private record Entry(
             MobEffectInstance effect, List<FormattedCharSequence> rows, int textWidth) {
         int height(Font renderer) {
@@ -173,7 +164,6 @@ public class StatusEffectHud implements CoreHudElement<StatusEffectHudConfig> {
         return Ordering.natural().sortedCopy(player.getActiveEffects());
     }
 
-    /** One line per effect, in the order of {@code effects}. */
     private TextList getLines(LocalPlayer player, List<MobEffectInstance> effects) {
         TextList lines = new TextList();
         boolean showDurations = getElementConfig().showDurations;
@@ -201,7 +191,6 @@ public class StatusEffectHud implements CoreHudElement<StatusEffectHudConfig> {
         return formatDuration(Mth.floor(effect.getDuration() / tickRate));
     }
 
-    /** "m:ss", or "h:mm:ss" from an hour. */
     public static String formatDuration(int totalSeconds) {
         int hours = totalSeconds / 3600;
         int minutes = totalSeconds / 60 % 60;

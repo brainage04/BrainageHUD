@@ -14,10 +14,6 @@ import net.minecraft.tags.ItemTags;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 
-/**
- * How many of each throwable or shootable item the player carries. Kinds they have none of are left
- * out; with none at all, the header shows N/A.
- */
 public class ProjectileHud implements BasicCoreHudElement<ProjectileHudConfig> {
     @Override
     public TextList getLines() {

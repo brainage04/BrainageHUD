@@ -61,10 +61,6 @@ public final class ModKeys {
                 "Enchant Info compact mode %s.".formatted(config.compactMode ? "on" : "off"));
     }
 
-    /**
-     * Lists every occupied slot in chat with its item, count and data components that differ from
-     * the item's defaults (its damage, enchantments, custom name and so on).
-     */
     private static void printInventoryStats(Minecraft minecraft) {
         LocalPlayer player = minecraft.player;
         if (player == null) return;

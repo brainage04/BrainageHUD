@@ -23,19 +23,17 @@ public class PositionHud implements BasicCoreHudElement<PositionHudConfig> {
     // Minecraft yaw 0 faces south (+Z) and increases clockwise: 90 is west, 180/-180 north, -90
     // east
     private static final String[] YAW_LABEL = {
-        "S (+Z)", // 0 : centred on 0
-        "SW (-X, +Z)", // 1 : centred on 45
-        "W (-X)", // 2 : centred on 90
-        "NW (-X, -Z)", // 3 : centred on 135
-        "N (-Z)", // 4 : centred on 180 / -180
-        "NE (+X, -Z)", // 5 : centred on 225 / -135
-        "E (+X)", // 6 : centred on 270 / -90
-        "SE (+X, +Z)" // 7 : centred on 315 / -45
+        "S (+Z)",
+        "SW (-X, +Z)",
+        "W (-X)",
+        "NW (-X, -Z)",
+        "N (-Z)",
+        "NE (+X, -Z)",
+        "E (+X)",
+        "SE (+X, +Z)"
     };
 
     public static String getYawString(float yaw) {
-        // shift by half a sector so each label's range starts at a multiple of 45, then wrap to [0,
-        // 360)
         float wrapped = ((yaw + 22.5F) % 360.0F + 360.0F) % 360.0F;
 
         return YAW_LABEL[(int) (wrapped / 45.0F)];
@@ -47,7 +45,6 @@ public class PositionHud implements BasicCoreHudElement<PositionHudConfig> {
     private static final Pattern FARMING_TOOL_NAME =
             Pattern.compile("\\b(axe|hoe|chopper|dicer|cutter|knife)\\b", Pattern.CASE_INSENSITIVE);
 
-    /** Vanilla axes and hoes, and items named as farming tools (like SkyBlock's Melon Dicer). */
     private static boolean isFarmingTool(ItemStack stack) {
         if (stack.isEmpty()) return false;
         if (stack.is(ItemTags.AXES) || stack.is(ItemTags.HOES)) return true;
@@ -121,7 +118,6 @@ public class PositionHud implements BasicCoreHudElement<PositionHudConfig> {
         }
 
         if (getElementConfig().showDirection) {
-            // taken from net.minecraft.client.gui.hud.DebugHud
             Entity entity = Minecraft.getInstance().getCameraEntity();
             if (entity == null) return lines;
 

@@ -13,15 +13,10 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.ItemEnchantments;
 
-/**
- * Ported from GetEnchantInfo's tooltip callback, which highlights maxed enchantment tooltip lines
- * in bold.
- */
 public class ModTooltipEvents {
     public static void onItemTooltip(ItemStack itemStack, List<Component> lines) {
         if (!getConfig().enchantInfoConfig.highlightMaxLevelEnchants) return;
 
-        // enchanted books keep their enchantments in a separate component
         ItemEnchantments enchantments =
                 itemStack.getOrDefault(DataComponents.STORED_ENCHANTMENTS, ItemEnchantments.EMPTY);
         if (enchantments.isEmpty()) enchantments = itemStack.getEnchantments();

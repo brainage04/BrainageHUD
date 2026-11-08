@@ -23,13 +23,6 @@ import net.minecraft.world.phys.Vec3;
 import org.joml.Matrix4f;
 import org.joml.Vector3fc;
 
-/**
- * Draws the current dimension's visible waypoints in the world: a tinted beacon beam, a spinning
- * gem hovering above the spot with a pulse spreading over the ground beneath it, and a label with
- * the name and distance that stays readable through walls.
- *
- * <p>Everything is submitted in camera-relative coordinates from the loader's level render hook.
- */
 public final class WaypointRenderer {
     /**
      * Waypoints further than this share of the render distance are drawn scaled towards the camera.
@@ -38,18 +31,12 @@ public final class WaypointRenderer {
      */
     private static final double PROJECTION_SHARE = 0.5D;
 
-    /**
-     * Past these distances the marker and label grow with distance, so they keep their size on
-     * screen.
-     */
     private static final double MARKER_GROWTH_START = 24.0D;
 
     private static final double LABEL_GROWTH_START = 12.0D;
 
-    /** Within this distance every label shows its name. */
     private static final double NAME_DISTANCE = 16.0D;
 
-    /** How close to the crosshair (in degrees) a waypoint must be to show its name from afar. */
     private static final float FOCUS_ANGLE = 5.0F;
 
     private static final float TEXT_SCALE = 0.025F;
@@ -99,10 +86,6 @@ public final class WaypointRenderer {
         }
     }
 
-    /**
-     * @param beamBottom the lowest block Y of the dimension
-     * @param beamTop one above the highest block Y of the dimension
-     */
     private record Frame(
             Camera camera,
             Font font,
@@ -160,10 +143,6 @@ public final class WaypointRenderer {
         poseStack.popPose();
     }
 
-    /**
-     * A slim beacon beam through the whole height of the dimension; like vanilla's, it widens with
-     * distance so it stays visible.
-     */
     private static void submitBeam(
             PoseStack poseStack,
             SubmitNodeCollector collector,
@@ -189,7 +168,6 @@ public final class WaypointRenderer {
         poseStack.popPose();
     }
 
-    /** An octahedron that spins and bobs, lit from above: bright top facets, dark lower ones. */
     private static void submitGem(
             PoseStack poseStack,
             SubmitNodeCollector collector,
@@ -251,7 +229,6 @@ public final class WaypointRenderer {
                 });
     }
 
-    /** Two rings spreading over the ground and fading, half a cycle apart, like a sonar ping. */
     private static void submitPulse(
             PoseStack poseStack, SubmitNodeCollector collector, float time, int rgb) {
         collector.submitCustomGeometry(
@@ -287,11 +264,6 @@ public final class WaypointRenderer {
                 });
     }
 
-    /**
-     * The name (in the waypoint's colour) over the distance, facing the camera. It is drawn dimly
-     * through walls and brightly where nothing is in front of it, like a vanilla name tag, and
-     * grows with distance so that it keeps its size on screen.
-     */
     private static void submitLabel(
             PoseStack poseStack,
             SubmitNodeCollector collector,
@@ -373,7 +345,6 @@ public final class WaypointRenderer {
         return cosine > Math.cos(FOCUS_ANGLE * Mth.DEG_TO_RAD);
     }
 
-    /** Metres below a kilometre, then kilometres to one decimal place. */
     static String formatDistance(double distance) {
         long metres = Math.round(distance);
         if (metres < 1000L) return metres + " m";

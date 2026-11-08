@@ -91,7 +91,6 @@ public class EnchantInfoHud implements BasicCoreHudElement<EnchantInfoHudConfig>
             Collection<String> blacklistedEnchantmentIds) {
         TextList lines = new TextList();
 
-        // an item that is neither enchantable nor enchanted has nothing to report
         if (!itemStack.isEnchantable() && !itemStack.isEnchanted()) return lines;
 
         ItemEnchantments enchantments = itemStack.getEnchantments();

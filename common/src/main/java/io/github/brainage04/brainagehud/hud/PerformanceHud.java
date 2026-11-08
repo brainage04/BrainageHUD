@@ -20,7 +20,6 @@ public class PerformanceHud implements BasicCoreHudElement<PerformanceHudConfig>
             lines.add("%d FPS".formatted(Minecraft.getInstance().getFps()));
         }
 
-        // taken from net.minecraft.client.gui.hud.DebugHud
         if (getElementConfig().showRamUsage) {
             long l = Runtime.getRuntime().maxMemory();
             long m = Runtime.getRuntime().totalMemory();
@@ -54,7 +53,6 @@ public class PerformanceHud implements BasicCoreHudElement<PerformanceHudConfig>
         return lines;
     }
 
-    /** Whether a GPU line is shown, which needs the game to keep measuring the GPU. */
     public static boolean isGpuProfilingEnabled() {
         PerformanceHudConfig config = getConfig().performanceHudConfig;
         return config.coreSettings.enabled && (config.showGpuUsage || config.showGpuFrameTime);

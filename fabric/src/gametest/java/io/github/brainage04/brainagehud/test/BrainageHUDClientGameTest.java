@@ -137,8 +137,6 @@ public final class BrainageHUDClientGameTest implements FabricClientGameTest {
                                 "Armor and keystrokes HUDs",
                                 "The equipped diamond armor and main-hand tool populate Armor Info while the WASD, space, and mouse controls populate Keystrokes.");
                         context.waitTicks(40);
-                        // three separate attack clicks, well within one second, whatever the frame
-                        // rate
                         for (int click = 0; click < 3; click++) {
                             context.getInput().pressKey(options -> options.keyAttack);
                         }
@@ -304,8 +302,6 @@ public final class BrainageHUDClientGameTest implements FabricClientGameTest {
                                                         + ".");
                                     }
                                 });
-                        // the World Centre is listed first; selecting it allows Hide but not Edit
-                        // or Delete
                         clickAt(
                                 context,
                                 context.computeOnClient(
@@ -461,11 +457,6 @@ public final class BrainageHUDClientGameTest implements FabricClientGameTest {
                 });
     }
 
-    /**
-     * The current GUI at GUI scale 4 in a window four times the GUI's size, so the HUDs sit where
-     * they do in the normal screenshots and every GUI pixel is a 4x4 block that can be checked when
-     * zoomed in; the window size and GUI scale are put back afterwards.
-     */
     private static Path takeLargeScreenshot(ClientGameTestContext context, String name) {
         int[] original =
                 context.computeOnClient(
@@ -1186,7 +1177,6 @@ public final class BrainageHUDClientGameTest implements FabricClientGameTest {
         }
     }
 
-    /** Clicks at GUI-scaled coordinates. */
     private static void clickAt(ClientGameTestContext context, int x, int y) {
         int scale = context.computeOnClient(client -> client.getWindow().getGuiScale());
         context.getInput().setCursorPos(x * scale + scale / 2.0D, y * scale + scale / 2.0D);
@@ -1302,10 +1292,6 @@ public final class BrainageHUDClientGameTest implements FabricClientGameTest {
         context.runOnClient(client -> client.getConnection().sendCommand(command));
     }
 
-    /**
-     * Asserts that the chat shows {@code expected} and that its part starting with {@code
-     * bodyStart} has {@code colour}.
-     */
     private static void assertChatMessage(
             Set<Component> chat, String expected, String bodyStart, ChatFormatting colour) {
         Component message =
@@ -1362,10 +1348,6 @@ public final class BrainageHUDClientGameTest implements FabricClientGameTest {
         return io.github.brainage04.hudrendererlib.util.ConfigUtils.getConfig();
     }
 
-    /**
-     * Asserts that a top-right element (the Keystrokes HUD) sits {@code expectedShift} pixels below
-     * its configured place.
-     */
     private static void assertTopRightShift(int expectedShift) {
         CoreSettings keystrokes = ConfigUtils.getConfig().keystrokesHudConfig.coreSettings;
         int unshifted = keystrokes.y + HudRenderer.getYOffset(keystrokes, 0);
@@ -1402,7 +1384,6 @@ public final class BrainageHUDClientGameTest implements FabricClientGameTest {
                 new PositionHud().getLines().stream().map(line -> line.getString()).toList();
         boolean hasPosition = lines.stream().anyMatch(line -> line.startsWith("X: 12.5"));
         boolean hasCCounter = lines.stream().anyMatch(line -> line.startsWith("C: "));
-        // the fixture player faces yaw 0, which is south
         boolean facesSouth = lines.stream().anyMatch(line -> line.startsWith("S (+Z)"));
 
         if (!hasPosition || !hasCCounter || !facesSouth) {

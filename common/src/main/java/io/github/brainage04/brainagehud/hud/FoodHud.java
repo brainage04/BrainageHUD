@@ -11,10 +11,6 @@ import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.world.item.ItemStack;
 
-/**
- * How many of each food the player carries, in the order they appear in the inventory, below a
- * header.
- */
 public class FoodHud implements BasicCoreHudElement<FoodHudConfig> {
     @Override
     public TextList getLines() {

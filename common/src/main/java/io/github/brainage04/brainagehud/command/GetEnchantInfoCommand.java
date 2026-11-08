@@ -14,7 +14,6 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.world.item.enchantment.Enchantment;
 
-/** Ported from GetEnchantInfo's {@code io.github.brainage04.commands.GetEnchantInfoCommand}. */
 public class GetEnchantInfoCommand {
     public static void sendEnchantmentInfo(
             HolderLookup.RegistryLookup<Enchantment> enchantmentRegistry,
@@ -51,10 +50,6 @@ public class GetEnchantInfoCommand {
                                                 .toList())));
     }
 
-    /**
-     * The enchantments whose name matches {@code query}, ignoring case: the exact match alone if
-     * there is one, otherwise every enchantment whose name contains the query.
-     */
     public static List<Holder.Reference<Enchantment>> findMatches(
             HolderLookup.RegistryLookup<Enchantment> enchantmentRegistry, String query) {
         String normalisedQuery = query.toLowerCase(Locale.ROOT);

@@ -15,7 +15,6 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.enchantment.Enchantment;
 
-/** Ported from GetEnchantInfo's {@code io.github.brainage04.commands.GetEnchantsCommand}. */
 public class GetEnchantsCommand {
     public static int execute(ItemStack itemStack) {
         HolderLookup.RegistryLookup<Enchantment> enchantmentRegistry =

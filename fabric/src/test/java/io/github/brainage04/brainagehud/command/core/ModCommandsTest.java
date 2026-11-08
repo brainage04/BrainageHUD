@@ -19,7 +19,6 @@ import net.minecraft.world.flag.FeatureFlags;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
-/** Parses commands against the registered tree without executing them. */
 class ModCommandsTest {
     private static CommandDispatcher<SharedSuggestionProvider> dispatcher;
 

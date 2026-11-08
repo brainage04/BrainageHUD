@@ -12,7 +12,6 @@ import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.MobCategory;
 
-/** How many entities the client has loaded, grouped by kind of mob. */
 public class EntityHud implements BasicCoreHudElement<EntityHudConfig> {
     enum Group {
         CREATURES("Creatures"),

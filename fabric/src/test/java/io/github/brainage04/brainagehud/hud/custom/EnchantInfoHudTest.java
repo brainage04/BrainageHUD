@@ -17,11 +17,6 @@ import net.minecraft.world.item.enchantment.Enchantment;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
-/**
- * Exercises the enchantment information HUD's logic against {@link TestEnchantments}, so that
- * applicability, conflicting enchantments, maximum levels and the config blacklist are all asserted
- * exactly.
- */
 class EnchantInfoHudTest {
     private static MappedRegistry<Enchantment> enchantments;
 
@@ -45,9 +40,6 @@ class EnchantInfoHudTest {
 
         printLines("diamond sword: sharpness III + unbreaking III, fire aspect blacklisted", lines);
 
-        // smite and bane of arthropods are excluded for conflicting with the sharpness already on
-        // the sword, and
-        // fire aspect is excluded by the blacklist
         assertEquals(
                 List.of(
                         "Diamond Sword",
@@ -95,8 +87,6 @@ class EnchantInfoHudTest {
                         + " blacklisted",
                 lines);
 
-        // every enchantment available to a diamond sword is either present or blacklisted, so no
-        // missing section
         assertEquals(
                 List.of("Diamond Sword", "Sharpness V", "Unbreaking III", "Mending", "Looting III"),
                 rendered(lines));

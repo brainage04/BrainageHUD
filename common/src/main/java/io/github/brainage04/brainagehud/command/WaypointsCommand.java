@@ -19,9 +19,6 @@ import net.minecraft.network.chat.Component;
 /**
  * {@code /waypoints}: manage the current world's waypoints. It is not called {@code /waypoint},
  * because a client command of that name would shadow vanilla's server {@code /waypoint}.
- *
- * <p>Incomplete or unexpected input runs the usage message of the subcommand it was meant for,
- * instead of failing to parse.
  */
 public final class WaypointsCommand {
     private static final String USAGE = "/waypoints [add|remove|list]";
@@ -102,7 +99,6 @@ public final class WaypointsCommand {
                         .then(unexpected(USAGE)));
     }
 
-    /** Takes whatever is left of the command and shows {@code usage}. */
     private static <S> RequiredArgumentBuilder<S, String> unexpected(String usage) {
         return RequiredArgumentBuilder.<S, String>argument(
                         "unexpected", StringArgumentType.greedyString())

@@ -35,7 +35,6 @@ public class ModConfig implements ConfigData {
 
     @ConfigEntry.Gui.CollapsibleObject public WaypointConfig waypointConfig = new WaypointConfig();
 
-    // basic
     @ConfigEntry.Gui.CollapsibleObject
     public DateTimeHudConfig dateTimeHudConfig = new DateTimeHudConfig();
 
@@ -70,7 +69,6 @@ public class ModConfig implements ConfigData {
     @ConfigEntry.Gui.CollapsibleObject
     public ToggleSprintHudConfig toggleSprintHudConfig = new ToggleSprintHudConfig();
 
-    // custom
     @ConfigEntry.Gui.CollapsibleObject
     public ArmourInfoHudConfig armourInfoHudConfig = new ArmourInfoHudConfig();
 
@@ -80,10 +78,6 @@ public class ModConfig implements ConfigData {
     @ConfigEntry.Gui.CollapsibleObject
     public KeystrokesHudConfig keystrokesHudConfig = new KeystrokesHudConfig();
 
-    /**
-     * Clamps hand-edited values into the ranges the config screen enforces, so that a bad {@code
-     * brainagehud.json} cannot break rendering.
-     */
     @Override
     public void validatePostLoad() {
         qualityOfLifeConfig.fullbright = Math.clamp(qualityOfLifeConfig.fullbright, -1.0F, 1.0F);

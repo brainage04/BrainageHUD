@@ -20,14 +20,6 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.enchantment.Enchantment;
 
-/**
- * Registers BrainageHUD's loader-agnostic client commands.
- *
- * <p>The enchantment commands are ported from GetEnchantInfo, which registered them through its own
- * platform abstraction. BrainageHUD registers them directly from each loader entrypoint instead;
- * the command sources of both loaders implement {@link SharedSuggestionProvider}, so no casts are
- * required.
- */
 public final class ModCommands {
     private ModCommands() {}
 
@@ -143,7 +135,6 @@ public final class ModCommands {
         return 1;
     }
 
-    /** The amount without trailing zeros: "0.5", "1", "-0.25". */
     static String formatFullbright(float amount) {
         return new BigDecimal(Float.toString(amount)).stripTrailingZeros().toPlainString();
     }

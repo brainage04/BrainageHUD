@@ -22,7 +22,6 @@ class TickRateTrackerTest {
     void measuresHowFastTheServerActuallyTicks() {
         TickRateTracker tracker = new TickRateTracker();
 
-        // a lagging server takes two seconds to run each batch of 20 ticks
         for (int report = 0; report <= 3; report++) {
             tracker.record(1000L + report * 20L, report * 2L * SECOND, 3);
         }
@@ -47,7 +46,6 @@ class TickRateTrackerTest {
     void forgetsOlderIntervalsWhenTheWindowShrinks() {
         TickRateTracker tracker = new TickRateTracker();
 
-        // ten slow intervals, then two healthy ones with the window lowered to two intervals
         for (int report = 0; report <= 10; report++) {
             tracker.record(report * 20L, report * 2L * SECOND, 30);
         }
@@ -63,7 +61,6 @@ class TickRateTrackerTest {
         tracker.record(100_000L, 0L, 3);
         tracker.record(100_010L, SECOND, 3);
 
-        // joining another world whose clock is behind the previous one
         tracker.record(500L, 2L * SECOND, 3);
         assertFalse(tracker.hasRate());
 
@@ -79,7 +76,6 @@ class TickRateTrackerTest {
         tracker.record(20L, SECOND, 3);
 
         tracker.reset();
-        // a new world far ahead in game time must not be compared with the old one
         tracker.record(1_000_000L, 2L * SECOND, 3);
 
         assertFalse(tracker.hasRate());

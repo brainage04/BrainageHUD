@@ -6,18 +6,11 @@ import io.github.brainage04.hudrendererlib.config.core.ElementCorners;
 import io.github.brainage04.hudrendererlib.hud.core.HudRenderer;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 
-/** Placement shared by the HUD elements that draw their own content instead of text lines. */
 final class CustomHudLayout {
     record Origin(int x, int y) {}
 
     private CustomHudLayout() {}
 
-    /**
-     * Positions content of the given size according to {@code coreSettings}, registers its padded
-     * bounds with the element editor and draws the backdrop behind it.
-     *
-     * @return the top-left corner at which the content should be drawn
-     */
     static Origin place(
             GuiGraphicsExtractor drawContext,
             CoreSettings coreSettings,

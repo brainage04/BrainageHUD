@@ -5,12 +5,10 @@ import static io.github.brainage04.brainagehud.util.ConfigUtils.getConfig;
 import io.github.brainage04.brainagehud.util.RollingAverage;
 import io.github.brainage04.brainagehud.util.TickRateTracker;
 
-/** Network statistics derived from packets the client receives. */
 public class ModPacketEvents {
     private static final RollingAverage PING = new RollingAverage();
     private static final TickRateTracker TICK_RATE = new TickRateTracker();
 
-    /** Called on the render thread when the client joins a world. */
     public static void onLogin() {
         PING.clear();
         TICK_RATE.reset();
@@ -21,7 +19,6 @@ public class ModPacketEvents {
         PING.add(roundTripMillis, getConfig().networkHudConfig.pingIntervalsTracked);
     }
 
-    /** Called on the render thread when the server reports its game time. */
     public static void onServerGameTime(long gameTime) {
         TICK_RATE.record(
                 gameTime, System.nanoTime(), getConfig().networkHudConfig.tpsIntervalsTracked);

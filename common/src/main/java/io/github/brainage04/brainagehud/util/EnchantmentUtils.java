@@ -16,9 +16,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.ItemEnchantments;
 
-/** Ported from GetEnchantInfo's {@code io.github.brainage04.util.EnchantmentUtils}. */
 public class EnchantmentUtils {
-    /** The enchantment at its maximum level, followed by the level already on {@code itemStack}. */
     public static Component getEnchantmentName(
             Holder<Enchantment> enchantmentHolder, ItemStack itemStack) {
         int maxLevel = enchantmentHolder.value().getMaxLevel();
@@ -59,7 +57,6 @@ public class EnchantmentUtils {
         return text;
     }
 
-    /** The identifier used by the configured enchantment blacklist. */
     public static String getEnchantmentId(Holder<Enchantment> enchantmentHolder) {
         return enchantmentHolder
                 .unwrapKey()
@@ -67,10 +64,6 @@ public class EnchantmentUtils {
                 .orElseGet(enchantmentHolder::getRegisteredName);
     }
 
-    /**
-     * The enchantments that could still be added to {@code itemStack}: applicable to the item, not
-     * already present, not blacklisted, and compatible with every enchantment already on the item.
-     */
     public static List<Holder.Reference<Enchantment>> getMissingEnchantments(
             HolderLookup.RegistryLookup<Enchantment> enchantmentRegistry,
             ItemStack itemStack,
@@ -101,12 +94,6 @@ public class EnchantmentUtils {
         return missingEnchantments;
     }
 
-    /**
-     * Groups enchantments that cannot coexist, so that each group can be displayed as a single
-     * "choose one" line. Every enchantment that conflicts with no other enchantment is returned as
-     * a group of one, and the input order is preserved by returning {@link java.util.List}s rather
-     * than {@link Set}s.
-     */
     public static List<List<Holder.Reference<Enchantment>>> groupConflictingEnchantments(
             List<Holder.Reference<Enchantment>> enchantments) {
         List<List<Holder.Reference<Enchantment>>> conflictGroups = new ArrayList<>();

@@ -10,9 +10,6 @@ public final class RollingAverage {
     private final LongArrayFIFOQueue samples = new LongArrayFIFOQueue();
     private long sum;
 
-    /**
-     * Adds {@code sample}, then drops the oldest samples until at most {@code maxSamples} remain.
-     */
     public synchronized void add(long sample, int maxSamples) {
         samples.enqueue(sample);
         sum += sample;
@@ -23,7 +20,6 @@ public final class RollingAverage {
         }
     }
 
-    /** The rounded mean of the retained samples, or 0 when there are none. */
     public synchronized long mean() {
         return samples.isEmpty() ? 0L : Math.round((double) sum / samples.size());
     }

@@ -5,12 +5,6 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
 
-/**
- * BrainageHUD's chat output. Each message starts with a grey {@code [BrainageHUD]} prefix and has a
- * body colour for its kind: info white, success green, warning yellow, error red. The colour is
- * only the default, so styled parts of a message keep their own colours. A list is sent as one
- * prefixed header followed by unprefixed {@link #detail} lines.
- */
 public final class ChatFeedback {
     private static final Component PREFIX =
             Component.literal("[%s] ".formatted(BrainageHUD.MOD_NAME))
@@ -18,7 +12,6 @@ public final class ChatFeedback {
 
     private ChatFeedback() {}
 
-    /** A query's result, or the header of a listed result. */
     public static void info(Component message) {
         send(Component.empty().append(PREFIX).append(body(ChatFormatting.WHITE, message)));
     }
@@ -27,7 +20,6 @@ public final class ChatFeedback {
         info(Component.literal(message));
     }
 
-    /** A completed action. */
     public static void success(Component message) {
         send(Component.empty().append(PREFIX).append(body(ChatFormatting.GREEN, message)));
     }
@@ -36,7 +28,6 @@ public final class ChatFeedback {
         success(Component.literal(message));
     }
 
-    /** Nothing to do, or advice. */
     public static void warning(Component message) {
         send(Component.empty().append(PREFIX).append(body(ChatFormatting.YELLOW, message)));
     }
@@ -45,7 +36,6 @@ public final class ChatFeedback {
         warning(Component.literal(message));
     }
 
-    /** Wrong input or usage. */
     public static void error(Component message) {
         send(Component.empty().append(PREFIX).append(body(ChatFormatting.RED, message)));
     }
@@ -54,7 +44,6 @@ public final class ChatFeedback {
         error(Component.literal(message));
     }
 
-    /** A line below a header, without the prefix. */
     public static void detail(Component message) {
         send(body(ChatFormatting.WHITE, message));
     }

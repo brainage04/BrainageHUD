@@ -2,7 +2,6 @@ package io.github.brainage04.brainagehud.util;
 
 import it.unimi.dsi.fastutil.longs.LongArrayFIFOQueue;
 
-/** Counts the clicks made during the last second. Used only on the render thread. */
 public final class ClickRateTracker {
     private static final long WINDOW_MILLIS = 1000L;
 

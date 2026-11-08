@@ -11,7 +11,6 @@ import org.junit.jupiter.api.Test;
 class PositionHudTest {
     @Test
     void labelsEachSectorCentre() {
-        // Minecraft yaw: 0 faces south (+Z), 90 west (-X), 180 north (-Z), -90 east (+X)
         assertLabels(
                 Map.of(
                         0.0F, "S (+Z)",
@@ -27,7 +26,6 @@ class PositionHudTest {
 
     @Test
     void switchesLabelsOnSectorBoundaries() {
-        // each sector starts half a sector before its centre
         assertLabels(
                 Map.of(
                         22.5F, "SW (-X, +Z)",

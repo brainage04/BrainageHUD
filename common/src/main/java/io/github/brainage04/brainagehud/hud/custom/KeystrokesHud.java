@@ -45,7 +45,6 @@ public class KeystrokesHud implements CoreHudElement<KeystrokesHudConfig> {
     private static List<KeyStrokesItem> getKeyStrokesItems(KeystrokesHudConfig settings) {
         int keySize = 20;
 
-        // custom rendering logic
         int x1 = 0;
         int y1 = 0;
 

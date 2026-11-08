@@ -13,11 +13,9 @@ import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
 
-/** Counts items across the player's inventory for the inventory tracker HUDs. */
 public final class InventoryCounter {
     private InventoryCounter() {}
 
-    /** How many matching items there are in total, and in each slot that holds some. */
     public record Count(int total, List<Integer> perSlot) {
         static final Count NONE = new Count(0, List.of());
 
@@ -28,7 +26,6 @@ public final class InventoryCounter {
         }
     }
 
-    /** The hotbar, inventory rows, armour (feet to head), then the off hand. */
     public static List<ItemStack> slots(LocalPlayer player) {
         Inventory inventory = player.getInventory();
         List<ItemStack> slots = new ArrayList<>(Inventory.SLOT_OFFHAND + 1);
@@ -46,10 +43,6 @@ public final class InventoryCounter {
         return count;
     }
 
-    /**
-     * Counts every matching item grouped by {@code key}, in the order each group is first found in
-     * the slots.
-     */
     public static <K> Map<K, Count> countBy(
             List<ItemStack> slots, Predicate<ItemStack> matches, Function<ItemStack, K> key) {
         Map<K, Count> counts = new LinkedHashMap<>();
@@ -64,9 +57,6 @@ public final class InventoryCounter {
         return counts;
     }
 
-    /**
-     * A tracker's bold header, e.g. "Food:", followed by a red "N/A" when the player carries none.
-     */
     public static Component header(String title, boolean none) {
         MutableComponent header =
                 Component.empty().append(Component.literal(title).withStyle(ChatFormatting.BOLD));
@@ -74,7 +64,6 @@ public final class InventoryCounter {
         return header;
     }
 
-    /** "Arrows: 96", or "Arrows: 96 [64, 32]" when the items are split over several slots. */
     public static String format(String label, Count count, boolean showSlots) {
         String line = "%s: %d".formatted(label, count.total());
         if (showSlots && count.perSlot().size() > 1) line += " " + count.perSlot();

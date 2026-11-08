@@ -6,7 +6,6 @@ import java.util.OptionalDouble;
 import java.util.OptionalLong;
 import net.minecraft.client.Minecraft;
 
-/** Throttled GPU and CPU usage readings. Used only on the render thread. */
 public class TimerUtils {
     private static double gpuUsage = 0;
     private static long gpuTimeNanos = 0;
@@ -16,20 +15,11 @@ public class TimerUtils {
     private static long cpuLastUpdated = System.currentTimeMillis();
     private static long cpuTimeNanos = getProcessCpuTimeNanos();
 
-    /**
-     * The share of each frame's time that the GPU spends drawing it, as a percentage, or empty
-     * before the GPU has been measured. Refreshed at most once per {@code
-     * millisecondsBetweenUpdates}.
-     */
     public static OptionalLong getGpuUsage(int millisecondsBetweenUpdates) {
         updateGpu(millisecondsBetweenUpdates);
         return gpuTimeNanos == 0 ? OptionalLong.empty() : OptionalLong.of((long) gpuUsage);
     }
 
-    /**
-     * The GPU's time per frame in milliseconds, or empty before the GPU has been measured.
-     * Refreshed at most once per {@code millisecondsBetweenUpdates}.
-     */
     public static OptionalDouble getGpuFrameTimeMillis(int millisecondsBetweenUpdates) {
         updateGpu(millisecondsBetweenUpdates);
         return gpuTimeNanos == 0
@@ -52,10 +42,6 @@ public class TimerUtils {
         }
     }
 
-    /**
-     * The process CPU usage percentage, refreshed at most once per {@code
-     * millisecondsBetweenUpdates}.
-     */
     public static long getCpuUsage(int millisecondsBetweenUpdates) {
         long now = System.currentTimeMillis();
         if (now - cpuLastUpdated > millisecondsBetweenUpdates) {

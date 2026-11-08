@@ -22,10 +22,6 @@ import net.minecraft.client.multiplayer.ServerData;
 import net.minecraft.client.server.IntegratedServer;
 import net.minecraft.world.level.storage.LevelResource;
 
-/**
- * The user's waypoints, kept per world in {@code config/brainagehud/waypoints.json}. A world is a
- * singleplayer save (by folder name) or a server (by address). Used only on the render thread.
- */
 public final class WaypointStore {
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
     private static final int[] COLOURS = {
@@ -37,7 +33,6 @@ public final class WaypointStore {
 
     private WaypointStore() {}
 
-    /** The current world's waypoints, or an empty optional outside a world. The list is live. */
     public static Optional<List<Waypoint>> current() {
         return currentWorldKey()
                 .map(key -> load().computeIfAbsent(key, ignored -> new ArrayList<>()));
@@ -60,7 +55,6 @@ public final class WaypointStore {
         return Optional.empty();
     }
 
-    /** Writes every world's waypoints to disk. */
     public static void save() {
         Path file = file();
         try {
@@ -79,14 +73,12 @@ public final class WaypointStore {
         }
     }
 
-    /** The waypoint called {@code name}, ignoring case. */
     public static Optional<Waypoint> find(List<Waypoint> waypoints, String name) {
         return waypoints.stream()
                 .filter(waypoint -> waypoint.name.equalsIgnoreCase(name))
                 .findFirst();
     }
 
-    /** The first of "Waypoint 1", "Waypoint 2", ... that no waypoint in the list is called. */
     public static String nextQuickName(List<Waypoint> waypoints) {
         for (int number = 1; ; number++) {
             String name = "Waypoint " + number;
@@ -94,7 +86,6 @@ public final class WaypointStore {
         }
     }
 
-    /** Cycles through a palette so that consecutive waypoints are told apart. */
     public static int nextColour(List<Waypoint> waypoints) {
         return COLOURS[waypoints.size() % COLOURS.length];
     }

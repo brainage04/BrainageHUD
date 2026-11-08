@@ -24,7 +24,6 @@ import net.minecraft.world.level.material.Fluids;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
-/** The bobber sits in the water block at y = 0 in every scene. */
 class FishingHudTest {
     private static final BlockPos HOOK = BlockPos.ZERO;
 
@@ -116,7 +115,6 @@ class FishingHudTest {
 
     @Test
     void chancesInOpenWaterWithoutLuckAreTheLootTableWeights() {
-        // fish 85, treasure 5, junk 10 out of 100
         assertArrayEquals(new int[] {85, 5, 10}, FishingHud.getChances(true, 0));
     }
 
@@ -128,9 +126,7 @@ class FishingHudTest {
 
     @Test
     void luckOfTheSeaThreeShiftsWeightFromFishAndJunkToTreasure() {
-        // fish 82, treasure 11, junk 4 out of 97: 84.54%, 11.34% and 4.12%
         assertArrayEquals(new int[] {85, 11, 4}, FishingHud.getChances(true, 3));
-        // fish 82 and junk 4 out of 86: 95.35% and 4.65%
         assertArrayEquals(new int[] {95, 0, 5}, FishingHud.getChances(false, 3));
     }
 
@@ -147,11 +143,9 @@ class FishingHudTest {
         }
     }
 
-    /** Air everywhere except the blocks set. */
     private static final class Scene implements BlockGetter {
         private final Map<BlockPos, BlockState> blocks = new HashMap<>();
 
-        /** Fills the layers {@code fromY..toY} within {@code radius} of the bobber's column. */
         Scene fill(int fromY, int toY, BlockState state, int radius) {
             for (int y = fromY; y <= toY; y++) {
                 for (int x = -radius; x <= radius; x++) {

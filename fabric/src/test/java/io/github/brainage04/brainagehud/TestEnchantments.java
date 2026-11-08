@@ -26,10 +26,7 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.item.enchantment.Enchantment;
 
 /**
- * An enchantment registry the tests control, so that applicability, conflicts, maximum levels and
- * names are all known exactly.
- *
- * <p>Vanilla enchantment data is loaded from datapack tags, which a headless test cannot bind
+ * Vanilla enchantment data is loaded from datapack tags, which a headless test cannot bind
  * without a full resource reload; this registry therefore defines its own enchantments. The
  * mechanisms under test (supported items, exclusivity, maximum levels) are the same ones vanilla
  * data uses.
@@ -42,7 +39,6 @@ public final class TestEnchantments {
 
     private TestEnchantments() {}
 
-    /** The bootstrapped, frozen registry; the game is bootstrapped on first use. */
     public static synchronized MappedRegistry<Enchantment> registry() {
         if (registry == null) registry = createRegistry();
         return registry;

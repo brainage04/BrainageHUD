@@ -52,7 +52,6 @@ public class ToggleSprintHud implements BasicCoreHudElement<ToggleSprintHudConfi
         return lines;
     }
 
-    /** The game's own toggle setting and the key's state, which stays down while toggled on. */
     private static Component internalValues(String name, boolean toggle, KeyMapping key) {
         return Component.literal("%s: toggle %s, key down %s".formatted(name, toggle, key.isDown()))
                 .withStyle(ChatFormatting.GRAY);

@@ -21,10 +21,6 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.enchantment.Enchantment;
 
-/**
- * Ported from GetEnchantInfo's {@code
- * io.github.brainage04.commands.core.argument.ClientHolderReferenceArgumentType}.
- */
 public class ClientHolderReferenceArgumentType<T> implements ArgumentType<Holder.Reference<T>> {
     public static final Dynamic2CommandExceptionType NOT_FOUND_EXCEPTION =
             new Dynamic2CommandExceptionType(

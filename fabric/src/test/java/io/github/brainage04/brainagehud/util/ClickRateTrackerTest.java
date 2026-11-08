@@ -9,7 +9,6 @@ class ClickRateTrackerTest {
     void countsEveryClickEvenWhenNothingReadsInBetween() {
         ClickRateTracker tracker = new ClickRateTracker();
 
-        // 15 clicks in 700 ms, faster than a low frame rate could sample
         for (int click = 0; click < 15; click++) {
             tracker.recordClick(click * 50L);
         }

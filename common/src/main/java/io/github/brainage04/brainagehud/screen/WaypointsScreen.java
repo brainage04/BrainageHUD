@@ -15,10 +15,6 @@ import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.network.chat.Component;
 import org.jetbrains.annotations.Nullable;
 
-/**
- * Lists the World Centre and the current world's waypoints, with buttons to add, edit, show/hide
- * and delete them. The World Centre can only be shown or hidden.
- */
 public class WaypointsScreen extends Screen {
     private static final int WHITE = 0xFFFFFFFF;
     private static final int GREY = 0xFFA0A0A0;
@@ -125,7 +121,6 @@ public class WaypointsScreen extends Screen {
         return entry == null ? Optional.empty() : Optional.of(entry.waypoint);
     }
 
-    /** The selected waypoint if it is one of the world's own, which can be edited and deleted. */
     private Optional<Waypoint> selectedOwn() {
         WaypointEntry entry = list.getSelected();
         return entry == null || entry.builtIn ? Optional.empty() : Optional.of(entry.waypoint);
@@ -196,7 +191,6 @@ public class WaypointsScreen extends Screen {
     private final class WaypointEntry extends ObjectSelectionList.Entry<WaypointEntry> {
         private final Waypoint waypoint;
 
-        /** The World Centre: it can be hidden, but not edited or deleted. */
         private final boolean builtIn;
 
         private WaypointEntry(Waypoint waypoint, boolean builtIn) {

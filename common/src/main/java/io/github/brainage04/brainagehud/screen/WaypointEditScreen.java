@@ -13,7 +13,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import org.jetbrains.annotations.Nullable;
 
-/** Creates a waypoint, prefilled with the player's position, or edits an existing one. */
 public class WaypointEditScreen extends Screen {
     private static final int WHITE = 0xFFFFFFFF;
     private static final int GREY = 0xFFA0A0A0;
@@ -133,7 +132,6 @@ public class WaypointEditScreen extends Screen {
         }
 
         if (waypoint == null) {
-            // reports its own problems, e.g. a duplicate name, in chat
             if (WaypointActions.create(name, pos.get()).isEmpty()) {
                 error = "Could not create the waypoint; see chat.";
                 return;

@@ -12,11 +12,6 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.item.enchantment.Enchantment;
 
-/**
- * Ported from GetEnchantInfo's {@code io.github.brainage04.commands.BlacklistedEnchantsCommand}.
- *
- * <p>The blacklist is stored as enchantment IDs in the config, which is the only source of truth.
- */
 public class BlacklistedEnchantsCommand {
     public static int executeAdd(Holder<Enchantment> enchantmentHolder) {
         List<String> blacklist = getBlacklist();
@@ -80,7 +75,6 @@ public class BlacklistedEnchantsCommand {
 
         for (String enchantmentId : blacklist) {
             Identifier identifier = Identifier.tryParse(enchantmentId);
-            // IDs of enchantments this world does not have are listed verbatim
             Component name =
                     identifier == null
                             ? Component.literal(enchantmentId)

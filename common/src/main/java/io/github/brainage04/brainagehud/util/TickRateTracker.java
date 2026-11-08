@@ -50,12 +50,10 @@ public final class TickRateTracker {
         previousNanos = nowNanos;
     }
 
-    /** Whether at least one interval has been measured since the last reset. */
     public boolean hasRate() {
         return totalNanos > 0L;
     }
 
-    /** Game ticks per wall-clock second over the retained intervals, or 0 before any interval. */
     public double ticksPerSecond() {
         return hasRate() ? totalTicks * 1_000_000_000.0D / totalNanos : 0.0D;
     }

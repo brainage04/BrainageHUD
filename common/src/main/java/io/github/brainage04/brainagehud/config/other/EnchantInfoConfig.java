@@ -4,13 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 import me.shedaniel.autoconfig.annotation.ConfigEntry;
 
-/**
- * Enchantment information settings ported from GetEnchantInfo's {@code config/getenchantinfo.json}.
- *
- * <p>The blacklist defaults are unchanged from GetEnchantInfo. Only the storage location differs:
- * these options now live in BrainageHUD's {@code config/brainagehud.json}, so a standalone
- * GetEnchantInfo config file is not read.
- */
 @SuppressWarnings("CanBeFinal")
 public class EnchantInfoConfig {
     @ConfigEntry.Gui.Tooltip public boolean highlightMaxLevelEnchants = true;
