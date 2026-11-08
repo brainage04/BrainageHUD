@@ -14,8 +14,6 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 
 public class NetworkHud implements BasicCoreHudElement<NetworkHudConfig> {
-    // Credits:
-    // https://github.com/vladmarica/better-ping-display-fabric
     @Override
     public TextList getLines() {
         TextList lines = new TextList();
