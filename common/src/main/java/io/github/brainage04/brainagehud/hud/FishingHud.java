@@ -1,5 +1,7 @@
 package io.github.brainage04.brainagehud.hud;
 
+import static io.github.brainage04.brainagehud.util.ConfigUtils.getConfig;
+
 import io.github.brainage04.brainagehud.config.hud.basic.FishingHudConfig;
 import io.github.brainage04.hudrendererlib.hud.core.BasicCoreHudElement;
 import io.github.brainage04.hudrendererlib.util.TextList;
@@ -18,11 +20,9 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.FluidState;
 
-import static io.github.brainage04.brainagehud.util.ConfigUtils.getConfig;
-
 /**
- * Shows whether the thrown bobber is in open water, which decides whether treasure can be caught, and the chance
- * of catching fish, treasure or junk.
+ * Shows whether the thrown bobber is in open water, which decides whether treasure can be caught,
+ * and the chance of catching fish, treasure or junk.
  *
  * <p>The server decides open water ({@code FishingHook.calculateOpenWater}) but never sends the
  * result, so the client's {@link FishingHook#isOpenWaterFishing()} is always {@code true}. This
@@ -31,7 +31,8 @@ import static io.github.brainage04.brainagehud.util.ConfigUtils.getConfig;
 public class FishingHud implements BasicCoreHudElement<FishingHudConfig> {
     private static final String NOT_IN_WATER = "Bobber: not in water";
     private static final String OPEN_WATER = "Open water: yes";
-    private static final String NOT_OPEN_WATER = "Open water: no (needs 5x5 water, 2 deep, open above)";
+    private static final String NOT_OPEN_WATER =
+            "Open water: no (needs 5x5 water, 2 deep, open above)";
     private static final String TREASURE_POSSIBLE = "Treasure: possible";
     private static final String TREASURE_IMPOSSIBLE = "Treasure: impossible";
 
@@ -70,38 +71,49 @@ public class FishingHud implements BasicCoreHudElement<FishingHudConfig> {
         lines.add(openWater ? TREASURE_POSSIBLE : TREASURE_IMPOSSIBLE);
 
         int[] chances = getChances(openWater, getLuck(player));
-        lines.add("Chances: Fish %d%%, Treasure %d%%, Junk %d%%".formatted(chances[0], chances[1], chances[2]));
+        lines.add(
+                "Chances: Fish %d%%, Treasure %d%%, Junk %d%%"
+                        .formatted(chances[0], chances[1], chances[2]));
         return lines;
     }
 
-    /** The luck the server rolls the catch with: the rod's Luck of the Sea level plus the player's luck attribute. */
+    /**
+     * The luck the server rolls the catch with: the rod's Luck of the Sea level plus the player's
+     * luck attribute.
+     */
     private static float getLuck(LocalPlayer player) {
         // the rod that cast the bobber, in the hand vanilla checks first
-        ItemStack rod = player.getMainHandItem().is(Items.FISHING_ROD) ? player.getMainHandItem() : player.getOffhandItem();
-        int luckOfTheSea = player.registryAccess()
-                .lookupOrThrow(Registries.ENCHANTMENT)
-                .get(Enchantments.LUCK_OF_THE_SEA)
-                .map(enchantment -> rod.getEnchantments().getLevel(enchantment))
-                .orElse(0);
+        ItemStack rod =
+                player.getMainHandItem().is(Items.FISHING_ROD)
+                        ? player.getMainHandItem()
+                        : player.getOffhandItem();
+        int luckOfTheSea =
+                player.registryAccess()
+                        .lookupOrThrow(Registries.ENCHANTMENT)
+                        .get(Enchantments.LUCK_OF_THE_SEA)
+                        .map(enchantment -> rod.getEnchantments().getLevel(enchantment))
+                        .orElse(0);
         return luckOfTheSea + player.getLuck();
     }
 
     /**
-     * The chance of catching fish, treasure and junk, in that order, as whole percentages that add up to 100 (all
-     * 0 when every weight is 0, where vanilla catches nothing). Like vanilla's loot pool each entry weighs
-     * {@code floor(weight + quality * luck)}, at least 0, and treasure only counts in open water.
+     * The chance of catching fish, treasure and junk, in that order, as whole percentages that add
+     * up to 100 (all 0 when every weight is 0, where vanilla catches nothing). Like vanilla's loot
+     * pool each entry weighs {@code floor(weight + quality * luck)}, at least 0, and treasure only
+     * counts in open water.
      */
     public static int[] getChances(boolean openWater, float luck) {
         int[] weights = {
-                getWeight(FISH_WEIGHT, FISH_QUALITY, luck),
-                openWater ? getWeight(TREASURE_WEIGHT, TREASURE_QUALITY, luck) : 0,
-                getWeight(JUNK_WEIGHT, JUNK_QUALITY, luck)
+            getWeight(FISH_WEIGHT, FISH_QUALITY, luck),
+            openWater ? getWeight(TREASURE_WEIGHT, TREASURE_QUALITY, luck) : 0,
+            getWeight(JUNK_WEIGHT, JUNK_QUALITY, luck)
         };
         int totalWeight = weights[0] + weights[1] + weights[2];
         int[] chances = new int[weights.length];
         if (totalWeight == 0) return chances;
 
-        // largest remainder rounding: round every share down, then give the leftover points to the largest
+        // largest remainder rounding: round every share down, then give the leftover points to the
+        // largest
         // remainders, earlier categories first on a tie
         long[] remainders = new long[weights.length];
         int leftover = 100;
@@ -127,9 +139,9 @@ public class FishingHud implements BasicCoreHudElement<FishingHudConfig> {
     }
 
     /**
-     * The client-side equivalent of {@code FishingHook.calculateOpenWater}: the four 5x5 layers from
-     * one block below the bobber to two blocks above it must each be entirely water or entirely
-     * clear, water must not sit above a clear layer, and the lowest layer must be water.
+     * The client-side equivalent of {@code FishingHook.calculateOpenWater}: the four 5x5 layers
+     * from one block below the bobber to two blocks above it must each be entirely water or
+     * entirely clear, water must not sit above a clear layer, and the lowest layer must be water.
      */
     public static boolean isOpenWater(BlockGetter level, BlockPos hookPos) {
         Layer below = Layer.INVALID;
@@ -177,7 +189,9 @@ public class FishingHud implements BasicCoreHudElement<FishingHudConfig> {
         if (state.isAir() || state.is(Blocks.LILY_PAD)) return Layer.ABOVE_WATER;
 
         FluidState fluid = state.getFluidState();
-        if (fluid.is(FluidTags.WATER) && fluid.isSource() && state.getCollisionShape(level, pos).isEmpty()) {
+        if (fluid.is(FluidTags.WATER)
+                && fluid.isSource()
+                && state.getCollisionShape(level, pos).isEmpty()) {
             return Layer.INSIDE_WATER;
         }
 

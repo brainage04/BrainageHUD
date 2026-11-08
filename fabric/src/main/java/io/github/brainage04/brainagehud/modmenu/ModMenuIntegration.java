@@ -1,8 +1,8 @@
 package io.github.brainage04.brainagehud.modmenu;
 
-import io.github.brainage04.brainagehud.config.core.ModConfig;
 import com.terraformersmc.modmenu.api.ConfigScreenFactory;
 import com.terraformersmc.modmenu.api.ModMenuApi;
+import io.github.brainage04.brainagehud.config.core.ModConfig;
 import me.shedaniel.autoconfig.AutoConfigClient;
 
 public class ModMenuIntegration implements ModMenuApi {

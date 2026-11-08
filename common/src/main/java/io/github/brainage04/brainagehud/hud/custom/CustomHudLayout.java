@@ -18,7 +18,11 @@ final class CustomHudLayout {
      *
      * @return the top-left corner at which the content should be drawn
      */
-    static Origin place(GuiGraphicsExtractor drawContext, CoreSettings coreSettings, int contentWidth, int contentHeight) {
+    static Origin place(
+            GuiGraphicsExtractor drawContext,
+            CoreSettings coreSettings,
+            int contentWidth,
+            int contentHeight) {
         int elementPadding = HudRendererLib.getPadding(coreSettings);
         int posX = HudRenderer.getPosX(coreSettings, contentWidth);
         int posY = HudRenderer.getPosY(coreSettings, contentHeight);
@@ -27,13 +31,9 @@ final class CustomHudLayout {
             case LEFT, CENTER, RIGHT -> posY -= elementPadding;
         }
 
-        ElementCorners corners = HudRenderer.getCornersWithPadding(
-                posX,
-                posY,
-                posX + contentWidth,
-                posY + contentHeight,
-                coreSettings
-        );
+        ElementCorners corners =
+                HudRenderer.getCornersWithPadding(
+                        posX, posY, posX + contentWidth, posY + contentHeight, coreSettings);
         corners.bottom += elementPadding * 2;
         HudRenderer.setElementBounds(coreSettings, corners);
         HudRenderer.renderBackdrop(drawContext, corners, coreSettings);

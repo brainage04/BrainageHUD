@@ -19,7 +19,8 @@ import net.minecraft.world.item.enchantment.ItemEnchantments;
 /** Ported from GetEnchantInfo's {@code io.github.brainage04.util.EnchantmentUtils}. */
 public class EnchantmentUtils {
     /** The enchantment at its maximum level, followed by the level already on {@code itemStack}. */
-    public static Component getEnchantmentName(Holder<Enchantment> enchantmentHolder, ItemStack itemStack) {
+    public static Component getEnchantmentName(
+            Holder<Enchantment> enchantmentHolder, ItemStack itemStack) {
         int maxLevel = enchantmentHolder.value().getMaxLevel();
         Component enchantmentName = Enchantment.getFullname(enchantmentHolder, maxLevel);
         int currentLevel = itemStack.getEnchantments().getLevel(enchantmentHolder);

@@ -6,8 +6,8 @@ import java.util.ArrayDeque;
  * Estimates the server's ticks per second from the game time it reports.
  *
  * <p>The server sends its game time roughly once a second. Each report is compared with the
- * previous one: the game ticks that elapsed divided by the wall-clock time that elapsed is the
- * rate at which the server is actually ticking. Summing both over a window, rather than averaging
+ * previous one: the game ticks that elapsed divided by the wall-clock time that elapsed is the rate
+ * at which the server is actually ticking. Summing both over a window, rather than averaging
  * per-interval rates, keeps irregularly spaced reports correctly weighted.
  */
 public final class TickRateTracker {

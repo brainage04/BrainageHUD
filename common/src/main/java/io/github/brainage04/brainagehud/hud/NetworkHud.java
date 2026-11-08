@@ -1,5 +1,8 @@
 package io.github.brainage04.brainagehud.hud;
 
+import static io.github.brainage04.brainagehud.util.ConfigUtils.getConfig;
+import static io.github.brainage04.brainagehud.util.MathUtils.roundDecimalPlaces;
+
 import io.github.brainage04.brainagehud.config.hud.basic.NetworkHudConfig;
 import io.github.brainage04.brainagehud.event.ModPacketEvents;
 import io.github.brainage04.hudrendererlib.hud.core.BasicCoreHudElement;
@@ -9,9 +12,6 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
-
-import static io.github.brainage04.brainagehud.util.ConfigUtils.getConfig;
-import static io.github.brainage04.brainagehud.util.MathUtils.roundDecimalPlaces;
 
 public class NetworkHud implements BasicCoreHudElement<NetworkHudConfig> {
     // Credits:
@@ -31,7 +31,11 @@ public class NetworkHud implements BasicCoreHudElement<NetworkHudConfig> {
                 lines.add("TPS: -");
             } else {
                 double tps = currentTps();
-                lines.add(line("TPS: ", roundDecimalPlaces(tps, getElementConfig().tpsDecimalPlaces), colour ? tpsColour(tps) : null));
+                lines.add(
+                        line(
+                                "TPS: ",
+                                roundDecimalPlaces(tps, getElementConfig().tpsDecimalPlaces),
+                                colour ? tpsColour(tps) : null));
             }
         }
 

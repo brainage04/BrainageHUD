@@ -48,9 +48,11 @@ It renders nothing at all unless the player is holding an item (main hand) that 
 `isEnchanted()`. For such an item it renders, in this order:
 
 1. the item's hover name, as a bold header (`showItemName`),
-2. one compact line per enchantment on the item, in enchantment-registry order (stable between frames),
+2. the enchantments on the item, in enchantment-registry order (stable between frames): one line each, or one line
+   joined with `, ` in compact mode,
 3. a `Missing:` header (only when something is in fact missing, `showMissingHeader`),
-4. the enchantments that could still be added to the item, one line each, in registry order.
+4. the enchantments that could still be added to the item, one line each in registry order, or one line joined with
+   `, ` in compact mode.
 
 Rules:
 
@@ -64,9 +66,17 @@ Rules:
   e.g. `Breach IV / Density V` on a mace. Both the HUD and `/getenchants` compute connected conflict groups.
 - Blacklisted enchantments are never suggested as missing; the same `enchantInfoConfig.blacklistedEnchantmentIds` list
   drives `/getenchants`, `/blacklistedenchants` and this element.
+- **Compact mode** (`compactMode`, on by default) joins each section onto one line: the present enchantments with their
+  levels and no maximum suffix (`Sharpness III, Unbreaking III`), and the missing enchantments without levels, groups
+  separated by `, ` and each group's choices by ` / ` (`Missing: Breach / Density, Wind Burst, Mending`). The `Missing:`
+  text is bold inside the line, so the header does not need a line of its own. A line longer than 70 characters wraps
+  between its groups (never inside one), which keeps the widest line on screen at ordinary GUI scales. The panel is
+  then two or three lines tall (name, enchantments, missing) instead of one line per enchantment and per missing group,
+  which is half the height of the full format on a sword with five missing enchantments. The Toggle Enchant Info Compact
+  key switches the same setting.
 
 Observed output from `fabric/src/test/java/.../EnchantInfoHudTest.java` (a controlled enchantment registry with
-Sharpness/Smite/Bane exclusivity, Breach/Density exclusivity and a blacklisted Fire Aspect):
+Sharpness/Smite/Bane exclusivity, Breach/Density exclusivity and a blacklisted Fire Aspect), with compact mode off:
 
 ```text
 diamond sword: sharpness III + unbreaking III, fire aspect blacklisted
@@ -90,8 +100,8 @@ diamond sword: sharpness V + unbreaking III + mending + looting III, fire aspect
   Looting III
 ```
 
-Element options: `showItemName`, `showEnchantments`, `showMaxLevels`, `showMissingEnchantments`, `showMissingHeader`,
-plus the standard `coreSettings` (enabled, x, y, anchor, overrides). Default position is top-left
+Element options: `showItemName`, `compactMode`, `showEnchantments`, `showMaxLevels`, `showMissingEnchantments`,
+`showMissingHeader`, plus the standard `coreSettings` (enabled, x, y, anchor, overrides). Default position is top-left
 (`ElementAnchor.TOP_LEFT`, 150, 5) and the element is enabled by default, like most BrainageHUD elements.
 
 ## Config surface

@@ -23,12 +23,15 @@ public class GetEnchantsCommand {
                         .level
                         .registryAccess()
                         .lookupOrThrow(Registries.ENCHANTMENT);
-        List<String> blacklist = ConfigUtils.getConfig().enchantInfoConfig.blacklistedEnchantmentIds;
+        List<String> blacklist =
+                ConfigUtils.getConfig().enchantInfoConfig.blacklistedEnchantmentIds;
 
         List<Holder.Reference<Enchantment>> acceptableEnchantments = new ArrayList<>();
         enchantmentRegistry
                 .listElements()
-                .filter(enchantment -> !blacklist.contains(EnchantmentUtils.getEnchantmentId(enchantment)))
+                .filter(
+                        enchantment ->
+                                !blacklist.contains(EnchantmentUtils.getEnchantmentId(enchantment)))
                 .filter(enchantment -> enchantment.value().canEnchant(itemStack))
                 .forEach(acceptableEnchantments::add);
 
@@ -73,7 +76,9 @@ public class GetEnchantsCommand {
             for (Holder<Enchantment> enchantment : unconflictedEnchantments) {
                 ChatFeedback.detail(
                         Component.literal(" - ")
-                                .append(EnchantmentUtils.getEnchantmentName(enchantment, itemStack)));
+                                .append(
+                                        EnchantmentUtils.getEnchantmentName(
+                                                enchantment, itemStack)));
             }
         }
 

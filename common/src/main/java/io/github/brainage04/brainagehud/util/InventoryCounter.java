@@ -50,20 +50,26 @@ public final class InventoryCounter {
      * Counts every matching item grouped by {@code key}, in the order each group is first found in
      * the slots.
      */
-    public static <K> Map<K, Count> countBy(List<ItemStack> slots, Predicate<ItemStack> matches, Function<ItemStack, K> key) {
+    public static <K> Map<K, Count> countBy(
+            List<ItemStack> slots, Predicate<ItemStack> matches, Function<ItemStack, K> key) {
         Map<K, Count> counts = new LinkedHashMap<>();
         for (ItemStack stack : slots) {
             if (!stack.isEmpty() && matches.test(stack)) {
-                counts.merge(key.apply(stack), Count.NONE.plus(stack.getCount()),
+                counts.merge(
+                        key.apply(stack),
+                        Count.NONE.plus(stack.getCount()),
                         (existing, added) -> existing.plus(added.total()));
             }
         }
         return counts;
     }
 
-    /** A tracker's bold header, e.g. "Food:", followed by a red "N/A" when the player carries none. */
+    /**
+     * A tracker's bold header, e.g. "Food:", followed by a red "N/A" when the player carries none.
+     */
     public static Component header(String title, boolean none) {
-        MutableComponent header = Component.empty().append(Component.literal(title).withStyle(ChatFormatting.BOLD));
+        MutableComponent header =
+                Component.empty().append(Component.literal(title).withStyle(ChatFormatting.BOLD));
         if (none) header.append(Component.literal(" N/A").withStyle(ChatFormatting.RED));
         return header;
     }

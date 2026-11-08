@@ -21,13 +21,15 @@ class InventoryCounterTest {
 
     @Test
     void countsEveryMatchingSlotInSlotOrder() {
-        List<ItemStack> slots = List.of(
-                new ItemStack(Items.ARROW, 32),
-                ItemStack.EMPTY,
-                new ItemStack(Items.BREAD, 5),
-                new ItemStack(Items.ARROW, 64));
+        List<ItemStack> slots =
+                List.of(
+                        new ItemStack(Items.ARROW, 32),
+                        ItemStack.EMPTY,
+                        new ItemStack(Items.BREAD, 5),
+                        new ItemStack(Items.ARROW, 64));
 
-        InventoryCounter.Count arrows = InventoryCounter.count(slots, stack -> stack.is(Items.ARROW));
+        InventoryCounter.Count arrows =
+                InventoryCounter.count(slots, stack -> stack.is(Items.ARROW));
 
         assertEquals(96, arrows.total());
         assertEquals("Arrows: 96 [32, 64]", InventoryCounter.format("Arrows", arrows, true));
@@ -36,22 +38,26 @@ class InventoryCounterTest {
 
     @Test
     void listsNoSlotBreakdownForASingleStack() {
-        InventoryCounter.Count pearls = InventoryCounter.count(
-                List.of(new ItemStack(Items.ENDER_PEARL, 16)), stack -> stack.is(Items.ENDER_PEARL));
+        InventoryCounter.Count pearls =
+                InventoryCounter.count(
+                        List.of(new ItemStack(Items.ENDER_PEARL, 16)),
+                        stack -> stack.is(Items.ENDER_PEARL));
 
         assertEquals("Ender Pearls: 16", InventoryCounter.format("Ender Pearls", pearls, true));
     }
 
     @Test
     void groupsByKeyInTheOrderEachIsFirstFound() {
-        List<ItemStack> slots = List.of(
-                new ItemStack(Items.BREAD, 3),
-                new ItemStack(Items.STONE, 64),
-                new ItemStack(Items.APPLE, 2),
-                new ItemStack(Items.BREAD, 10));
+        List<ItemStack> slots =
+                List.of(
+                        new ItemStack(Items.BREAD, 3),
+                        new ItemStack(Items.STONE, 64),
+                        new ItemStack(Items.APPLE, 2),
+                        new ItemStack(Items.BREAD, 10));
 
-        Map<Item, InventoryCounter.Count> food = InventoryCounter.countBy(
-                slots, stack -> !stack.is(Items.STONE), ItemStack::getItem);
+        Map<Item, InventoryCounter.Count> food =
+                InventoryCounter.countBy(
+                        slots, stack -> !stack.is(Items.STONE), ItemStack::getItem);
 
         assertEquals(List.of(Items.BREAD, Items.APPLE), List.copyOf(food.keySet()));
         assertEquals(new InventoryCounter.Count(13, List.of(3, 10)), food.get(Items.BREAD));

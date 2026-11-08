@@ -26,7 +26,8 @@ class ModCommandsTest {
     @BeforeAll
     static void registerCommands() {
         HolderLookup.Provider registries =
-                HolderLookup.Provider.create(Stream.of(TestEnchantments.registry(), BuiltInRegistries.ITEM));
+                HolderLookup.Provider.create(
+                        Stream.of(TestEnchantments.registry(), BuiltInRegistries.ITEM));
         dispatcher = new CommandDispatcher<>();
         ModCommands.registerClientCommands(
                 dispatcher, CommandBuildContext.simple(registries, FeatureFlags.VANILLA_SET));
@@ -47,10 +48,18 @@ class ModCommandsTest {
 
     @Test
     void wrongWaypointsInputStillRunsTheUsageMessage() {
-        for (String command : List.of("waypoints add", "waypoints remove", "waypoints remove Base extra", "waypoints list extra", "waypoints teleport Base")) {
+        for (String command :
+                List.of(
+                        "waypoints add",
+                        "waypoints remove",
+                        "waypoints remove Base extra",
+                        "waypoints list extra",
+                        "waypoints teleport Base")) {
             assertTrue(isExecutable(command), command);
         }
-        assertEquals(List.of("waypoints", "add", "name", "coordinates"), parsedNodes("waypoints add \"My Base\" 1 2 3"));
+        assertEquals(
+                List.of("waypoints", "add", "name", "coordinates"),
+                parsedNodes("waypoints add \"My Base\" 1 2 3"));
     }
 
     @Test
@@ -63,10 +72,15 @@ class ModCommandsTest {
 
     private static List<String> parsedNodes(String command) {
         ParseResults<SharedSuggestionProvider> parse = dispatcher.parse(command, null);
-        assertTrue(parse.getExceptions().isEmpty() && !parse.getReader().canRead(), () -> command + " did not parse: " + parse.getExceptions());
+        assertTrue(
+                parse.getExceptions().isEmpty() && !parse.getReader().canRead(),
+                () -> command + " did not parse: " + parse.getExceptions());
 
         CommandContextBuilder<SharedSuggestionProvider> context = parse.getContext();
-        return context.getNodes().stream().map(ParsedCommandNode::getNode).map(node -> node.getName()).toList();
+        return context.getNodes().stream()
+                .map(ParsedCommandNode::getNode)
+                .map(node -> node.getName())
+                .toList();
     }
 
     private static boolean isExecutable(String command) {

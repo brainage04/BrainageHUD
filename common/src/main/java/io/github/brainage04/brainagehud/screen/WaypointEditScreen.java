@@ -43,11 +43,31 @@ public class WaypointEditScreen extends Screen {
         String z = zBox == null ? null : zBox.getValue();
         int left = (width - FIELD_WIDTH) / 2;
 
-        nameBox = addRenderableWidget(new EditBox(font, left, 60, FIELD_WIDTH, 20, Component.literal("Name")));
+        nameBox =
+                addRenderableWidget(
+                        new EditBox(font, left, 60, FIELD_WIDTH, 20, Component.literal("Name")));
         nameBox.setMaxLength(WaypointActions.MAX_NAME_LENGTH);
-        xBox = addRenderableWidget(new EditBox(font, left, 104, COORDINATE_WIDTH, 20, Component.literal("X")));
-        yBox = addRenderableWidget(new EditBox(font, left + (FIELD_WIDTH - COORDINATE_WIDTH) / 2, 104, COORDINATE_WIDTH, 20, Component.literal("Y")));
-        zBox = addRenderableWidget(new EditBox(font, left + FIELD_WIDTH - COORDINATE_WIDTH, 104, COORDINATE_WIDTH, 20, Component.literal("Z")));
+        xBox =
+                addRenderableWidget(
+                        new EditBox(font, left, 104, COORDINATE_WIDTH, 20, Component.literal("X")));
+        yBox =
+                addRenderableWidget(
+                        new EditBox(
+                                font,
+                                left + (FIELD_WIDTH - COORDINATE_WIDTH) / 2,
+                                104,
+                                COORDINATE_WIDTH,
+                                20,
+                                Component.literal("Y")));
+        zBox =
+                addRenderableWidget(
+                        new EditBox(
+                                font,
+                                left + FIELD_WIDTH - COORDINATE_WIDTH,
+                                104,
+                                COORDINATE_WIDTH,
+                                20,
+                                Component.literal("Z")));
 
         if (name == null) {
             fillInitialValues();
@@ -58,10 +78,14 @@ public class WaypointEditScreen extends Screen {
             zBox.setValue(z);
         }
 
-        addRenderableWidget(Button.builder(Component.literal("Save"), button -> save())
-                .bounds(width / 2 - 102, height - 28, 100, 20).build());
-        addRenderableWidget(Button.builder(Component.literal("Cancel"), button -> onClose())
-                .bounds(width / 2 + 2, height - 28, 100, 20).build());
+        addRenderableWidget(
+                Button.builder(Component.literal("Save"), button -> save())
+                        .bounds(width / 2 - 102, height - 28, 100, 20)
+                        .build());
+        addRenderableWidget(
+                Button.builder(Component.literal("Cancel"), button -> onClose())
+                        .bounds(width / 2 + 2, height - 28, 100, 20)
+                        .build());
 
         setInitialFocus(nameBox);
     }
@@ -84,7 +108,8 @@ public class WaypointEditScreen extends Screen {
     }
 
     @Override
-    public void extractRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {
+    public void extractRenderState(
+            GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {
         super.extractRenderState(graphics, mouseX, mouseY, partialTick);
         graphics.centeredText(font, title, width / 2, 20, WHITE);
         graphics.text(font, "Name", nameBox.getX(), nameBox.getY() - 11, GREY);
@@ -133,10 +158,11 @@ public class WaypointEditScreen extends Screen {
 
     private Optional<BlockPos> parsePosition() {
         try {
-            return Optional.of(new BlockPos(
-                    Integer.parseInt(xBox.getValue().strip()),
-                    Integer.parseInt(yBox.getValue().strip()),
-                    Integer.parseInt(zBox.getValue().strip())));
+            return Optional.of(
+                    new BlockPos(
+                            Integer.parseInt(xBox.getValue().strip()),
+                            Integer.parseInt(yBox.getValue().strip()),
+                            Integer.parseInt(zBox.getValue().strip())));
         } catch (NumberFormatException exception) {
             return Optional.empty();
         }

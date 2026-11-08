@@ -1,15 +1,19 @@
 package io.github.brainage04.brainagehud.config.hud.custom.keystrokes;
 
 import io.github.brainage04.hudrendererlib.config.core.CoreSettings;
-import io.github.brainage04.hudrendererlib.config.core.ICoreSettingsContainer;
 import io.github.brainage04.hudrendererlib.config.core.ElementAnchor;
+import io.github.brainage04.hudrendererlib.config.core.ICoreSettingsContainer;
 import me.shedaniel.autoconfig.annotation.ConfigEntry;
 
 @SuppressWarnings("CanBeFinal")
 public class KeystrokesHudConfig implements ICoreSettingsContainer {
     @ConfigEntry.Gui.CollapsibleObject
-    public CoreSettings coreSettings = new CoreSettings("Keystrokes HUD", true, -5, 5, ElementAnchor.TOP_RIGHT);
-    @ConfigEntry.BoundedDiscrete(min = 0, max = 255) public int keyBackdropOpacity = 100;
+    public CoreSettings coreSettings =
+            new CoreSettings("Keystrokes HUD", true, -5, 5, ElementAnchor.TOP_RIGHT);
+
+    @ConfigEntry.BoundedDiscrete(min = 0, max = 255)
+    public int keyBackdropOpacity = 100;
+
     public boolean showWasd = true;
     public boolean showSpace = true;
     public boolean showMouseButtons = true;

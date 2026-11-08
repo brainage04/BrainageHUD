@@ -1,5 +1,7 @@
 package io.github.brainage04.brainagehud.hud;
 
+import static io.github.brainage04.brainagehud.util.ConfigUtils.getConfig;
+
 import io.github.brainage04.brainagehud.config.hud.basic.EntityHudConfig;
 import io.github.brainage04.hudrendererlib.hud.core.BasicCoreHudElement;
 import io.github.brainage04.hudrendererlib.util.TextList;
@@ -9,8 +11,6 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.MobCategory;
-
-import static io.github.brainage04.brainagehud.util.ConfigUtils.getConfig;
 
 /** How many entities the client has loaded, grouped by kind of mob. */
 public class EntityHud implements BasicCoreHudElement<EntityHudConfig> {
@@ -30,7 +30,8 @@ public class EntityHud implements BasicCoreHudElement<EntityHudConfig> {
         static Group of(MobCategory category) {
             return switch (category) {
                 case CREATURE -> CREATURES;
-                case WATER_CREATURE, UNDERGROUND_WATER_CREATURE, WATER_AMBIENT, AXOLOTLS -> WATER_CREATURES;
+                case WATER_CREATURE, UNDERGROUND_WATER_CREATURE, WATER_AMBIENT, AXOLOTLS ->
+                        WATER_CREATURES;
                 case AMBIENT -> AMBIENT;
                 case MONSTER -> MONSTERS;
                 case MISC -> OTHERS;
@@ -61,7 +62,8 @@ public class EntityHud implements BasicCoreHudElement<EntityHudConfig> {
         return lines;
     }
 
-    private static void addGroup(TextList lines, Map<Group, Integer> counts, Group group, boolean shown) {
+    private static void addGroup(
+            TextList lines, Map<Group, Integer> counts, Group group, boolean shown) {
         if (shown) lines.add("  %s: %d".formatted(group.label, counts.getOrDefault(group, 0)));
     }
 

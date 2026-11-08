@@ -1,17 +1,17 @@
 package io.github.brainage04.brainagehud.hud;
 
+import static io.github.brainage04.brainagehud.util.ConfigUtils.getConfig;
+import static io.github.brainage04.brainagehud.util.MathUtils.roundDecimalPlaces;
+
 import io.github.brainage04.brainagehud.config.hud.basic.MotionHudConfig;
 import io.github.brainage04.hudrendererlib.hud.core.BasicCoreHudElement;
 import io.github.brainage04.hudrendererlib.util.TextList;
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.entity.Entity;
 
-import static io.github.brainage04.brainagehud.util.ConfigUtils.getConfig;
-import static io.github.brainage04.brainagehud.util.MathUtils.roundDecimalPlaces;
-
 /**
- * How fast the camera entity is moving, from how far it moved over the last tick. Unlike its
- * delta movement, this is what actually happened after collisions, friction and vehicles.
+ * How fast the camera entity is moving, from how far it moved over the last tick. Unlike its delta
+ * movement, this is what actually happened after collisions, friction and vehicles.
  */
 public class MotionHud implements BasicCoreHudElement<MotionHudConfig> {
     private static final double TICKS_PER_SECOND = 20.0D;
@@ -40,8 +40,16 @@ public class MotionHud implements BasicCoreHudElement<MotionHudConfig> {
     }
 
     static String speed(String label, double blocksPerTick, MotionHudConfig config) {
-        String line = "%s: %s m/s".formatted(label, roundDecimalPlaces(blocksPerTick * TICKS_PER_SECOND, config.decimalPlaces));
-        if (config.showBlocksPerTick) line += " (%s m/tick)".formatted(roundDecimalPlaces(blocksPerTick, config.decimalPlaces));
+        String line =
+                "%s: %s m/s"
+                        .formatted(
+                                label,
+                                roundDecimalPlaces(
+                                        blocksPerTick * TICKS_PER_SECOND, config.decimalPlaces));
+        if (config.showBlocksPerTick)
+            line +=
+                    " (%s m/tick)"
+                            .formatted(roundDecimalPlaces(blocksPerTick, config.decimalPlaces));
         return line;
     }
 

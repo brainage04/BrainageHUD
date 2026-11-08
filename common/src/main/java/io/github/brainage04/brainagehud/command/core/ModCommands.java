@@ -69,7 +69,9 @@ public final class ModCommands {
                                                 context ->
                                                         GetEnchantsCommand.execute(
                                                                 ClientHolderReferenceArgumentType
-                                                                        .getItem(context, "item")))));
+                                                                        .getItem(
+                                                                                context,
+                                                                                "item")))));
 
         dispatcher.register(
                 LiteralArgumentBuilder.<S>literal("blacklistedenchants")
@@ -82,14 +84,16 @@ public final class ModCommands {
                                                                 ClientHolderReferenceArgumentType
                                                                         .registryEntry(
                                                                                 registryAccess,
-                                                                                Registries.ENCHANTMENT))
+                                                                                Registries
+                                                                                        .ENCHANTMENT))
                                                         .executes(
                                                                 context ->
-                                                                        BlacklistedEnchantsCommand.executeAdd(
-                                                                                ClientHolderReferenceArgumentType
-                                                                                        .getEnchantment(
-                                                                                                context,
-                                                                                                "enchantmentId")))))
+                                                                        BlacklistedEnchantsCommand
+                                                                                .executeAdd(
+                                                                                        ClientHolderReferenceArgumentType
+                                                                                                .getEnchantment(
+                                                                                                        context,
+                                                                                                        "enchantmentId")))))
                         .then(
                                 LiteralArgumentBuilder.<S>literal("remove")
                                         .then(
@@ -99,17 +103,22 @@ public final class ModCommands {
                                                                 ClientHolderReferenceArgumentType
                                                                         .registryEntry(
                                                                                 registryAccess,
-                                                                                Registries.ENCHANTMENT))
+                                                                                Registries
+                                                                                        .ENCHANTMENT))
                                                         .executes(
                                                                 context ->
-                                                                        BlacklistedEnchantsCommand.executeRemove(
-                                                                                ClientHolderReferenceArgumentType
-                                                                                        .getEnchantment(
-                                                                                                context,
-                                                                                                "enchantmentId")))))
+                                                                        BlacklistedEnchantsCommand
+                                                                                .executeRemove(
+                                                                                        ClientHolderReferenceArgumentType
+                                                                                                .getEnchantment(
+                                                                                                        context,
+                                                                                                        "enchantmentId")))))
                         .then(
                                 LiteralArgumentBuilder.<S>literal("query")
-                                        .executes(context -> BlacklistedEnchantsCommand.executeQuery())));
+                                        .executes(
+                                                context ->
+                                                        BlacklistedEnchantsCommand
+                                                                .executeQuery())));
 
         WaypointsCommand.register(dispatcher);
 

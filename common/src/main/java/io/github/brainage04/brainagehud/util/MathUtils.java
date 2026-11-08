@@ -10,9 +10,9 @@ public class MathUtils {
     private static final DecimalFormat[] FORMATS = new DecimalFormat[MAX_DECIMAL_PLACES + 1];
 
     /**
-     * Formats {@code input} with exactly {@code decimalPlaces} fractional digits, clamped to
-     * {@code [0, MAX_DECIMAL_PLACES]}. The value is formatted as a {@code double}, so large
-     * coordinates keep their fractional part.
+     * Formats {@code input} with exactly {@code decimalPlaces} fractional digits, clamped to {@code
+     * [0, MAX_DECIMAL_PLACES]}. The value is formatted as a {@code double}, so large coordinates
+     * keep their fractional part.
      */
     public static String roundDecimalPlaces(double input, int decimalPlaces) {
         int places = Math.clamp(decimalPlaces, 0, MAX_DECIMAL_PLACES);

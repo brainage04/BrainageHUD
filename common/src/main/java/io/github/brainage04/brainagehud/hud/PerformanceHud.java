@@ -1,5 +1,7 @@
 package io.github.brainage04.brainagehud.hud;
 
+import static io.github.brainage04.brainagehud.util.ConfigUtils.getConfig;
+
 import io.github.brainage04.brainagehud.config.hud.basic.PerformanceHudConfig;
 import io.github.brainage04.brainagehud.util.MathUtils;
 import io.github.brainage04.brainagehud.util.TimerUtils;
@@ -8,8 +10,6 @@ import io.github.brainage04.hudrendererlib.util.TextList;
 import java.util.OptionalDouble;
 import java.util.OptionalLong;
 import net.minecraft.client.Minecraft;
-
-import static io.github.brainage04.brainagehud.util.ConfigUtils.getConfig;
 
 public class PerformanceHud implements BasicCoreHudElement<PerformanceHudConfig> {
     @Override
@@ -27,11 +27,8 @@ public class PerformanceHud implements BasicCoreHudElement<PerformanceHudConfig>
             long n = Runtime.getRuntime().freeMemory();
             long o = m - n;
 
-            lines.add("RAM: %d%% (%d/%dMB)".formatted(
-                    o * 100L / l,
-                    o / 1_048_576L,
-                    l / 1_048_576L
-            ));
+            lines.add(
+                    "RAM: %d%% (%d/%dMB)".formatted(o * 100L / l, o / 1_048_576L, l / 1_048_576L));
         }
 
         if (getElementConfig().showGpuUsage) {
@@ -41,7 +38,13 @@ public class PerformanceHud implements BasicCoreHudElement<PerformanceHudConfig>
 
         if (getElementConfig().showGpuFrameTime) {
             OptionalDouble frameTime = TimerUtils.getGpuFrameTimeMillis(500);
-            lines.add(frameTime.isPresent() ? "GPU Time: %s ms".formatted(MathUtils.roundDecimalPlaces(frameTime.getAsDouble(), 1)) : "GPU Time: -");
+            lines.add(
+                    frameTime.isPresent()
+                            ? "GPU Time: %s ms"
+                                    .formatted(
+                                            MathUtils.roundDecimalPlaces(
+                                                    frameTime.getAsDouble(), 1))
+                            : "GPU Time: -");
         }
 
         if (getElementConfig().showCpuUsage) {

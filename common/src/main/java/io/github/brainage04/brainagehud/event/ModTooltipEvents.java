@@ -23,8 +23,7 @@ public class ModTooltipEvents {
 
         // enchanted books keep their enchantments in a separate component
         ItemEnchantments enchantments =
-                itemStack.getOrDefault(
-                        DataComponents.STORED_ENCHANTMENTS, ItemEnchantments.EMPTY);
+                itemStack.getOrDefault(DataComponents.STORED_ENCHANTMENTS, ItemEnchantments.EMPTY);
         if (enchantments.isEmpty()) enchantments = itemStack.getEnchantments();
         if (enchantments.isEmpty()) return;
 

@@ -10,7 +10,9 @@ public final class RollingAverage {
     private final LongArrayFIFOQueue samples = new LongArrayFIFOQueue();
     private long sum;
 
-    /** Adds {@code sample}, then drops the oldest samples until at most {@code maxSamples} remain. */
+    /**
+     * Adds {@code sample}, then drops the oldest samples until at most {@code maxSamples} remain.
+     */
     public synchronized void add(long sample, int maxSamples) {
         samples.enqueue(sample);
         sum += sample;

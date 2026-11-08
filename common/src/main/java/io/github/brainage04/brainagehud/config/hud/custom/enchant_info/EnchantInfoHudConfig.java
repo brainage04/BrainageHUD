@@ -12,6 +12,7 @@ public class EnchantInfoHudConfig implements ICoreSettingsContainer {
             new CoreSettings("Enchant Info HUD", true, 150, 5, ElementAnchor.TOP_LEFT);
 
     public boolean showItemName = true;
+    @ConfigEntry.Gui.Tooltip public boolean compactMode = true;
     @ConfigEntry.Gui.Tooltip public boolean showEnchantments = true;
     @ConfigEntry.Gui.Tooltip public boolean showMaxLevels = true;
     @ConfigEntry.Gui.Tooltip public boolean showMissingEnchantments = true;

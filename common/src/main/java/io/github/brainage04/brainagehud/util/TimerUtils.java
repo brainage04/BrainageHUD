@@ -18,7 +18,8 @@ public class TimerUtils {
 
     /**
      * The share of each frame's time that the GPU spends drawing it, as a percentage, or empty
-     * before the GPU has been measured. Refreshed at most once per {@code millisecondsBetweenUpdates}.
+     * before the GPU has been measured. Refreshed at most once per {@code
+     * millisecondsBetweenUpdates}.
      */
     public static OptionalLong getGpuUsage(int millisecondsBetweenUpdates) {
         updateGpu(millisecondsBetweenUpdates);
@@ -31,13 +32,15 @@ public class TimerUtils {
      */
     public static OptionalDouble getGpuFrameTimeMillis(int millisecondsBetweenUpdates) {
         updateGpu(millisecondsBetweenUpdates);
-        return gpuTimeNanos == 0 ? OptionalDouble.empty() : OptionalDouble.of(gpuTimeNanos / 1_000_000.0D);
+        return gpuTimeNanos == 0
+                ? OptionalDouble.empty()
+                : OptionalDouble.of(gpuTimeNanos / 1_000_000.0D);
     }
 
     /**
-     * Reads the timer query behind the F3 GPU utilization, which the game divides by the frame
-     * time to get that utilization. It averages the GPU time of the last few frames, and reads 0
-     * until a frame has been measured.
+     * Reads the timer query behind the F3 GPU utilization, which the game divides by the frame time
+     * to get that utilization. It averages the GPU time of the last few frames, and reads 0 until a
+     * frame has been measured.
      */
     private static void updateGpu(int millisecondsBetweenUpdates) {
         long now = System.currentTimeMillis();
@@ -49,13 +52,19 @@ public class TimerUtils {
         }
     }
 
-    /** The process CPU usage percentage, refreshed at most once per {@code millisecondsBetweenUpdates}. */
+    /**
+     * The process CPU usage percentage, refreshed at most once per {@code
+     * millisecondsBetweenUpdates}.
+     */
     public static long getCpuUsage(int millisecondsBetweenUpdates) {
         long now = System.currentTimeMillis();
         if (now - cpuLastUpdated > millisecondsBetweenUpdates) {
             long currentCpuTimeNanos = getProcessCpuTimeNanos();
             long elapsedNanos = (now - cpuLastUpdated) * 1_000_000L;
-            cpuUsage = (currentCpuTimeNanos - cpuTimeNanos) * 100L / (elapsedNanos * Runtime.getRuntime().availableProcessors());
+            cpuUsage =
+                    (currentCpuTimeNanos - cpuTimeNanos)
+                            * 100L
+                            / (elapsedNanos * Runtime.getRuntime().availableProcessors());
             cpuTimeNanos = currentCpuTimeNanos;
             cpuLastUpdated = now;
         }

@@ -43,37 +43,75 @@ public class WaypointsScreen extends Screen {
 
         list = addRenderableWidget(new WaypointList(minecraft, width, height - 32 - 64, 32, 24));
         if (waypoints != null && minecraft.level != null) {
-            list.add(new WaypointEntry(WorldCentre.in(minecraft.level.dimension().identifier().toString()), true));
+            list.add(
+                    new WaypointEntry(
+                            WorldCentre.in(minecraft.level.dimension().identifier().toString()),
+                            true));
             waypoints.forEach(waypoint -> list.add(new WaypointEntry(waypoint, false)));
         }
 
         int rowWidth = BUTTON_WIDTH * 4 + BUTTON_GAP * 3;
         int left = (width - rowWidth) / 2;
         int rowY = height - 56;
-        Button addButton = addRenderableWidget(Button.builder(Component.literal("Add"), button -> edit(null))
-                .bounds(left, rowY, BUTTON_WIDTH, 20).build());
+        Button addButton =
+                addRenderableWidget(
+                        Button.builder(Component.literal("Add"), button -> edit(null))
+                                .bounds(left, rowY, BUTTON_WIDTH, 20)
+                                .build());
         addButton.active = waypoints != null;
-        editButton = addRenderableWidget(Button.builder(Component.literal("Edit"), button -> selectedOwn().ifPresent(this::edit))
-                .bounds(left + (BUTTON_WIDTH + BUTTON_GAP), rowY, BUTTON_WIDTH, 20).build());
-        toggleButton = addRenderableWidget(Button.builder(Component.literal("Hide"), button -> toggleSelected())
-                .bounds(left + (BUTTON_WIDTH + BUTTON_GAP) * 2, rowY, BUTTON_WIDTH, 20).build());
-        deleteButton = addRenderableWidget(Button.builder(Component.literal("Delete"), button -> deleteSelected())
-                .bounds(left + (BUTTON_WIDTH + BUTTON_GAP) * 3, rowY, BUTTON_WIDTH, 20).build());
-        addRenderableWidget(Button.builder(Component.literal("Done"), button -> onClose())
-                .bounds((width - 200) / 2, height - 28, 200, 20).build());
+        editButton =
+                addRenderableWidget(
+                        Button.builder(
+                                        Component.literal("Edit"),
+                                        button -> selectedOwn().ifPresent(this::edit))
+                                .bounds(left + (BUTTON_WIDTH + BUTTON_GAP), rowY, BUTTON_WIDTH, 20)
+                                .build());
+        toggleButton =
+                addRenderableWidget(
+                        Button.builder(Component.literal("Hide"), button -> toggleSelected())
+                                .bounds(
+                                        left + (BUTTON_WIDTH + BUTTON_GAP) * 2,
+                                        rowY,
+                                        BUTTON_WIDTH,
+                                        20)
+                                .build());
+        deleteButton =
+                addRenderableWidget(
+                        Button.builder(Component.literal("Delete"), button -> deleteSelected())
+                                .bounds(
+                                        left + (BUTTON_WIDTH + BUTTON_GAP) * 3,
+                                        rowY,
+                                        BUTTON_WIDTH,
+                                        20)
+                                .build());
+        addRenderableWidget(
+                Button.builder(Component.literal("Done"), button -> onClose())
+                        .bounds((width - 200) / 2, height - 28, 200, 20)
+                        .build());
 
         updateButtons();
     }
 
     @Override
-    public void extractRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {
+    public void extractRenderState(
+            GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {
         super.extractRenderState(graphics, mouseX, mouseY, partialTick);
         graphics.centeredText(font, title, width / 2, 12, WHITE);
 
         if (waypoints == null) {
-            graphics.centeredText(font, "Waypoints are kept per world. Join a world to manage them.", width / 2, height / 2 - 20, GREY);
+            graphics.centeredText(
+                    font,
+                    "Waypoints are kept per world. Join a world to manage them.",
+                    width / 2,
+                    height / 2 - 20,
+                    GREY);
         } else if (waypoints.isEmpty()) {
-            graphics.centeredText(font, "No waypoints of your own yet. Press Add, or the Create Waypoint key in game.", width / 2, height / 2 - 20, GREY);
+            graphics.centeredText(
+                    font,
+                    "No waypoints of your own yet. Press Add, or the Create Waypoint key in game.",
+                    width / 2,
+                    height / 2 - 20,
+                    GREY);
         }
     }
 
@@ -124,7 +162,9 @@ public class WaypointsScreen extends Screen {
         editButton.active = selectedOwn().isPresent();
         toggleButton.active = selected.isPresent();
         deleteButton.active = selectedOwn().isPresent();
-        toggleButton.setMessage(Component.literal(selected.map(waypoint -> waypoint.visible).orElse(true) ? "Hide" : "Show"));
+        toggleButton.setMessage(
+                Component.literal(
+                        selected.map(waypoint -> waypoint.visible).orElse(true) ? "Hide" : "Show"));
     }
 
     private final class WaypointList extends ObjectSelectionList<WaypointEntry> {
@@ -155,6 +195,7 @@ public class WaypointsScreen extends Screen {
 
     private final class WaypointEntry extends ObjectSelectionList.Entry<WaypointEntry> {
         private final Waypoint waypoint;
+
         /** The World Centre: it can be hidden, but not edited or deleted. */
         private final boolean builtIn;
 
@@ -164,15 +205,26 @@ public class WaypointsScreen extends Screen {
         }
 
         @Override
-        public void extractContent(GuiGraphicsExtractor graphics, int mouseX, int mouseY, boolean hovered, float partialTick) {
+        public void extractContent(
+                GuiGraphicsExtractor graphics,
+                int mouseX,
+                int mouseY,
+                boolean hovered,
+                float partialTick) {
             int x = getContentX() + 2;
             int y = getContentY() + 1;
             graphics.text(font, WaypointActions.name(waypoint), x, y, WHITE);
             if (!waypoint.visible) {
                 graphics.text(font, "(hidden)", x + font.width(waypoint.name) + 6, y, GREY);
             }
-            String where = builtIn ? "every dimension" : WaypointActions.dimensionName(waypoint.dimension);
-            graphics.text(font, "%s  %s".formatted(waypoint.pos().toShortString(), where), x, y + 11, GREY);
+            String where =
+                    builtIn ? "every dimension" : WaypointActions.dimensionName(waypoint.dimension);
+            graphics.text(
+                    font,
+                    "%s  %s".formatted(waypoint.pos().toShortString(), where),
+                    x,
+                    y + 11,
+                    GREY);
         }
 
         @Override

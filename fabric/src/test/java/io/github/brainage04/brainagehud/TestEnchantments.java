@@ -66,23 +66,53 @@ public final class TestEnchantments {
 
         TagKey<Enchantment> damageExclusive = enchantmentTag("damage_exclusive");
         TagKey<Enchantment> maceExclusive = enchantmentTag("mace_exclusive");
-        HolderSet<Enchantment> damageExclusiveSet = HolderSet.emptyNamed(enchantments, damageExclusive);
+        HolderSet<Enchantment> damageExclusiveSet =
+                HolderSet.emptyNamed(enchantments, damageExclusive);
         HolderSet<Enchantment> maceExclusiveSet = HolderSet.emptyNamed(enchantments, maceExclusive);
         HolderSet<Enchantment> noExclusivity = HolderSet.empty();
 
         Holder.Reference<Enchantment> sharpness =
-                register(enchantments, "sharpness", "Sharpness", 5, damageExclusiveSet, Items.DIAMOND_SWORD, Items.DIAMOND_AXE);
+                register(
+                        enchantments,
+                        "sharpness",
+                        "Sharpness",
+                        5,
+                        damageExclusiveSet,
+                        Items.DIAMOND_SWORD,
+                        Items.DIAMOND_AXE);
         Holder.Reference<Enchantment> smite =
-                register(enchantments, "smite", "Smite", 5, damageExclusiveSet, Items.DIAMOND_SWORD);
+                register(
+                        enchantments, "smite", "Smite", 5, damageExclusiveSet, Items.DIAMOND_SWORD);
         Holder.Reference<Enchantment> baneOfArthropods =
-                register(enchantments, "bane_of_arthropods", "Bane of Arthropods", 5, damageExclusiveSet, Items.DIAMOND_SWORD);
+                register(
+                        enchantments,
+                        "bane_of_arthropods",
+                        "Bane of Arthropods",
+                        5,
+                        damageExclusiveSet,
+                        Items.DIAMOND_SWORD);
         Holder.Reference<Enchantment> breach =
                 register(enchantments, "breach", "Breach", 4, maceExclusiveSet, Items.MACE);
         Holder.Reference<Enchantment> density =
                 register(enchantments, "density", "Density", 5, maceExclusiveSet, Items.MACE);
         register(enchantments, "wind_burst", "Wind Burst", 3, noExclusivity, Items.MACE);
-        register(enchantments, "unbreaking", "Unbreaking", 3, noExclusivity, Items.DIAMOND_SWORD, Items.DIAMOND_PICKAXE);
-        register(enchantments, "mending", "Mending", 1, noExclusivity, Items.DIAMOND_SWORD, Items.DIAMOND_PICKAXE, Items.MACE);
+        register(
+                enchantments,
+                "unbreaking",
+                "Unbreaking",
+                3,
+                noExclusivity,
+                Items.DIAMOND_SWORD,
+                Items.DIAMOND_PICKAXE);
+        register(
+                enchantments,
+                "mending",
+                "Mending",
+                1,
+                noExclusivity,
+                Items.DIAMOND_SWORD,
+                Items.DIAMOND_PICKAXE,
+                Items.MACE);
         register(enchantments, "fire_aspect", "Fire Aspect", 2, noExclusivity, Items.DIAMOND_SWORD);
         register(enchantments, "looting", "Looting", 3, noExclusivity, Items.DIAMOND_SWORD);
 
@@ -99,7 +129,7 @@ public final class TestEnchantments {
         // vanilla binds item components while loading a world, so a headless test applies them
         // itself in order for ItemStack construction - and therefore isEnchantable/isEnchanted -
         // to behave as it does in game
-        HolderLookup.Provider vanillaRegistries = VanillaRegistries.createLookup();
+        HolderLookup.Provider vanillaRegistries = VanillaRegistries.createWorldLookup();
 
         for (DataComponentInitializers.PendingComponents<?> pendingComponents :
                 BuiltInRegistries.DATA_COMPONENT_INITIALIZERS.build(vanillaRegistries)) {

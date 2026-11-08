@@ -31,34 +31,81 @@ public final class WaypointsCommand {
 
     private WaypointsCommand() {}
 
-    public static <S extends SharedSuggestionProvider> void register(CommandDispatcher<S> dispatcher) {
+    public static <S extends SharedSuggestionProvider> void register(
+            CommandDispatcher<S> dispatcher) {
         dispatcher.register(
                 LiteralArgumentBuilder.<S>literal("waypoints")
                         .executes(context -> openScreen())
-                        .then(LiteralArgumentBuilder.<S>literal("add")
-                                .executes(context -> usage(ADD_USAGE))
-                                .then(RequiredArgumentBuilder.<S, String>argument("name", StringArgumentType.string())
-                                        .executes(context -> added(WaypointActions.createAtPlayer(name(context)).isPresent()))
-                                        .then(RequiredArgumentBuilder.<S, String>argument("coordinates", StringArgumentType.greedyString())
-                                                .executes(context -> addAt(name(context), StringArgumentType.getString(context, "coordinates"))))))
-                        .then(LiteralArgumentBuilder.<S>literal("remove")
-                                .executes(context -> usage(REMOVE_USAGE))
-                                .then(RequiredArgumentBuilder.<S, String>argument("name", StringArgumentType.string())
-                                        .suggests((context, builder) -> SharedSuggestionProvider.suggest(
-                                                WaypointStore.current().orElse(List.of()).stream()
-                                                        .map(waypoint -> StringArgumentType.escapeIfRequired(waypoint.name)),
-                                                builder))
-                                        .executes(context -> WaypointActions.remove(name(context)) ? 1 : 0)
-                                        .then(unexpected(REMOVE_USAGE))))
-                        .then(LiteralArgumentBuilder.<S>literal("list")
-                                .executes(context -> list())
-                                .then(unexpected(LIST_USAGE)))
+                        .then(
+                                LiteralArgumentBuilder.<S>literal("add")
+                                        .executes(context -> usage(ADD_USAGE))
+                                        .then(
+                                                RequiredArgumentBuilder.<S, String>argument(
+                                                                "name", StringArgumentType.string())
+                                                        .executes(
+                                                                context ->
+                                                                        added(
+                                                                                WaypointActions
+                                                                                        .createAtPlayer(
+                                                                                                name(
+                                                                                                        context))
+                                                                                        .isPresent()))
+                                                        .then(
+                                                                RequiredArgumentBuilder
+                                                                        .<S, String>argument(
+                                                                                "coordinates",
+                                                                                StringArgumentType
+                                                                                        .greedyString())
+                                                                        .executes(
+                                                                                context ->
+                                                                                        addAt(
+                                                                                                name(
+                                                                                                        context),
+                                                                                                StringArgumentType
+                                                                                                        .getString(
+                                                                                                                context,
+                                                                                                                "coordinates"))))))
+                        .then(
+                                LiteralArgumentBuilder.<S>literal("remove")
+                                        .executes(context -> usage(REMOVE_USAGE))
+                                        .then(
+                                                RequiredArgumentBuilder.<S, String>argument(
+                                                                "name", StringArgumentType.string())
+                                                        .suggests(
+                                                                (context, builder) ->
+                                                                        SharedSuggestionProvider
+                                                                                .suggest(
+                                                                                        WaypointStore
+                                                                                                .current()
+                                                                                                .orElse(
+                                                                                                        List
+                                                                                                                .of())
+                                                                                                .stream()
+                                                                                                .map(
+                                                                                                        waypoint ->
+                                                                                                                StringArgumentType
+                                                                                                                        .escapeIfRequired(
+                                                                                                                                waypoint.name)),
+                                                                                        builder))
+                                                        .executes(
+                                                                context ->
+                                                                        WaypointActions.remove(
+                                                                                        name(
+                                                                                                context))
+                                                                                ? 1
+                                                                                : 0)
+                                                        .then(unexpected(REMOVE_USAGE))))
+                        .then(
+                                LiteralArgumentBuilder.<S>literal("list")
+                                        .executes(context -> list())
+                                        .then(unexpected(LIST_USAGE)))
                         .then(unexpected(USAGE)));
     }
 
     /** Takes whatever is left of the command and shows {@code usage}. */
     private static <S> RequiredArgumentBuilder<S, String> unexpected(String usage) {
-        return RequiredArgumentBuilder.<S, String>argument("unexpected", StringArgumentType.greedyString())
+        return RequiredArgumentBuilder.<S, String>argument(
+                        "unexpected", StringArgumentType.greedyString())
                 .executes(context -> usage(usage));
     }
 
@@ -84,7 +131,9 @@ public final class WaypointsCommand {
             }
         }
 
-        return added(WaypointActions.create(name, new BlockPos(position[0], position[1], position[2])).isPresent());
+        return added(
+                WaypointActions.create(name, new BlockPos(position[0], position[1], position[2]))
+                        .isPresent());
     }
 
     private static int usage(String usage) {
@@ -108,12 +157,16 @@ public final class WaypointsCommand {
 
         ChatFeedback.info("Waypoints:");
         for (Waypoint waypoint : waypoints) {
-            ChatFeedback.detail(Component.literal(" - ")
-                    .append(WaypointActions.name(waypoint))
-                    .append(" %s (%s)%s".formatted(
-                            waypoint.pos().toShortString(),
-                            WaypointActions.dimensionName(waypoint.dimension),
-                            waypoint.visible ? "" : " [hidden]")));
+            ChatFeedback.detail(
+                    Component.literal(" - ")
+                            .append(WaypointActions.name(waypoint))
+                            .append(
+                                    " %s (%s)%s"
+                                            .formatted(
+                                                    waypoint.pos().toShortString(),
+                                                    WaypointActions.dimensionName(
+                                                            waypoint.dimension),
+                                                    waypoint.visible ? "" : " [hidden]")));
         }
         return 1;
     }

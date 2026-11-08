@@ -1,7 +1,18 @@
 package io.github.brainage04.brainagehud.config.core;
 
 import io.github.brainage04.brainagehud.BrainageHUD;
-import io.github.brainage04.brainagehud.config.hud.basic.*;
+import io.github.brainage04.brainagehud.config.hud.basic.DateTimeHudConfig;
+import io.github.brainage04.brainagehud.config.hud.basic.EntityHudConfig;
+import io.github.brainage04.brainagehud.config.hud.basic.FishingHudConfig;
+import io.github.brainage04.brainagehud.config.hud.basic.FoodHudConfig;
+import io.github.brainage04.brainagehud.config.hud.basic.MotionHudConfig;
+import io.github.brainage04.brainagehud.config.hud.basic.NetworkHudConfig;
+import io.github.brainage04.brainagehud.config.hud.basic.PerformanceHudConfig;
+import io.github.brainage04.brainagehud.config.hud.basic.PositionHudConfig;
+import io.github.brainage04.brainagehud.config.hud.basic.ProjectileHudConfig;
+import io.github.brainage04.brainagehud.config.hud.basic.ReachHudConfig;
+import io.github.brainage04.brainagehud.config.hud.basic.StatusEffectHudConfig;
+import io.github.brainage04.brainagehud.config.hud.basic.ToggleSprintHudConfig;
 import io.github.brainage04.brainagehud.config.hud.custom.armour_info.ArmourInfoHudConfig;
 import io.github.brainage04.brainagehud.config.hud.custom.enchant_info.EnchantInfoHudConfig;
 import io.github.brainage04.brainagehud.config.hud.custom.keystrokes.KeystrokesHudConfig;
@@ -22,8 +33,7 @@ public class ModConfig implements ConfigData {
     @ConfigEntry.Gui.CollapsibleObject
     public EnchantInfoConfig enchantInfoConfig = new EnchantInfoConfig();
 
-    @ConfigEntry.Gui.CollapsibleObject
-    public WaypointConfig waypointConfig = new WaypointConfig();
+    @ConfigEntry.Gui.CollapsibleObject public WaypointConfig waypointConfig = new WaypointConfig();
 
     // basic
     @ConfigEntry.Gui.CollapsibleObject
@@ -35,8 +45,7 @@ public class ModConfig implements ConfigData {
     @ConfigEntry.Gui.CollapsibleObject
     public FishingHudConfig fishingHudConfig = new FishingHudConfig();
 
-    @ConfigEntry.Gui.CollapsibleObject
-    public FoodHudConfig foodHudConfig = new FoodHudConfig();
+    @ConfigEntry.Gui.CollapsibleObject public FoodHudConfig foodHudConfig = new FoodHudConfig();
 
     @ConfigEntry.Gui.CollapsibleObject
     public MotionHudConfig motionHudConfig = new MotionHudConfig();
@@ -72,26 +81,33 @@ public class ModConfig implements ConfigData {
     public KeystrokesHudConfig keystrokesHudConfig = new KeystrokesHudConfig();
 
     /**
-     * Clamps hand-edited values into the ranges the config screen enforces, so that a bad
-     * {@code brainagehud.json} cannot break rendering.
+     * Clamps hand-edited values into the ranges the config screen enforces, so that a bad {@code
+     * brainagehud.json} cannot break rendering.
      */
     @Override
     public void validatePostLoad() {
         qualityOfLifeConfig.fullbright = Math.clamp(qualityOfLifeConfig.fullbright, -1.0F, 1.0F);
 
-        networkHudConfig.updatePingTickInterval = Math.clamp(networkHudConfig.updatePingTickInterval, 1, 20);
-        networkHudConfig.pingIntervalsTracked = Math.clamp(networkHudConfig.pingIntervalsTracked, 1, 30);
-        networkHudConfig.tpsIntervalsTracked = Math.clamp(networkHudConfig.tpsIntervalsTracked, 1, 30);
+        networkHudConfig.updatePingTickInterval =
+                Math.clamp(networkHudConfig.updatePingTickInterval, 1, 20);
+        networkHudConfig.pingIntervalsTracked =
+                Math.clamp(networkHudConfig.pingIntervalsTracked, 1, 30);
+        networkHudConfig.tpsIntervalsTracked =
+                Math.clamp(networkHudConfig.tpsIntervalsTracked, 1, 30);
         networkHudConfig.tpsDecimalPlaces = clampDecimalPlaces(networkHudConfig.tpsDecimalPlaces);
 
-        positionHudConfig.positionDecimalPlaces = clampDecimalPlaces(positionHudConfig.positionDecimalPlaces);
-        positionHudConfig.rotationDecimalPlaces = clampDecimalPlaces(positionHudConfig.rotationDecimalPlaces);
+        positionHudConfig.positionDecimalPlaces =
+                clampDecimalPlaces(positionHudConfig.positionDecimalPlaces);
+        positionHudConfig.rotationDecimalPlaces =
+                clampDecimalPlaces(positionHudConfig.rotationDecimalPlaces);
         reachHudConfig.decimalPlaces = clampDecimalPlaces(reachHudConfig.decimalPlaces);
         motionHudConfig.decimalPlaces = clampDecimalPlaces(motionHudConfig.decimalPlaces);
-        armourInfoHudConfig.durabilityDecimalPlaces = clampDecimalPlaces(armourInfoHudConfig.durabilityDecimalPlaces);
+        armourInfoHudConfig.durabilityDecimalPlaces =
+                clampDecimalPlaces(armourInfoHudConfig.durabilityDecimalPlaces);
 
         waypointConfig.labelScalePercent = Math.clamp(waypointConfig.labelScalePercent, 50, 200);
-        keystrokesHudConfig.keyBackdropOpacity = Math.clamp(keystrokesHudConfig.keyBackdropOpacity, 0, 255);
+        keystrokesHudConfig.keyBackdropOpacity =
+                Math.clamp(keystrokesHudConfig.keyBackdropOpacity, 0, 255);
     }
 
     private static int clampDecimalPlaces(int decimalPlaces) {

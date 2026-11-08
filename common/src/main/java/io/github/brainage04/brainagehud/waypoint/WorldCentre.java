@@ -17,7 +17,8 @@ public final class WorldCentre {
 
     /** The World Centre in {@code dimension}, with the configured colour and visibility. */
     public static Waypoint in(String dimension) {
-        Waypoint waypoint = new Waypoint(NAME, POS, dimension, getConfig().waypointConfig.worldCentreColour);
+        Waypoint waypoint =
+                new Waypoint(NAME, POS, dimension, getConfig().waypointConfig.worldCentreColour);
         waypoint.visible = getConfig().waypointConfig.showWorldCentre;
         return waypoint;
     }

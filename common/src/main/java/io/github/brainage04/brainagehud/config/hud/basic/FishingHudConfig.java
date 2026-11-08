@@ -8,7 +8,8 @@ import me.shedaniel.autoconfig.annotation.ConfigEntry;
 @SuppressWarnings("CanBeFinal")
 public class FishingHudConfig implements ICoreSettingsContainer {
     @ConfigEntry.Gui.CollapsibleObject
-    public CoreSettings coreSettings = new CoreSettings("Fishing HUD", true, 0, 60, ElementAnchor.CENTER);
+    public CoreSettings coreSettings =
+            new CoreSettings("Fishing HUD", true, 0, 60, ElementAnchor.CENTER);
 
     @Override
     public CoreSettings getCoreSettings() {

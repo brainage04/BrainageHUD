@@ -18,8 +18,8 @@ import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.level.material.Fluid;
+import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.level.material.Fluids;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -36,8 +36,12 @@ class FishingHudTest {
         // tag (and every other requested tag to empty) and then freezing binds each fluid's tags
         MappedRegistry<Fluid> fluids = (MappedRegistry<Fluid>) BuiltInRegistries.FLUID;
         fluids.bindAllTagsToEmpty();
-        fluids.bindTags(Map.of(FluidTags.WATER, List.of(
-                Fluids.WATER.builtInRegistryHolder(), Fluids.FLOWING_WATER.builtInRegistryHolder())));
+        fluids.bindTags(
+                Map.of(
+                        FluidTags.WATER,
+                        List.of(
+                                fluids.wrapAsHolder(Fluids.WATER),
+                                fluids.wrapAsHolder(Fluids.FLOWING_WATER))));
         fluids.freeze();
     }
 
@@ -50,7 +54,10 @@ class FishingHudTest {
 
     @Test
     void lilyPadsCountAsOpenAbove() {
-        Scene scene = new Scene().fill(-1, 0, Blocks.WATER.defaultBlockState(), 2).fill(1, 1, Blocks.LILY_PAD.defaultBlockState(), 2);
+        Scene scene =
+                new Scene()
+                        .fill(-1, 0, Blocks.WATER.defaultBlockState(), 2)
+                        .fill(1, 1, Blocks.LILY_PAD.defaultBlockState(), 2);
 
         assertTrue(FishingHud.isOpenWater(scene, HOOK));
     }
@@ -58,30 +65,40 @@ class FishingHudTest {
     @Test
     void singleBlockOfWaterIsNotOpenWater() {
         // the reported case: one water block in a hole in the ground
-        Scene scene = new Scene().fill(-1, 0, Blocks.DIRT.defaultBlockState(), 2).set(HOOK, Blocks.WATER.defaultBlockState());
+        Scene scene =
+                new Scene()
+                        .fill(-1, 0, Blocks.DIRT.defaultBlockState(), 2)
+                        .set(HOOK, Blocks.WATER.defaultBlockState());
 
         assertFalse(FishingHud.isOpenWater(scene, HOOK));
     }
 
     @Test
     void waterOneBlockDeepIsNotOpenWater() {
-        Scene scene = new Scene().fill(-1, -1, Blocks.STONE.defaultBlockState(), 2).fill(0, 0, Blocks.WATER.defaultBlockState(), 2);
+        Scene scene =
+                new Scene()
+                        .fill(-1, -1, Blocks.STONE.defaultBlockState(), 2)
+                        .fill(0, 0, Blocks.WATER.defaultBlockState(), 2);
 
         assertFalse(FishingHud.isOpenWater(scene, HOOK));
     }
 
     @Test
     void poolNarrowerThanFiveIsNotOpenWater() {
-        Scene scene = new Scene()
-                .fill(-1, 0, Blocks.STONE.defaultBlockState(), 2)
-                .fill(-1, 0, Blocks.WATER.defaultBlockState(), 1);
+        Scene scene =
+                new Scene()
+                        .fill(-1, 0, Blocks.STONE.defaultBlockState(), 2)
+                        .fill(-1, 0, Blocks.WATER.defaultBlockState(), 1);
 
         assertFalse(FishingHud.isOpenWater(scene, HOOK));
     }
 
     @Test
     void blockTwoAboveTheBobberBlocksOpenWater() {
-        Scene scene = new Scene().fill(-1, 0, Blocks.WATER.defaultBlockState(), 2).set(new BlockPos(2, 2, 2), Blocks.OAK_LEAVES.defaultBlockState());
+        Scene scene =
+                new Scene()
+                        .fill(-1, 0, Blocks.WATER.defaultBlockState(), 2)
+                        .set(new BlockPos(2, 2, 2), Blocks.OAK_LEAVES.defaultBlockState());
 
         assertFalse(FishingHud.isOpenWater(scene, HOOK));
     }
@@ -89,7 +106,9 @@ class FishingHudTest {
     @Test
     void waterAboveAnAirPocketIsNotOpenWater() {
         Scene scene = new Scene().fill(-1, 2, Blocks.WATER.defaultBlockState(), 2);
-        assertTrue(FishingHud.isOpenWater(scene, HOOK), "water continuing upwards is still open water");
+        assertTrue(
+                FishingHud.isOpenWater(scene, HOOK),
+                "water continuing upwards is still open water");
 
         scene.fill(1, 1, Blocks.AIR.defaultBlockState(), 2);
         assertFalse(FishingHud.isOpenWater(scene, HOOK));
@@ -120,7 +139,10 @@ class FishingHudTest {
         for (int tenths = -100; tenths <= 400; tenths++) {
             for (boolean openWater : new boolean[] {true, false}) {
                 int[] chances = FishingHud.getChances(openWater, tenths / 10.0F);
-                assertEquals(100, chances[0] + chances[1] + chances[2], "luck " + tenths / 10.0F + ", open water " + openWater);
+                assertEquals(
+                        100,
+                        chances[0] + chances[1] + chances[2],
+                        "luck " + tenths / 10.0F + ", open water " + openWater);
             }
         }
     }

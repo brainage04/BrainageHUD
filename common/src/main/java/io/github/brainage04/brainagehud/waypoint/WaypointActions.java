@@ -26,7 +26,9 @@ public final class WaypointActions {
         return create(name, player.blockPosition());
     }
 
-    /** Creates a waypoint in the player's dimension, named "Waypoint N" when {@code name} is null. */
+    /**
+     * Creates a waypoint in the player's dimension, named "Waypoint N" when {@code name} is null.
+     */
     public static Optional<Waypoint> create(String name, BlockPos pos) {
         Minecraft minecraft = Minecraft.getInstance();
         Optional<List<Waypoint>> waypoints = WaypointStore.current();
@@ -47,21 +49,24 @@ public final class WaypointActions {
             return Optional.empty();
         }
 
-        Waypoint waypoint = new Waypoint(
-                waypointName,
-                pos,
-                minecraft.level.dimension().identifier().toString(),
-                WaypointStore.nextColour(list));
+        Waypoint waypoint =
+                new Waypoint(
+                        waypointName,
+                        pos,
+                        minecraft.level.dimension().identifier().toString(),
+                        WaypointStore.nextColour(list));
         list.add(waypoint);
         WaypointStore.save();
 
-        MutableComponent message = Component.literal("Created waypoint ")
-                .append(name(waypoint))
-                .append(" at %s.".formatted(pos.toShortString()));
+        MutableComponent message =
+                Component.literal("Created waypoint ")
+                        .append(name(waypoint))
+                        .append(" at %s.".formatted(pos.toShortString()));
         if (getConfig().waypointConfig.showInWorld) {
             ChatFeedback.success(message);
         } else {
-            ChatFeedback.warning(message.append(" Turn on Show In World in the Waypoints config to see it."));
+            ChatFeedback.warning(
+                    message.append(" Turn on Show In World in the Waypoints config to see it."));
         }
 
         return Optional.of(waypoint);
@@ -77,21 +82,31 @@ public final class WaypointActions {
 
         waypoints.get().remove(waypoint.get());
         WaypointStore.save();
-        ChatFeedback.success(Component.literal("Removed waypoint ").append(name(waypoint.get())).append("."));
+        ChatFeedback.success(
+                Component.literal("Removed waypoint ").append(name(waypoint.get())).append("."));
         return true;
     }
 
     /** Why {@code name} cannot be a waypoint name, or empty if it can. */
     public static Optional<String> validateName(String name) {
         if (name.isEmpty()) return Optional.of("A waypoint needs a name.");
-        if (name.length() > MAX_NAME_LENGTH) return Optional.of("Waypoint names can be at most %d characters long.".formatted(MAX_NAME_LENGTH));
-        if (name.chars().anyMatch(character -> character == '\u00a7' || character == '"' || Character.isISOControl(character))) {
+        if (name.length() > MAX_NAME_LENGTH)
+            return Optional.of(
+                    "Waypoint names can be at most %d characters long.".formatted(MAX_NAME_LENGTH));
+        if (name.chars()
+                .anyMatch(
+                        character ->
+                                character == '\u00a7'
+                                        || character == '"'
+                                        || Character.isISOControl(character))) {
             return Optional.of("Waypoint names cannot contain \u00a7 or \".");
         }
         return Optional.empty();
     }
 
-    /** "Overworld", "Nether" or "The End" for the vanilla dimensions, otherwise the dimension's ID. */
+    /**
+     * "Overworld", "Nether" or "The End" for the vanilla dimensions, otherwise the dimension's ID.
+     */
     public static String dimensionName(String dimension) {
         return switch (dimension) {
             case "minecraft:overworld" -> "Overworld";
@@ -103,6 +118,7 @@ public final class WaypointActions {
 
     /** The waypoint's name in its colour. */
     public static MutableComponent name(Waypoint waypoint) {
-        return Component.literal(waypoint.name).withStyle(style -> style.withColor(TextColor.fromRgb(waypoint.colour)));
+        return Component.literal(waypoint.name)
+                .withStyle(style -> style.withColor(TextColor.fromRgb(waypoint.colour)));
     }
 }

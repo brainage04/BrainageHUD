@@ -15,7 +15,8 @@ class MotionHudTest {
         config.decimalPlaces = 2;
         config.showBlocksPerTick = false;
 
-        assertEquals("Motion X: -5" + SEPARATOR + "00 m/s", MotionHud.speed("Motion X", -0.25, config));
+        assertEquals(
+                "Motion X: -5" + SEPARATOR + "00 m/s", MotionHud.speed("Motion X", -0.25, config));
         assertEquals("Speed: 0" + SEPARATOR + "00 m/s", MotionHud.speed("Speed", 0, config));
     }
 
@@ -25,7 +26,8 @@ class MotionHudTest {
         config.decimalPlaces = 2;
         config.showBlocksPerTick = true;
 
-        assertEquals("Speed: 5" + SEPARATOR + "00 m/s (0" + SEPARATOR + "25 m/tick)",
+        assertEquals(
+                "Speed: 5" + SEPARATOR + "00 m/s (0" + SEPARATOR + "25 m/tick)",
                 MotionHud.speed("Speed", 0.25, config));
     }
 }

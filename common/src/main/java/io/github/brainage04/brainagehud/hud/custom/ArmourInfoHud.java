@@ -1,5 +1,7 @@
 package io.github.brainage04.brainagehud.hud.custom;
 
+import static io.github.brainage04.brainagehud.util.ConfigUtils.getConfig;
+
 import io.github.brainage04.brainagehud.config.hud.custom.armour_info.ArmourInfoHudConfig;
 import io.github.brainage04.brainagehud.config.hud.custom.armour_info.DurabilityFormat;
 import io.github.brainage04.brainagehud.util.MathUtils;
@@ -18,8 +20,6 @@ import net.minecraft.util.CommonColors;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.item.ItemStack;
 
-import static io.github.brainage04.brainagehud.util.ConfigUtils.getConfig;
-
 public class ArmourInfoHud implements CoreHudElement<ArmourInfoHudConfig> {
     public static String generateItemInfo(ItemStack itemStack, ArmourInfoHudConfig settings) {
         String itemString = "";
@@ -35,12 +35,21 @@ public class ArmourInfoHud implements CoreHudElement<ArmourInfoHudConfig> {
 
             int currentDurability = itemStack.getMaxDamage() - itemStack.getDamageValue();
 
-            itemString += switch (settings.durabilityFormat) {
-                case NONE -> "";
-                case FIRST_NUMBER -> "%d".formatted(currentDurability);
-                case BOTH_NUMBERS -> "%d / %d".formatted(currentDurability, itemStack.getMaxDamage());
-                case PERCENTAGE -> "%s%%".formatted(MathUtils.roundDecimalPlaces((double) currentDurability / itemStack.getMaxDamage() * 100, settings.durabilityDecimalPlaces));
-            };
+            itemString +=
+                    switch (settings.durabilityFormat) {
+                        case NONE -> "";
+                        case FIRST_NUMBER -> "%d".formatted(currentDurability);
+                        case BOTH_NUMBERS ->
+                                "%d / %d".formatted(currentDurability, itemStack.getMaxDamage());
+                        case PERCENTAGE ->
+                                "%s%%"
+                                        .formatted(
+                                                MathUtils.roundDecimalPlaces(
+                                                        (double) currentDurability
+                                                                / itemStack.getMaxDamage()
+                                                                * 100,
+                                                        settings.durabilityDecimalPlaces));
+                    };
         }
 
         return itemString;
@@ -78,26 +87,39 @@ public class ArmourInfoHud implements CoreHudElement<ArmourInfoHudConfig> {
         int itemTextOffset = 16 + elementPadding * 2;
         int elementWidth = itemTextOffset + maxLineWidth;
         int elementHeight = 16 * items.size() + elementPadding * (items.size() - 1);
-        CustomHudLayout.Origin origin = CustomHudLayout.place(drawContext, config.coreSettings, elementWidth, elementHeight);
+        CustomHudLayout.Origin origin =
+                CustomHudLayout.place(
+                        drawContext, config.coreSettings, elementWidth, elementHeight);
         int posX = origin.x();
         int posY = origin.y();
 
         for (int i = 0; i < items.size(); i++) {
             ItemInfo item = items.get(i);
             int contentWidth = itemTextOffset + item.textWidth();
-            int linePosX = HudRenderer.alignContentX(config.coreSettings, posX, elementWidth, contentWidth);
+            int linePosX =
+                    HudRenderer.alignContentX(
+                            config.coreSettings, posX, elementWidth, contentWidth);
             int itemPosY = posY + i * (16 + elementPadding);
             int linePosY = itemPosY + 5;
 
             drawContext.item(item.stack(), linePosX, itemPosY);
 
-            if (config.showDurabilityBar && item.stack().getMaxDamage() > 0 && item.stack().getDamageValue() > 0) {
+            if (config.showDurabilityBar
+                    && item.stack().getMaxDamage() > 0
+                    && item.stack().getDamageValue() > 0) {
                 int barWidth = item.stack().getBarWidth();
                 int barColour = item.stack().getBarColor();
                 int barX = linePosX + 2;
                 int barY = linePosY + 8;
-                drawContext.fill(RenderPipelines.GUI, barX, barY, barX + 13, barY + 2, CommonColors.BLACK);
-                drawContext.fill(RenderPipelines.GUI, barX, barY, barX + barWidth, barY + 1, barColour | CommonColors.BLACK);
+                drawContext.fill(
+                        RenderPipelines.GUI, barX, barY, barX + 13, barY + 2, CommonColors.BLACK);
+                drawContext.fill(
+                        RenderPipelines.GUI,
+                        barX,
+                        barY,
+                        barX + barWidth,
+                        barY + 1,
+                        barColour | CommonColors.BLACK);
             }
 
             drawContext.text(
@@ -106,20 +128,19 @@ public class ArmourInfoHud implements CoreHudElement<ArmourInfoHudConfig> {
                     linePosX + itemTextOffset,
                     linePosY,
                     HudRendererLib.getTextColour(config.coreSettings),
-                    HudRendererLib.getTextShadows(config.coreSettings)
-            );
+                    HudRendererLib.getTextShadows(config.coreSettings));
         }
     }
 
-    private static void addItem(List<ItemInfo> items, ItemStack stack, ArmourInfoHudConfig config, Font renderer) {
+    private static void addItem(
+            List<ItemInfo> items, ItemStack stack, ArmourInfoHudConfig config, Font renderer) {
         if (stack.isEmpty()) return;
 
         String text = generateItemInfo(stack, config);
         items.add(new ItemInfo(stack, text, renderer.width(text)));
     }
 
-    private record ItemInfo(ItemStack stack, String text, int textWidth) {
-    }
+    private record ItemInfo(ItemStack stack, String text, int textWidth) {}
 
     @Override
     public ArmourInfoHudConfig getElementConfig() {

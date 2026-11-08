@@ -9,10 +9,13 @@ public final class Waypoint {
     public int x;
     public int y;
     public int z;
+
     /** The dimension's ID, e.g. {@code minecraft:overworld}. */
     public String dimension;
+
     /** 0xRRGGBB. */
     public int colour;
+
     public boolean visible = true;
 
     public Waypoint(String name, BlockPos pos, String dimension, int colour) {

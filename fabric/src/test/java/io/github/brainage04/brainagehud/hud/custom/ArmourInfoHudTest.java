@@ -30,7 +30,10 @@ class ArmourInfoHudTest {
         config.showItemNames = true;
         assertEquals("Diamond Sword: 150 / 200", ArmourInfoHud.generateItemInfo(sword, config));
         config.durabilityFormat = DurabilityFormat.PERCENTAGE;
-        assertEquals("Diamond Sword: 75" + DecimalFormatSymbols.getInstance().getDecimalSeparator() + "0%",
+        assertEquals(
+                "Diamond Sword: 75"
+                        + DecimalFormatSymbols.getInstance().getDecimalSeparator()
+                        + "0%",
                 ArmourInfoHud.generateItemInfo(sword, config));
     }
 
@@ -40,9 +43,12 @@ class ArmourInfoHudTest {
         config.showItemNames = true;
         config.durabilityFormat = DurabilityFormat.NONE;
 
-        assertEquals("Diamond Sword", ArmourInfoHud.generateItemInfo(new ItemStack(Items.DIAMOND_SWORD), config));
+        assertEquals(
+                "Diamond Sword",
+                ArmourInfoHud.generateItemInfo(new ItemStack(Items.DIAMOND_SWORD), config));
         config.showItemNames = false;
-        assertEquals("", ArmourInfoHud.generateItemInfo(new ItemStack(Items.DIAMOND_SWORD), config));
+        assertEquals(
+                "", ArmourInfoHud.generateItemInfo(new ItemStack(Items.DIAMOND_SWORD), config));
     }
 
     @Test

@@ -1,14 +1,16 @@
 package io.github.brainage04.brainagehud.config.hud.basic;
 
 import io.github.brainage04.hudrendererlib.config.core.CoreSettings;
-import io.github.brainage04.hudrendererlib.config.core.ICoreSettingsContainer;
 import io.github.brainage04.hudrendererlib.config.core.ElementAnchor;
+import io.github.brainage04.hudrendererlib.config.core.ICoreSettingsContainer;
 import me.shedaniel.autoconfig.annotation.ConfigEntry;
 
 @SuppressWarnings("CanBeFinal")
 public class FoodHudConfig implements ICoreSettingsContainer {
     @ConfigEntry.Gui.CollapsibleObject
-    public CoreSettings coreSettings = new CoreSettings("Food HUD", true, -5, -70, ElementAnchor.BOTTOM_RIGHT);
+    public CoreSettings coreSettings =
+            new CoreSettings("Food HUD", true, -5, -70, ElementAnchor.BOTTOM_RIGHT);
+
     @ConfigEntry.Gui.Tooltip public boolean showSlotCounts = false;
 
     @Override

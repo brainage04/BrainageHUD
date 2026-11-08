@@ -1,20 +1,20 @@
 package io.github.brainage04.brainagehud.hud;
 
+import static io.github.brainage04.brainagehud.util.ConfigUtils.getConfig;
+
 import io.github.brainage04.brainagehud.config.hud.basic.DateTimeHudConfig;
 import io.github.brainage04.hudrendererlib.hud.core.BasicCoreHudElement;
 import io.github.brainage04.hudrendererlib.util.TextList;
-
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
-
-import static io.github.brainage04.brainagehud.util.ConfigUtils.getConfig;
 
 public class DateTimeHud implements BasicCoreHudElement<DateTimeHudConfig> {
     private static final DateTimeFormatter DATE = DateTimeFormatter.ofPattern("E dd MMM yyyy");
     private static final DateTimeFormatter TIME_12_HOUR = DateTimeFormatter.ofPattern("hh:mm:ss a");
     private static final DateTimeFormatter TIME_24_HOUR = DateTimeFormatter.ofPattern("HH:mm:ss");
     // "xxx" always prints an offset such as +00:00, whereas "XXX" prints "Z" for UTC
-    private static final DateTimeFormatter TIMEZONE = DateTimeFormatter.ofPattern("z '(UTC 'xxx')'");
+    private static final DateTimeFormatter TIMEZONE =
+            DateTimeFormatter.ofPattern("z '(UTC 'xxx')'");
 
     @Override
     public TextList getLines() {
@@ -29,11 +29,7 @@ public class DateTimeHud implements BasicCoreHudElement<DateTimeHudConfig> {
 
         if (config.showTime) {
             if (config.twelveHourFormat) {
-                lines.add(
-                        TIME_12_HOUR.format(now)
-                                .replace("am", "AM")
-                                .replace("pm", "PM")
-                );
+                lines.add(TIME_12_HOUR.format(now).replace("am", "AM").replace("pm", "PM"));
             } else {
                 lines.add(TIME_24_HOUR.format(now));
             }

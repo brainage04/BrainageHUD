@@ -1,5 +1,7 @@
 package io.github.brainage04.brainagehud.hud;
 
+import static io.github.brainage04.brainagehud.util.ConfigUtils.getConfig;
+
 import io.github.brainage04.brainagehud.config.hud.basic.ToggleSprintHudConfig;
 import io.github.brainage04.hudrendererlib.hud.core.BasicCoreHudElement;
 import io.github.brainage04.hudrendererlib.util.TextList;
@@ -9,8 +11,6 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.Options;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.network.chat.Component;
-
-import static io.github.brainage04.brainagehud.util.ConfigUtils.getConfig;
 
 public class ToggleSprintHud implements BasicCoreHudElement<ToggleSprintHudConfig> {
     @Override
@@ -28,7 +28,8 @@ public class ToggleSprintHud implements BasicCoreHudElement<ToggleSprintHudConfi
         }
 
         if (player.isSprinting()) {
-            if (Minecraft.getInstance().options.toggleSprint().get() && Minecraft.getInstance().options.keySprint.isDown()) {
+            if (Minecraft.getInstance().options.toggleSprint().get()
+                    && Minecraft.getInstance().options.keySprint.isDown()) {
                 lines.add("[Sprinting (Toggled)]");
             } else {
                 lines.add("[Sprinting (Vanilla)]");
@@ -36,7 +37,8 @@ public class ToggleSprintHud implements BasicCoreHudElement<ToggleSprintHudConfi
         }
 
         if (player.isShiftKeyDown()) {
-            if (Minecraft.getInstance().options.toggleCrouch().get() && Minecraft.getInstance().options.keyShift.isDown()) {
+            if (Minecraft.getInstance().options.toggleCrouch().get()
+                    && Minecraft.getInstance().options.keyShift.isDown()) {
                 lines.add("[Sneaking (Toggled)]");
             } else {
                 lines.add("[Sneaking (Vanilla)]");

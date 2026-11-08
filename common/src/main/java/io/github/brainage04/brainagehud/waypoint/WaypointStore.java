@@ -39,7 +39,8 @@ public final class WaypointStore {
 
     /** The current world's waypoints, or an empty optional outside a world. The list is live. */
     public static Optional<List<Waypoint>> current() {
-        return currentWorldKey().map(key -> load().computeIfAbsent(key, ignored -> new ArrayList<>()));
+        return currentWorldKey()
+                .map(key -> load().computeIfAbsent(key, ignored -> new ArrayList<>()));
     }
 
     public static Optional<String> currentWorldKey() {
@@ -53,7 +54,8 @@ public final class WaypointStore {
         }
 
         ServerData serverData = minecraft.getCurrentServer();
-        if (serverData != null) return Optional.of("server/" + serverData.ip.toLowerCase(Locale.ROOT));
+        if (serverData != null)
+            return Optional.of("server/" + serverData.ip.toLowerCase(Locale.ROOT));
 
         return Optional.empty();
     }
@@ -67,7 +69,11 @@ public final class WaypointStore {
             try (Writer writer = Files.newBufferedWriter(temporary)) {
                 GSON.toJson(load(), writer);
             }
-            Files.move(temporary, file, StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
+            Files.move(
+                    temporary,
+                    file,
+                    StandardCopyOption.REPLACE_EXISTING,
+                    StandardCopyOption.ATOMIC_MOVE);
         } catch (IOException exception) {
             BrainageHUD.LOGGER.error("Could not save waypoints to {}", file, exception);
         }
@@ -75,7 +81,9 @@ public final class WaypointStore {
 
     /** The waypoint called {@code name}, ignoring case. */
     public static Optional<Waypoint> find(List<Waypoint> waypoints, String name) {
-        return waypoints.stream().filter(waypoint -> waypoint.name.equalsIgnoreCase(name)).findFirst();
+        return waypoints.stream()
+                .filter(waypoint -> waypoint.name.equalsIgnoreCase(name))
+                .findFirst();
     }
 
     /** The first of "Waypoint 1", "Waypoint 2", ... that no waypoint in the list is called. */
@@ -100,12 +108,17 @@ public final class WaypointStore {
 
         try (Reader reader = Files.newBufferedReader(file)) {
             Map<String, List<Waypoint>> loaded =
-                    GSON.fromJson(reader, new TypeToken<LinkedHashMap<String, ArrayList<Waypoint>>>() {}.getType());
+                    GSON.fromJson(
+                            reader,
+                            new TypeToken<
+                                    LinkedHashMap<String, ArrayList<Waypoint>>>() {}.getType());
             if (loaded != null) worlds.putAll(loaded);
         } catch (IOException | JsonParseException exception) {
-            // keep the unreadable file rather than overwriting it with an empty list on the next save
+            // keep the unreadable file rather than overwriting it with an empty list on the next
+            // save
             Path backup = file.resolveSibling(file.getFileName() + ".unreadable");
-            BrainageHUD.LOGGER.error("Could not read waypoints from {}; moving it to {}", file, backup, exception);
+            BrainageHUD.LOGGER.error(
+                    "Could not read waypoints from {}; moving it to {}", file, backup, exception);
             try {
                 Files.move(file, backup, StandardCopyOption.REPLACE_EXISTING);
             } catch (IOException moveException) {
@@ -117,6 +130,11 @@ public final class WaypointStore {
     }
 
     private static Path file() {
-        return Minecraft.getInstance().gameDirectory.toPath().resolve("config").resolve(BrainageHUD.MOD_ID).resolve("waypoints.json");
+        return Minecraft.getInstance()
+                .gameDirectory
+                .toPath()
+                .resolve("config")
+                .resolve(BrainageHUD.MOD_ID)
+                .resolve("waypoints.json");
     }
 }

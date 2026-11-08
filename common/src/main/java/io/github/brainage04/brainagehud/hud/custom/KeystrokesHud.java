@@ -1,12 +1,12 @@
 package io.github.brainage04.brainagehud.hud.custom;
 
+import static io.github.brainage04.brainagehud.util.ConfigUtils.getConfig;
+
 import io.github.brainage04.brainagehud.config.hud.custom.keystrokes.ClicksPerSecondFormat;
 import io.github.brainage04.brainagehud.config.hud.custom.keystrokes.KeystrokesHudConfig;
 import io.github.brainage04.brainagehud.event.ModClickEvents;
 import io.github.brainage04.hudrendererlib.HudRendererLib;
 import io.github.brainage04.hudrendererlib.hud.core.CoreHudElement;
-import org.jetbrains.annotations.Nullable;
-
 import java.util.ArrayList;
 import java.util.IdentityHashMap;
 import java.util.List;
@@ -16,13 +16,13 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.util.ARGB;
-
-import static io.github.brainage04.brainagehud.util.ConfigUtils.getConfig;
+import org.jetbrains.annotations.Nullable;
 
 public class KeystrokesHud implements CoreHudElement<KeystrokesHudConfig> {
     private static final long KEY_TRANSITION_DURATION_NANOS = 100_000_000L;
 
-    private record KeyStrokesItem(@Nullable KeyMapping key, String name, int x, int y, int width, int height) {}
+    private record KeyStrokesItem(
+            @Nullable KeyMapping key, String name, int x, int y, int width, int height) {}
 
     private static final class KeyTransition {
         private float progress;
@@ -38,7 +38,8 @@ public class KeystrokesHud implements CoreHudElement<KeystrokesHudConfig> {
         }
     }
 
-    private final IdentityHashMap<KeyMapping, KeyTransition> keyTransitions = new IdentityHashMap<>();
+    private final IdentityHashMap<KeyMapping, KeyTransition> keyTransitions =
+            new IdentityHashMap<>();
     private long renderFrame;
 
     private static List<KeyStrokesItem> getKeyStrokesItems(KeystrokesHudConfig settings) {
@@ -60,9 +61,7 @@ public class KeystrokesHud implements CoreHudElement<KeystrokesHudConfig> {
                             x1 + keySize + elementPadding,
                             y1,
                             keySize,
-                            keySize
-                    )
-            );
+                            keySize));
 
             y1 += keySize + elementPadding;
 
@@ -73,9 +72,7 @@ public class KeystrokesHud implements CoreHudElement<KeystrokesHudConfig> {
                             x1,
                             y1,
                             keySize,
-                            keySize
-                    )
-            );
+                            keySize));
             keystrokesList.add(
                     new KeyStrokesItem(
                             Minecraft.getInstance().options.keyDown,
@@ -83,9 +80,7 @@ public class KeystrokesHud implements CoreHudElement<KeystrokesHudConfig> {
                             x1 + keySize + elementPadding,
                             y1,
                             keySize,
-                            keySize
-                    )
-            );
+                            keySize));
             keystrokesList.add(
                     new KeyStrokesItem(
                             Minecraft.getInstance().options.keyRight,
@@ -93,9 +88,7 @@ public class KeystrokesHud implements CoreHudElement<KeystrokesHudConfig> {
                             x1 + (keySize + elementPadding) * 2,
                             y1,
                             keySize,
-                            keySize
-                    )
-            );
+                            keySize));
 
             y1 += keySize + elementPadding;
         }
@@ -108,9 +101,7 @@ public class KeystrokesHud implements CoreHudElement<KeystrokesHudConfig> {
                             x1,
                             y1,
                             keySize * 3 + elementPadding * 2,
-                            keySize
-                    )
-            );
+                            keySize));
 
             y1 += keySize + elementPadding;
         }
@@ -123,42 +114,39 @@ public class KeystrokesHud implements CoreHudElement<KeystrokesHudConfig> {
                             x1,
                             y1,
                             (int) (keySize * 1.5 + (double) elementPadding / 2),
-                            keySize
-                    )
-            );
+                            keySize));
             keystrokesList.add(
                     new KeyStrokesItem(
                             Minecraft.getInstance().options.keyUse,
                             "RMB",
-                            x1 + (int) (keySize * 1.5 + (double) elementPadding / 2) + elementPadding,
+                            x1
+                                    + (int) (keySize * 1.5 + (double) elementPadding / 2)
+                                    + elementPadding,
                             y1,
                             (int) (keySize * 1.5 + (double) elementPadding / 2),
-                            keySize
-                    )
-            );
+                            keySize));
 
             y1 += keySize + elementPadding;
         }
 
         if (settings.clicksPerSecondFormat != ClicksPerSecondFormat.NONE) {
-            String cpsString = switch (settings.clicksPerSecondFormat) {
-                case LEFT_CLICK -> "%d CPS".formatted(ModClickEvents.getAttackClicksPerSecond());
-                case RIGHT_CLICK -> "%d CPS (R)".formatted(ModClickEvents.getUseClicksPerSecond());
-                case BOTH -> "%d | %d CPS".formatted(
-                        ModClickEvents.getAttackClicksPerSecond(), ModClickEvents.getUseClicksPerSecond());
-                default -> "";
-            };
+            String cpsString =
+                    switch (settings.clicksPerSecondFormat) {
+                        case LEFT_CLICK ->
+                                "%d CPS".formatted(ModClickEvents.getAttackClicksPerSecond());
+                        case RIGHT_CLICK ->
+                                "%d CPS (R)".formatted(ModClickEvents.getUseClicksPerSecond());
+                        case BOTH ->
+                                "%d | %d CPS"
+                                        .formatted(
+                                                ModClickEvents.getAttackClicksPerSecond(),
+                                                ModClickEvents.getUseClicksPerSecond());
+                        default -> "";
+                    };
 
             keystrokesList.add(
                     new KeyStrokesItem(
-                            null,
-                            cpsString,
-                            x1,
-                            y1,
-                            keySize * 3 + elementPadding * 2,
-                            keySize
-                    )
-            );
+                            null, cpsString, x1, y1, keySize * 3 + elementPadding * 2, keySize));
         }
 
         return keystrokesList;
@@ -185,7 +173,9 @@ public class KeystrokesHud implements CoreHudElement<KeystrokesHudConfig> {
         if (keystrokesList.isEmpty()) return;
         int elementWidth = keystrokesList.getLast().x + keystrokesList.getLast().width;
         int elementHeight = keystrokesList.getLast().y + keystrokesList.getLast().height;
-        CustomHudLayout.Origin origin = CustomHudLayout.place(drawContext, settings.coreSettings, elementWidth, elementHeight);
+        CustomHudLayout.Origin origin =
+                CustomHudLayout.place(
+                        drawContext, settings.coreSettings, elementWidth, elementHeight);
         int posX = origin.x();
         int posY = origin.y();
 
@@ -209,14 +199,16 @@ public class KeystrokesHud implements CoreHudElement<KeystrokesHudConfig> {
                     transition.lastSeenFrame = frame;
                 }
 
-                int pressedBackdropColour = ARGB.color(
-                        keyBackdropAlpha,
-                        ARGB.red(configuredTextColour),
-                        ARGB.green(configuredTextColour),
-                        ARGB.blue(configuredTextColour)
-                );
-                backdropColour = ARGB.srgbLerp(transition.progress, backdropColour, pressedBackdropColour);
-                textColour = ARGB.srgbLerp(transition.progress, configuredTextColour, ARGB.opaque(0));
+                int pressedBackdropColour =
+                        ARGB.color(
+                                keyBackdropAlpha,
+                                ARGB.red(configuredTextColour),
+                                ARGB.green(configuredTextColour),
+                                ARGB.blue(configuredTextColour));
+                backdropColour =
+                        ARGB.srgbLerp(transition.progress, backdropColour, pressedBackdropColour);
+                textColour =
+                        ARGB.srgbLerp(transition.progress, configuredTextColour, ARGB.opaque(0));
             }
 
             drawContext.fill(
@@ -224,16 +216,20 @@ public class KeystrokesHud implements CoreHudElement<KeystrokesHudConfig> {
                     posY + keyStrokesItem.y,
                     posX + keyStrokesItem.x + keyStrokesItem.width,
                     posY + keyStrokesItem.y + keyStrokesItem.height,
-                    backdropColour
-            );
+                    backdropColour);
             drawContext.text(
                     renderer,
                     keyStrokesItem.name,
-                    posX + keyStrokesItem.x + (keyStrokesItem.width / 2) - (renderer.width(keyStrokesItem.name) / 2),
-                    posY + keyStrokesItem.y + (keyStrokesItem.height / 2) - (renderer.lineHeight / 2),
+                    posX
+                            + keyStrokesItem.x
+                            + (keyStrokesItem.width / 2)
+                            - (renderer.width(keyStrokesItem.name) / 2),
+                    posY
+                            + keyStrokesItem.y
+                            + (keyStrokesItem.height / 2)
+                            - (renderer.lineHeight / 2),
                     textColour,
-                    textShadows
-            );
+                    textShadows);
         }
         keyTransitions.entrySet().removeIf(entry -> entry.getValue().lastSeenFrame != frame);
     }

@@ -7,12 +7,14 @@ import net.minecraft.network.chat.Component;
 
 /**
  * BrainageHUD's chat output. Each message starts with a grey {@code [BrainageHUD]} prefix and has a
- * body colour for its kind: info white, success green, warning yellow, error red. The colour is only
- * the default, so styled parts of a message keep their own colours. A list is sent as one prefixed
- * header followed by unprefixed {@link #detail} lines.
+ * body colour for its kind: info white, success green, warning yellow, error red. The colour is
+ * only the default, so styled parts of a message keep their own colours. A list is sent as one
+ * prefixed header followed by unprefixed {@link #detail} lines.
  */
 public final class ChatFeedback {
-    private static final Component PREFIX = Component.literal("[%s] ".formatted(BrainageHUD.MOD_NAME)).withStyle(ChatFormatting.GRAY);
+    private static final Component PREFIX =
+            Component.literal("[%s] ".formatted(BrainageHUD.MOD_NAME))
+                    .withStyle(ChatFormatting.GRAY);
 
     private ChatFeedback() {}
 

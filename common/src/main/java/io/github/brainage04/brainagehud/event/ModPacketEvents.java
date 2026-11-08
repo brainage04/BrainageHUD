@@ -1,9 +1,9 @@
 package io.github.brainage04.brainagehud.event;
 
+import static io.github.brainage04.brainagehud.util.ConfigUtils.getConfig;
+
 import io.github.brainage04.brainagehud.util.RollingAverage;
 import io.github.brainage04.brainagehud.util.TickRateTracker;
-
-import static io.github.brainage04.brainagehud.util.ConfigUtils.getConfig;
 
 /** Network statistics derived from packets the client receives. */
 public class ModPacketEvents {
@@ -23,7 +23,8 @@ public class ModPacketEvents {
 
     /** Called on the render thread when the server reports its game time. */
     public static void onServerGameTime(long gameTime) {
-        TICK_RATE.record(gameTime, System.nanoTime(), getConfig().networkHudConfig.tpsIntervalsTracked);
+        TICK_RATE.record(
+                gameTime, System.nanoTime(), getConfig().networkHudConfig.tpsIntervalsTracked);
     }
 
     public static long getPing() {

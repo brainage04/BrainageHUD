@@ -1,6 +1,6 @@
 # BrainageHUD
 
-BrainageHUD is a client-side Fabric and NeoForge mod for Minecraft 26.2 that adds useful heads-up display (HUD) elements, along with waypoints and enchantment tools.
+BrainageHUD is a client-side Fabric and NeoForge mod for Minecraft 26.3 that adds useful heads-up display (HUD) elements, along with waypoints and enchantment tools.
 
 Motion and Entity are off by default; turn them on in the config editor. Every element can be configured to show as little or as much as you like.
 
@@ -38,15 +38,15 @@ Each part can be turned off, and the label resized, under Waypoint Config in the
 
 ### Enchant Info
 
-The Enchant Info HUD shows the held item's name, its enchantments (with the maximum level after any enchantment below it), then a "Missing:" list of the enchantments it could still get. Enchantments that cannot be combined share one line, e.g. `Fortune III / Silk Touch`. Blacklisted enchantments are never listed as missing; by default the blacklist holds the curses and the enchantments that are usually a worse choice (such as Blast Protection, Smite and Knockback). Each part can be turned off under Enchant Info HUD in the config editor.
+The Enchant Info HUD shows the held item's name, its enchantments, then a "Missing:" list of the enchantments it could still get. Compact mode is on by default: all of the item's enchantments share one line with their levels (`Sharpness III, Unbreaking III`), and the missing enchantments share another (`Missing: Fire Aspect, Looting, Mending`), without maximum levels, so a plain sword takes three lines instead of eight. A missing list too long for one line wraps between its entries, never through one. With Compact Mode off (Enchant Info HUD > Compact Mode, or the Toggle Enchant Info Compact key, `K`) the full format is used: one line per enchantment, with the maximum level after any enchantment below it, and one line per missing choice. In both formats, enchantments that cannot be combined share one line in the missing list, e.g. `Fortune / Silk Touch`. Blacklisted enchantments are never listed as missing; by default the blacklist holds the curses and the enchantments that are usually a worse choice (such as Blast Protection, Smite and Knockback). Each part can be turned off under Enchant Info HUD in the config editor, and the key switches compact mode without opening it.
 
 Tooltip lines of enchantments at their maximum level are shown in bold (Enchant Info > Highlight Max Level Enchants).
 
 ## Getting started
 
-- Minecraft 26.2; Java 25 or later.
-- Fabric Loader 0.19.3 or later with [Fabric API](https://modrinth.com/mod/fabric-api), or NeoForge 26.2.0.88 or later.
-- [HudRendererLib](https://modrinth.com/mod/hudrendererlib) 1.0.12 or later and [Cloth Config](https://modrinth.com/mod/cloth-config) 26.2.155 or later, for your loader.
+- Minecraft 26.3; Java 25 or later.
+- Fabric Loader 0.19.5 or later with [Fabric API](https://modrinth.com/mod/fabric-api), or NeoForge 26.3.0.99 or later.
+- [HudRendererLib](https://modrinth.com/mod/hudrendererlib) 1.1.0 or later and [Cloth Config](https://modrinth.com/mod/cloth-config) 26.3.159 or later, for your loader.
 - Recommended on Fabric: [Mod Menu](https://modrinth.com/mod/modmenu), for a config button in the mods list.
 
 Install the BrainageHUD JAR for your loader (Fabric or NeoForge) and its requirements into the client's `mods` folder. BrainageHUD is client-only and isn't needed on servers.
@@ -63,6 +63,7 @@ Install the BrainageHUD JAR for your loader (Fabric or NeoForge) and its require
 - `Numpad Plus` (Open Element Editor) – opens the HUD element editor.
 - `B` (Create Waypoint) – creates a waypoint where you stand, named "Waypoint 1", "Waypoint 2", and so on.
 - `U` (Manage Waypoints) – opens a screen to add, edit, hide/show and delete waypoints.
+- `K` (Toggle Enchant Info Compact) – switches the Enchant Info HUD between compact and full lines, and says in chat which one is on.
 - `Inventory Stats` (Unbound) – lists every occupied inventory slot in chat with its item, count and item data (damage, enchantments, custom name and so on).
 
 The element editor key and HudRendererLib's own config key (Numpad Enter) are in the HudRendererLib category of the controls screen; the rest are in the BrainageHUD category.

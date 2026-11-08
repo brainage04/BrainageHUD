@@ -27,17 +27,27 @@ public class GetEnchantInfoCommand {
                         .append(":")
                         .withStyle(ChatFormatting.BOLD));
 
-        ChatFeedback.detail(Component.literal("ID: %s".formatted(EnchantmentUtils.getEnchantmentId(enchantmentHolder))));
-        ChatFeedback.detail(Component.literal("Max level: %d".formatted(enchantment.getMaxLevel())));
+        ChatFeedback.detail(
+                Component.literal(
+                        "ID: %s".formatted(EnchantmentUtils.getEnchantmentId(enchantmentHolder))));
+        ChatFeedback.detail(
+                Component.literal("Max level: %d".formatted(enchantment.getMaxLevel())));
         ChatFeedback.detail(
                 Component.literal("Incompatible with: ")
-                        .append(joinIncompatibleEnchantmentNames(enchantmentRegistry, enchantmentHolder)));
+                        .append(
+                                joinIncompatibleEnchantmentNames(
+                                        enchantmentRegistry, enchantmentHolder)));
         ChatFeedback.detail(
                 Component.literal("Applied to: ")
                         .append(
                                 joinNames(
                                         enchantment.getSupportedItems().stream()
-                                                .map(item -> item.value().getName(item.value().getDefaultInstance()))
+                                                .map(
+                                                        item ->
+                                                                item.value()
+                                                                        .getName(
+                                                                                item.value()
+                                                                                        .getDefaultInstance()))
                                                 .toList())));
     }
 
@@ -50,7 +60,8 @@ public class GetEnchantInfoCommand {
         String normalisedQuery = query.toLowerCase(Locale.ROOT);
         List<Holder.Reference<Enchantment>> potentialMatches = new ArrayList<>();
 
-        for (Holder.Reference<Enchantment> enchantment : enchantmentRegistry.listElements().toList()) {
+        for (Holder.Reference<Enchantment> enchantment :
+                enchantmentRegistry.listElements().toList()) {
             String name =
                     EnchantmentUtils.getEnchantmentName(enchantment)
                             .getString()
@@ -66,7 +77,8 @@ public class GetEnchantInfoCommand {
 
     public static int execute(String desiredEnchantmentString) {
         HolderLookup.RegistryLookup<Enchantment> enchantmentRegistry = getEnchantmentRegistry();
-        List<Holder.Reference<Enchantment>> matches = findMatches(enchantmentRegistry, desiredEnchantmentString);
+        List<Holder.Reference<Enchantment>> matches =
+                findMatches(enchantmentRegistry, desiredEnchantmentString);
 
         if (matches.size() == 1) {
             sendEnchantmentInfo(enchantmentRegistry, matches.getFirst());
@@ -106,7 +118,9 @@ public class GetEnchantInfoCommand {
                 enchantmentRegistry
                         .listElements()
                         .filter(enchantment -> enchantment.value() != baseEnchantment.value())
-                        .filter(enchantment -> !Enchantment.areCompatible(baseEnchantment, enchantment))
+                        .filter(
+                                enchantment ->
+                                        !Enchantment.areCompatible(baseEnchantment, enchantment))
                         .<Component>map(EnchantmentUtils::getEnchantmentName)
                         .toList();
 
@@ -126,9 +140,6 @@ public class GetEnchantInfoCommand {
     }
 
     private static HolderLookup.RegistryLookup<Enchantment> getEnchantmentRegistry() {
-        return Minecraft.getInstance()
-                .level
-                .registryAccess()
-                .lookupOrThrow(Registries.ENCHANTMENT);
+        return Minecraft.getInstance().level.registryAccess().lookupOrThrow(Registries.ENCHANTMENT);
     }
 }

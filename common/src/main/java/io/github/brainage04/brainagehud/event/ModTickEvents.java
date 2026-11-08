@@ -1,6 +1,5 @@
 package io.github.brainage04.brainagehud.event;
 
-
 public class ModTickEvents {
     private static int ticks = 0;
 

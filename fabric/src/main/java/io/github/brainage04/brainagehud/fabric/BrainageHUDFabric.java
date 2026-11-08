@@ -23,7 +23,11 @@ public final class BrainageHUDFabric implements ClientModInitializer {
                         ModTooltipEvents.onItemTooltip(itemStack, lines));
         ClientTickEvents.START_CLIENT_TICK.register(client -> ModTickEvents.onClientTick());
         // submits are camera-relative; the view rotation is applied when they are drawn
-        LevelRenderEvents.COLLECT_SUBMITS.register(context -> WaypointRenderer.submit(
-                new PoseStack(), context.submitNodeCollector(), Minecraft.getInstance().gameRenderer.mainCamera()));
+        LevelRenderEvents.COLLECT_SUBMITS.register(
+                context ->
+                        WaypointRenderer.submit(
+                                new PoseStack(),
+                                context.submitNodeCollector(),
+                                Minecraft.getInstance().gameRenderer.mainCamera()));
     }
 }

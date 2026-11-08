@@ -1,5 +1,7 @@
 package io.github.brainage04.brainagehud.hud;
 
+import static io.github.brainage04.brainagehud.util.ConfigUtils.getConfig;
+
 import io.github.brainage04.brainagehud.config.hud.basic.ReachHudConfig;
 import io.github.brainage04.brainagehud.util.MathUtils;
 import io.github.brainage04.hudrendererlib.hud.core.BasicCoreHudElement;
@@ -13,8 +15,6 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
-
-import static io.github.brainage04.brainagehud.util.ConfigUtils.getConfig;
 
 public class ReachHud implements BasicCoreHudElement<ReachHudConfig> {
     private TextList cachedLines = new TextList();
@@ -80,9 +80,13 @@ public class ReachHud implements BasicCoreHudElement<ReachHudConfig> {
                 }
             }
 
-            lines.add("%s blocks".formatted(
-                    MathUtils.roundDecimalPlaces(player.getEyePosition().distanceTo(hitResult.getLocation()), config.decimalPlaces))
-            );
+            lines.add(
+                    "%s blocks"
+                            .formatted(
+                                    MathUtils.roundDecimalPlaces(
+                                            player.getEyePosition()
+                                                    .distanceTo(hitResult.getLocation()),
+                                            config.decimalPlaces)));
         }
 
         return lines;

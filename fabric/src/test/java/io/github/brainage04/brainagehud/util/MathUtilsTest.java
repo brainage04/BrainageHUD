@@ -11,7 +11,8 @@ class MathUtilsTest {
 
     @Test
     void keepsFractionAtWorldBorderCoordinates() {
-        assertEquals("29999984" + SEPARATOR + "37", MathUtils.roundDecimalPlaces(29_999_984.37D, 2));
+        assertEquals(
+                "29999984" + SEPARATOR + "37", MathUtils.roundDecimalPlaces(29_999_984.37D, 2));
         assertEquals("-1000000" + SEPARATOR + "3", MathUtils.roundDecimalPlaces(-1_000_000.34D, 1));
     }
 

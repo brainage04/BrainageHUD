@@ -1,22 +1,29 @@
 package io.github.brainage04.brainagehud.config.hud.custom.armour_info;
 
-import io.github.brainage04.hudrendererlib.config.core.CoreSettings;
-import io.github.brainage04.hudrendererlib.config.core.ICoreSettingsContainer;
-import io.github.brainage04.hudrendererlib.config.core.ElementAnchor;
 import io.github.brainage04.brainagehud.util.MathUtils;
+import io.github.brainage04.hudrendererlib.config.core.CoreSettings;
+import io.github.brainage04.hudrendererlib.config.core.ElementAnchor;
+import io.github.brainage04.hudrendererlib.config.core.ICoreSettingsContainer;
 import me.shedaniel.autoconfig.annotation.ConfigEntry;
 
 @SuppressWarnings("CanBeFinal")
 public class ArmourInfoHudConfig implements ICoreSettingsContainer {
     @ConfigEntry.Gui.CollapsibleObject
-    public CoreSettings coreSettings = new CoreSettings("Armour Info HUD", true, -150, -5, ElementAnchor.BOTTOM_RIGHT);
+    public CoreSettings coreSettings =
+            new CoreSettings("Armour Info HUD", true, -150, -5, ElementAnchor.BOTTOM_RIGHT);
+
     public boolean showArmour = true;
     public boolean showMainHand = false;
     public boolean showOffHand = false;
     public boolean showItemNames = false;
     @ConfigEntry.Gui.Tooltip public boolean showDurabilityBar = true;
-    @ConfigEntry.Gui.Tooltip public DurabilityFormat durabilityFormat = DurabilityFormat.FIRST_NUMBER;
-    @ConfigEntry.Gui.Tooltip @ConfigEntry.BoundedDiscrete(min = 0, max = MathUtils.MAX_DECIMAL_PLACES) public int durabilityDecimalPlaces = 1;
+
+    @ConfigEntry.Gui.Tooltip
+    public DurabilityFormat durabilityFormat = DurabilityFormat.FIRST_NUMBER;
+
+    @ConfigEntry.Gui.Tooltip
+    @ConfigEntry.BoundedDiscrete(min = 0, max = MathUtils.MAX_DECIMAL_PLACES)
+    public int durabilityDecimalPlaces = 1;
 
     @Override
     public CoreSettings getCoreSettings() {

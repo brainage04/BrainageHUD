@@ -5,7 +5,8 @@ import java.util.Set;
 
 public class StringUtils {
     /** Words written in capitals in labels, e.g. "Show FPS" rather than "Show Fps". */
-    private static final Set<String> ACRONYMS = Set.of("HUD", "FPS", "RAM", "CPU", "GPU", "TPS", "WASD", "ID", "CPS");
+    private static final Set<String> ACRONYMS =
+            Set.of("HUD", "FPS", "RAM", "CPU", "GPU", "TPS", "WASD", "ID", "CPS");
 
     public static char toUpperCase(char c) {
         if (c >= 'a' && c <= 'z') {
@@ -16,9 +17,9 @@ public class StringUtils {
     }
 
     /**
-     * Turns a camel case name into a Title Case label with its acronyms in capitals:
-     * {@code showWasd} becomes "Show WASD" and {@code blacklistedEnchantmentIds} "Blacklisted
-     * Enchantment IDs".
+     * Turns a camel case name into a Title Case label with its acronyms in capitals: {@code
+     * showWasd} becomes "Show WASD" and {@code blacklistedEnchantmentIds} "Blacklisted Enchantment
+     * IDs".
      */
     public static String pascalCaseToHumanReadable(String input) {
         StringBuilder output = new StringBuilder(input.length() + 8);
@@ -39,7 +40,8 @@ public class StringUtils {
         String upperCase = word.toUpperCase(Locale.ROOT);
         if (ACRONYMS.contains(upperCase)) return upperCase;
         // plural acronyms keep a lower case s: "IDs"
-        if (upperCase.endsWith("S") && ACRONYMS.contains(upperCase.substring(0, upperCase.length() - 1))) {
+        if (upperCase.endsWith("S")
+                && ACRONYMS.contains(upperCase.substring(0, upperCase.length() - 1))) {
             return upperCase.substring(0, upperCase.length() - 1) + "s";
         }
 
