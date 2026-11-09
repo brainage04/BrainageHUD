@@ -33,13 +33,23 @@ public class EnglishLangProvider extends FabricLanguageProvider {
                     "y", "Y Coordinate",
                     "elementOverrides", "Style Overrides");
 
+    /**
+     * The label of every element's Max Width value: the unit and what 0 means are not obvious from
+     * "Value", and the HUD Element Editor sets the same number.
+     */
+    private static final String MAX_WIDTH_VALUE_LABEL = "Width in GUI Pixels (0 = No Limit)";
+
     private void generateReflectedTranslations(
             Object config, String baseKey, TranslationBuilder translationBuilder) {
         for (Field field : config.getClass().getFields()) {
             String newBaseKey = "%s.%s".formatted(baseKey, field.getName());
             Object value = get(field, config);
 
-            translationBuilder.add(newBaseKey, label(field, value));
+            translationBuilder.add(
+                    newBaseKey,
+                    newBaseKey.endsWith(".elementOverrides.maxWidth.value")
+                            ? MAX_WIDTH_VALUE_LABEL
+                            : label(field, value));
 
             if (field.getType().isPrimitive()) continue;
             if (field.getType().isEnum()) continue;
@@ -229,7 +239,7 @@ public class EnglishLangProvider extends FabricLanguageProvider {
             {"armourInfoHudConfig.durabilityDecimalPlaces", decimalPlaces},
             {
                 "enchantInfoHudConfig.compactMode",
-                "Puts the enchantments on one line and the missing ones on another, without maximum levels. The Toggle Enchant Info Compact key switches it off and on."
+                "Puts the enchantments on one line and the missing ones that can all be added on another, without maximum levels; each choice of enchantments that cannot be combined gets its own line. The Toggle Enchant Info Compact key switches it off and on."
             },
             {
                 "enchantInfoHudConfig.showEnchantments",

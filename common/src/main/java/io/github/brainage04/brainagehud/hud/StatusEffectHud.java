@@ -10,6 +10,7 @@ import io.github.brainage04.hudrendererlib.config.core.ElementCorners;
 import io.github.brainage04.hudrendererlib.hud.core.CoreHudElement;
 import io.github.brainage04.hudrendererlib.hud.core.HudRenderer;
 import io.github.brainage04.hudrendererlib.util.TextList;
+import io.github.brainage04.hudrendererlib.util.TextWrapper;
 import java.util.ArrayList;
 import java.util.List;
 import net.minecraft.client.DeltaTracker;
@@ -24,6 +25,7 @@ import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.util.Mth;
 import net.minecraft.world.effect.MobEffectInstance;
+
 
 public class StatusEffectHud implements CoreHudElement<StatusEffectHudConfig> {
     /**
@@ -46,6 +48,12 @@ public class StatusEffectHud implements CoreHudElement<StatusEffectHudConfig> {
         return getLines(player, getSortedEffects(player));
     }
 
+    /** The max width wraps the text lines only; icon entries keep each name whole. */
+    @Override
+    public boolean supportsMaxWidth() {
+        return !getElementConfig().showIcons;
+    }
+
     @Override
     public void render(GuiGraphicsExtractor drawContext, DeltaTracker renderTickCounter) {
         LocalPlayer player = Minecraft.getInstance().player;
@@ -55,16 +63,15 @@ public class StatusEffectHud implements CoreHudElement<StatusEffectHudConfig> {
         StatusEffectHudConfig config = getElementConfig();
         List<MobEffectInstance> effects = getSortedEffects(player);
         if (!config.showIcons) {
+            // getLines already wrapped the lines at the max width
             HudRenderer.renderElement(
-                    renderer, drawContext, getLines(player, effects), config.coreSettings);
+                    renderer, drawContext, getLines(player, effects), config.coreSettings, true);
             return;
         }
         if (effects.isEmpty()) return;
 
         CoreSettings coreSettings = config.coreSettings;
         int elementPadding = HudRendererLib.getPadding(coreSettings);
-        int maxWidth = HudRendererLib.getMaxWidth(coreSettings);
-        int wrapWidth = Math.max(1, maxWidth - ICON_TEXT_OFFSET);
         float tickRate = player.level().tickRateManager().tickrate();
 
         List<Entry> entries = new ArrayList<>(effects.size());
@@ -72,14 +79,9 @@ public class StatusEffectHud implements CoreHudElement<StatusEffectHudConfig> {
         int elementHeight = elementPadding;
         for (MobEffectInstance effect : effects) {
             List<FormattedCharSequence> rows = new ArrayList<>();
-            addRows(renderer, rows, getEffectName(effect), maxWidth, wrapWidth);
+            rows.add(getEffectName(effect).getVisualOrderText());
             if (config.showDurations) {
-                addRows(
-                        renderer,
-                        rows,
-                        Component.literal(formatDuration(effect, tickRate)),
-                        maxWidth,
-                        wrapWidth);
+                rows.add(Component.literal(formatDuration(effect, tickRate)).getVisualOrderText());
             }
             int entryTextWidth = 0;
             for (FormattedCharSequence row : rows) {
@@ -147,31 +149,27 @@ public class StatusEffectHud implements CoreHudElement<StatusEffectHudConfig> {
         }
     }
 
-    private static void addRows(
-            Font renderer,
-            List<FormattedCharSequence> rows,
-            Component text,
-            int maxWidth,
-            int wrapWidth) {
-        if (maxWidth > 0) {
-            rows.addAll(renderer.split(text, wrapWidth));
-        } else {
-            rows.add(text.getVisualOrderText());
-        }
-    }
-
     private static List<MobEffectInstance> getSortedEffects(LocalPlayer player) {
         return Ordering.natural().sortedCopy(player.getActiveEffects());
     }
 
+
     private TextList getLines(LocalPlayer player, List<MobEffectInstance> effects) {
         TextList lines = new TextList();
         boolean showDurations = getElementConfig().showDurations;
+        int maxWidth = HudRendererLib.getMaxWidth(getElementConfig().coreSettings);
         float tickRate = player.level().tickRateManager().tickrate();
         for (MobEffectInstance effect : effects) {
-            MutableComponent line = getEffectName(effect);
-            if (showDurations) line.append(": ").append(formatDuration(effect, tickRate));
-            lines.add(line);
+            List<Component> parts = new ArrayList<>(2);
+            parts.add(getEffectName(effect));
+            if (showDurations) parts.add(Component.literal(formatDuration(effect, tickRate)));
+            lines.addAll(
+                    TextWrapper.wrapParts(
+                            Component.empty(),
+                            parts,
+                            ": ",
+                            maxWidth,
+                            TextWrapper.widthOf(Minecraft.getInstance().font)));
         }
         return lines;
     }
