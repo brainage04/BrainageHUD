@@ -8,6 +8,7 @@ import io.github.brainage04.brainagehud.BrainageHUD;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.Writer;
+import java.lang.reflect.Type;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
@@ -24,6 +25,8 @@ import net.minecraft.world.level.storage.LevelResource;
 
 public final class WaypointStore {
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
+    private static final Type WORLDS_TYPE =
+            new TypeToken<LinkedHashMap<String, ArrayList<Waypoint>>>() {}.getType();
     private static final int[] COLOURS = {
         0xFF5555, 0x55FF55, 0x5555FF, 0xFFFF55, 0xFF55FF, 0x55FFFF,
         0xFFAA00, 0xAA00AA, 0x00AAAA, 0xFFFFFF, 0xAAAAAA, 0x00AA00
@@ -98,12 +101,7 @@ public final class WaypointStore {
         if (!Files.exists(file)) return worlds;
 
         try (Reader reader = Files.newBufferedReader(file)) {
-            Map<String, List<Waypoint>> loaded =
-                    GSON.fromJson(
-                            reader,
-                            new TypeToken<
-                                    LinkedHashMap<String, ArrayList<Waypoint>>>() {}.getType());
-            if (loaded != null) worlds.putAll(loaded);
+            worlds.putAll(read(reader));
         } catch (IOException | JsonParseException exception) {
             // keep the unreadable file rather than overwriting it with an empty list on the next
             // save
@@ -118,6 +116,11 @@ public final class WaypointStore {
         }
 
         return worlds;
+    }
+
+    static Map<String, List<Waypoint>> read(Reader reader) {
+        Map<String, List<Waypoint>> loaded = GSON.fromJson(reader, WORLDS_TYPE);
+        return loaded == null ? new LinkedHashMap<>() : loaded;
     }
 
     private static Path file() {
