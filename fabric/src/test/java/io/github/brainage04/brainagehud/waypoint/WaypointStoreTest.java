@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.StringReader;
 import java.util.List;
+import java.util.Map;
 import net.minecraft.core.BlockPos;
 import org.junit.jupiter.api.Test;
 
@@ -50,6 +51,76 @@ class WaypointStoreTest {
 
         assertNotNull(loaded);
         assertTrue(loaded.get(0).visible);
+    }
+
+    @Test
+    void readDropsEntriesWithoutANameOrDimension() {
+        // find() compares names and the renderer compares dimensions, so a hand-edited entry
+        // without either would throw instead of being skipped.
+        String saved =
+                """
+                {
+                  "server/example.org": [
+                    {
+                      "name": "Base",
+                      "x": 1,
+                      "y": 64,
+                      "z": 2,
+                      "dimension": "minecraft:overworld",
+                      "colour": 16777215,
+                      "visible": true
+                    },
+                    {
+                      "x": 1,
+                      "y": 64,
+                      "z": 2,
+                      "dimension": "minecraft:overworld",
+                      "colour": 16777215
+                    },
+                    {
+                      "name": "No dimension",
+                      "x": 1,
+                      "y": 64,
+                      "z": 2,
+                      "colour": 16777215
+                    }
+                  ]
+                }
+                """;
+
+        List<String> names =
+                WaypointStore.read(new StringReader(saved)).get("server/example.org").stream()
+                        .map(waypoint -> waypoint.name)
+                        .toList();
+
+        assertEquals(List.of("Base"), names);
+    }
+
+    @Test
+    void readSkipsAWorldWhoseListIsNull() {
+        // A hand-edited file can map a world to null; load() then sets worlds to a fresh map, so a
+        // throw here would erase the file on the next save.
+        String saved =
+                """
+                {
+                  "server/example.org": null,
+                  "server/other.org": [
+                    {
+                      "name": "Base",
+                      "x": 1,
+                      "y": 64,
+                      "z": 2,
+                      "dimension": "minecraft:overworld",
+                      "colour": 16777215
+                    }
+                  ]
+                }
+                """;
+
+        Map<String, List<Waypoint>> worlds = WaypointStore.read(new StringReader(saved));
+
+        assertEquals(1, worlds.size());
+        assertNotNull(worlds.get("server/other.org"));
     }
 
     private static Waypoint waypoint(String name) {
