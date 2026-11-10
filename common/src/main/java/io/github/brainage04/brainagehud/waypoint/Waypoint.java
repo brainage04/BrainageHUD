@@ -25,6 +25,12 @@ public final class Waypoint {
         this.colour = colour;
     }
 
+    /**
+     * Without it Gson allocates through Unsafe and skips the field initialisers above (Gson 2.14.0
+     * {@code ConstructorConstructor#newUnsafeAllocator}).
+     */
+    private Waypoint() {}
+
     public BlockPos pos() {
         return new BlockPos(x, y, z);
     }
