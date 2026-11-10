@@ -17,6 +17,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ServerData;
@@ -120,7 +121,27 @@ public final class WaypointStore {
 
     static Map<String, List<Waypoint>> read(Reader reader) {
         Map<String, List<Waypoint>> loaded = GSON.fromJson(reader, WORLDS_TYPE);
-        return loaded == null ? new LinkedHashMap<>() : loaded;
+        if (loaded == null) return new LinkedHashMap<>();
+        loaded.values().removeIf(Objects::isNull);
+        loaded.forEach(
+                (world, waypoints) -> {
+                    int before = waypoints.size();
+                    waypoints.removeIf(WaypointStore::isIncomplete);
+                    int dropped = before - waypoints.size();
+                    if (dropped > 0) {
+                        BrainageHUD.LOGGER.warn(
+                                "Dropped {} waypoint(s) without a name or dimension in {}",
+                                dropped,
+                                world);
+                    }
+                });
+        return loaded;
+    }
+
+    private static boolean isIncomplete(Waypoint waypoint) {
+        // find() compares the name and the renderer the dimension, so an entry without them would
+        // throw instead of being left out
+        return waypoint == null || waypoint.name == null || waypoint.dimension == null;
     }
 
     private static Path file() {
