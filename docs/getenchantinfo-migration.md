@@ -1,9 +1,10 @@
 # GetEnchantInfo → BrainageHUD migration
 
 This document describes what was moved out of the standalone GetEnchantInfo mod into BrainageHUD, how the ported
-behaviour is exposed now, and every known difference that remains. It is written so that GetEnchantInfo is not deleted on
-a false report: everything GetEnchantInfo did on the client is present in BrainageHUD, apart from the differences listed
-under [Not yet equivalent / deliberate differences](#not-yet-equivalent--deliberate-differences).
+behaviour is exposed now, and every known difference that remains. Everything GetEnchantInfo did on the client is
+present in BrainageHUD, apart from the differences listed
+under [Differences from GetEnchantInfo](#differences-from-getenchantinfo), so GetEnchantInfo can
+be checked against that list before it is deleted.
 
 ## What moved
 
@@ -58,7 +59,7 @@ Rules:
 
 - **Present enchantments** are `Sharpness III` style (`Enchantment.getFullname`). When an enchantment is below its
   maximum level, the maximum is appended: `Sharpness III (max 5)` (`showMaxLevels`). An enchantment shown without that
-  suffix is therefore already maxed, which is the point of the original mod.
+  suffix is therefore already maxed, which is what the original mod was for.
 - **Missing enchantments** are those that are applicable to the item (`Enchantment.canEnchant`), not already present,
   not in the blacklist, and compatible with *every* enchantment already on the item. A missing enchantment is shown at
   its maximum level, e.g. `Mending`, `Fire Aspect II`.
@@ -118,7 +119,7 @@ The generated `common/src/main/generated/assets/brainagehud/lang/en_us.json` was
 `./gradlew :fabric:runDatagen`, so every new option has a label in the config editor. That regeneration also picked up
 `maxWidth` override labels for the other elements that were missing from the previously committed file.
 
-## Not yet equivalent / deliberate differences
+## Differences from GetEnchantInfo
 
 - **Config file location.** The blacklist now lives in `config/brainagehud.json`; an existing `config/getenchantinfo.json`
   is **not** read or migrated. A user who changed their GetEnchantInfo blacklist has to re-add those entries (or copy

@@ -1,8 +1,8 @@
 # BrainageHUD icon
 
-## What this is
+## Overview
 
-The mod's icon: `icon.png` — 1024x1024 RGBA PNG, 13 053 bytes,
+The mod's icon is `icon.png`: a 1024x1024 RGBA PNG, 13 053 bytes,
 sha256 `4ba8579cccc53adcbe21f77ba4ce9f7d4b49ada60a88cb44a261dee18bdc276e`.
 
 It is a real in-game screenshot: the 600x600 capture crop `provenance/capture-crop.png`
@@ -14,7 +14,7 @@ compositing, no shader pack and no resource pack. The mod ships 128x128 LANCZOS 
 
 ## How it was made
 
-**Method: real Minecraft capture** (not a Blender render, not generated pixel art).
+**Method:** a capture from the real Minecraft client, not a Blender render or generated pixel art.
 
 Client and scene:
 
@@ -27,14 +27,14 @@ Client and scene:
 | Audio | own PulseAudio null sink `round3_ui_mcscreens` (`soundDevice=Round3UIMCScreens`) |
 | Shader pack | **none** (vanilla rendering) |
 | Resource pack | **none** |
-| World | `UI Void` — flat generator with `layers=[]`, biome `minecraft:the_void`, `generate_structures=0`, seed `20260910`: pure void, no terrain |
+| World | `UI Void`, a flat generator with `layers=[]`, biome `minecraft:the_void`, `generate_structures=0`, seed `20260910`: pure void, no terrain |
 | Camera | `/tp @s 0.5 -60 0.5 0 0` → x=0.5 y=-60 z=0.5, yaw 0°, pitch 0° |
 | Scene state | `/gamemode spectator`, `/time set noon`, `/weather clear`, `/tick freeze` (all four verified through the client's own chat feedback) |
 | Screenshot conditions | GUI scale 4, renderDistance 2, `renderClouds=false`, no cloud layer in any frame, HUD visible (F1 not pressed); the frame is the game's own native F2 PNG, no post-processing |
 
 The subject is HudRendererLib 1.0.7's **HUD Element Editor**, opened with the mod's own
 keybind (`keypad add`). The pointer was moved to (160, 90) and left-clicked, which selects
-and highlights the BrainageHUD **Position** HUD element (TOP_LEFT, x=5 y=5) — the
+and highlights the BrainageHUD **Position** HUD element (TOP_LEFT, x=5 y=5). The
 translucent white selection overlay is drawn over the element rectangle and the other HUD
 elements stay visible.
 
@@ -60,7 +60,7 @@ LANCZOS resize was rejected because it blurs every GUI pixel edge.
 | Path | What it is |
 |---|---|
 | `manifest.json` | The round-3 delivery record for this icon: label, method, source, measured geometry, notes |
-| `capture-crop.png` | **The 600x600 capture crop** (formerly `icon.png`, byte-identical) — the only surviving copy of this crop |
+| `capture-crop.png` | The 600x600 capture crop (formerly `icon.png`, byte-identical), the only surviving copy of this crop |
 | `native_scale.py` | **The script that writes `icon.png`** from `capture-crop.png` (native 150x150 recovery, 6x NEAREST, centred on 1024x1024) and the two shipped 128x128 copies |
 | `evidence/crop-report.json` | The measured highlight rectangle and the crop box used by `scripts/make_crops.py` |
 | `evidence/scene.json` | Full scene provenance: display, audio sink, client, mod list, options, world generation, every verified scene command, the BrainageHUD shot description |
@@ -114,24 +114,24 @@ mod jars named in `client-ui.args`, and the world save (the void world is rebuil
 
 ## Notes
 
-* **The source frame is not preserved.** `scripts/make_crops.py` crops
+* **The source frame has been deleted.** `scripts/make_crops.py` crops
   `renders/frames/hud-editor-selected.png`, and that directory is empty in the round-3
-  tree — the full-resolution F2 frames of the captures-ui session were deleted before the
+  tree: the full-resolution F2 frames of the captures-ui session were deleted before the
   later capture pass. The capture crop (`capture-crop.png`, shipped as the icon until
   2026-10-02) is intact and is the only surviving copy of that crop; re-running the recipe
-  above is the way to obtain the frame again.
-* **This is a recapture, not a crop of an earlier closeup.** The previously approved
+  above obtains the frame again.
+* **This round recaptured the scene.** The previously approved
   closeup was 590x480, so a 600x600 crop of it was geometrically impossible without
   inventing pixels. The same scene was therefore recaptured: same editor, same element,
   same GUI scale 4 (the measured selection rectangle is 451x375 px in both sessions). The
-  only visible difference is the backdrop — this round's void world instead of the earlier
+  only visible difference is the backdrop: this round's void world instead of the earlier
   dungeon world.
 * `tools/setup.py` builds the void world from `captures-fortnite/runtime/saves/Fortnite
   Void Corner` with `level.dat` rewritten by `tools/nbt.py` and `world_gen_settings.dat`
   copied byte-identical; that save is not part of this provenance.
 * The client never renders a chat suggestion *list* in 26.2 (it renders an inline
-  completion in the input line); that is why the BrainageHUD icon, not a chat shot, is the
-  BrainageHUD icon. See `blockers.json`.
+  completion in the input line), so the BrainageHUD icon shows the HUD editor instead of a
+  chat shot. See `blockers.json`.
 
 ## Working-tree note
 
