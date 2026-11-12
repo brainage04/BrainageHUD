@@ -275,7 +275,9 @@ public class EnchantInfoHud implements BasicCoreHudElement<EnchantInfoHudConfig>
             for (List<Holder.Reference<Enchantment>> conflictGroup : conflictGroups) {
                 sections.add(
                         Section.parts(
-                                Component.empty(), formatMissingEnchantments(conflictGroup), " / "));
+                                Component.empty(),
+                                formatMissingEnchantments(conflictGroup),
+                                " / "));
             }
         }
 

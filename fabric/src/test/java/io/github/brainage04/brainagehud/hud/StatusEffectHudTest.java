@@ -33,10 +33,14 @@ class StatusEffectHudTest {
     void iconRowsWrapBetweenWordsAtTheMaxWidthLessTheIconColumn() {
         assertEquals(
                 List.of("Slow", "Falling"),
-                strings(StatusEffectHud.wrapIconRow(Component.literal("Slow Falling"), 32, CHARACTERS)));
+                strings(
+                        StatusEffectHud.wrapIconRow(
+                                Component.literal("Slow Falling"), 32, CHARACTERS)));
         assertEquals(
                 List.of("Regeneration"),
-                strings(StatusEffectHud.wrapIconRow(Component.literal("Regeneration"), 32, CHARACTERS)));
+                strings(
+                        StatusEffectHud.wrapIconRow(
+                                Component.literal("Regeneration"), 32, CHARACTERS)));
     }
 
     @Test
@@ -48,7 +52,9 @@ class StatusEffectHudTest {
                                 Component.literal("Slow Falling II"), 0, CHARACTERS)));
         assertEquals(
                 List.of("Speed II"),
-                strings(StatusEffectHud.wrapIconRow(Component.literal("Speed II"), 32, CHARACTERS)));
+                strings(
+                        StatusEffectHud.wrapIconRow(
+                                Component.literal("Speed II"), 32, CHARACTERS)));
     }
 
     private static List<String> strings(List<Component> rows) {
