@@ -11,11 +11,14 @@ import io.github.brainage04.brainagehud.config.hud.custom.enchant_info.EnchantIn
 import io.github.brainage04.brainagehud.config.other.EnchantInfoConfig;
 import io.github.brainage04.hudrendererlib.util.TextList;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.ToIntFunction;
 import net.minecraft.core.MappedRegistry;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FormattedText;
+import net.minecraft.network.chat.Style;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.item.ItemStack;
@@ -329,6 +332,63 @@ class EnchantInfoHudTest {
                 List.of("Cataclysm /", "Volatile"),
                 rendered.subList(rendered.size() - 2, rendered.size()));
         assertEveryNameWhole(lines);
+    }
+
+    @Test
+    void aLongItemNameWrapsBetweenWordsAndStaysBold() {
+        ItemStack sword = new ItemStack(Items.IRON_SWORD);
+        sword.set(
+                DataComponents.CUSTOM_NAME,
+                Component.literal("The Unbreakable Blade of the Northern Wastes Forged Anew"));
+        EnchantInfoHudConfig config = new EnchantInfoHudConfig();
+        config.compactMode = true;
+        config.showMissingEnchantments = false;
+
+        TextList lines =
+                EnchantInfoHud.getLines(
+                        skyport,
+                        sword,
+                        config,
+                        new EnchantInfoConfig().blacklistedEnchantmentIds,
+                        20,
+                        CHARACTERS);
+
+        assertEquals(
+                List.of("The Unbreakable", "Blade of the", "Northern Wastes", "Forged Anew"),
+                rendered(lines));
+        for (Component line : lines) {
+            line.visit(
+                    (style, text) -> {
+                        if (!text.isBlank()) assertTrue(style.isBold(), text);
+                        return Optional.empty();
+                    },
+                    Style.EMPTY);
+        }
+    }
+
+    @Test
+    void theCachedLinesFollowAFontChangeWithTheSameItem() {
+        EnchantInfoHudConfig config = new EnchantInfoHudConfig();
+        config.compactMode = true;
+        ItemStack sword = new ItemStack(Items.IRON_SWORD);
+        List<String> blacklist = new EnchantInfoConfig().blacklistedEnchantmentIds;
+        // a wider font, as Force Unicode Font or a resource pack can switch to while the item stays
+        ToIntFunction<FormattedText> wider = text -> 2 * text.getString().length();
+        EnchantInfoHud hud = new EnchantInfoHud();
+
+        hud.cachedLines(skyport, sword, config, blacklist, 48, CHARACTERS);
+        TextList afterFontChange = hud.cachedLines(skyport, sword, config, blacklist, 48, wider);
+
+        assertEquals(
+                rendered(EnchantInfoHud.getLines(skyport, sword, config, blacklist, 48, wider)),
+                rendered(afterFontChange));
+        for (Component line : afterFontChange) {
+            String text = line.getString();
+            // a line holding a single name may be wider; every other line fits
+            if (text.contains(", ") || text.contains(" / ")) {
+                assertTrue(wider.applyAsInt(line) <= 48, text);
+            }
+        }
     }
 
     @Test

@@ -72,9 +72,9 @@ Rules:
   without levels (`Missing: Wind Burst, Mending`); each conflict group follows on a line of its own with its choices
   joined by ` / ` (`Breach / Density`). The `Missing:` text is bold inside the line, so the header does not need a line
   of its own. Lines wrap at the element's max width, 300 GUI pixels unless the user sets one, only at `, ` and ` / `
-  and never inside a name, which keeps the panel clear of the top-right elements at ordinary GUI scales. The panel is
-  then a few lines tall instead of one line per enchantment and per missing group. The Toggle Enchant Info Compact key
-  switches the same setting.
+  and never inside a name (the item name wraps between words), which keeps the panel clear of the default Date/Time
+  HUD in a 1920x1080 window at GUI scale 3. The panel is then a few lines tall instead of one line per enchantment and
+  per missing group. The Toggle Enchant Info Compact key switches the same setting.
 
 Observed output from `fabric/src/test/java/.../EnchantInfoHudTest.java` (a controlled enchantment registry with
 Sharpness/Smite/Bane exclusivity, Breach/Density exclusivity and a blacklisted Fire Aspect), with compact mode off:

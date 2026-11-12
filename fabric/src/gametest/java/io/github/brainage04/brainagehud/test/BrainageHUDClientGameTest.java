@@ -745,6 +745,14 @@ public final class BrainageHUDClientGameTest implements FabricClientGameTest {
             context.waitTicks(5);
             context.runOnClient(
                     client -> {
+                        int settingsMaxWidth = HudRendererLib.getMaxWidth(enchantSettings());
+                        if (settingsMaxWidth != EnchantInfoHud.DEFAULT_MAX_WIDTH) {
+                            throw new AssertionError(
+                                    "Expected HudRendererLib.getMaxWidth(settings) to give Enchant Info's default %d, got %d"
+                                            .formatted(
+                                                    EnchantInfoHud.DEFAULT_MAX_WIDTH,
+                                                    settingsMaxWidth));
+                        }
                         List<Component> lines = new EnchantInfoHud().getLines();
                         int widest = widestLine(client, lines);
                         if (widest > EnchantInfoHud.DEFAULT_MAX_WIDTH) {
