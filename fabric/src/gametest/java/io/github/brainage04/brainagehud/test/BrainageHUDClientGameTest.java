@@ -36,9 +36,12 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import javax.imageio.ImageIO;
 import net.fabricmc.fabric.api.client.gametest.v1.FabricClientGameTest;
 import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext;
+import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
@@ -66,6 +69,11 @@ import org.lwjgl.sdl.SDLVideo;
 
 @SuppressWarnings("UnstableApiUsage")
 public final class BrainageHUDClientGameTest implements FabricClientGameTest {
+    /** Set by the build on the client GameTest run that installs Sodium. */
+    private static final String SODIUM_RUN_PROPERTY = "brainagehud.gametest.sodium";
+
+    private static final Pattern DEBUG_SECTION_COUNTS = Pattern.compile("C: (\\d+)/(\\d+)");
+
     @Override
     public void runTest(ClientGameTestContext context) {
         Properties serverProperties = ClientGameTestServers.flatServerProperties();
@@ -120,6 +128,8 @@ public final class BrainageHUDClientGameTest implements FabricClientGameTest {
                                 "Position and corrected C-counter",
                                 "The top-left HUD shows the fixed player position, chunk coordinates, rendered-section C-counter, entity counter, and direction.");
                         context.waitTicks(80);
+                        context.runOnClient(
+                                BrainageHUDClientGameTest::assertCountersMatchDebugScreen);
 
                         ClientGameTestRecorder.showStep(
                                 context,
@@ -1389,6 +1399,54 @@ public final class BrainageHUDClientGameTest implements FabricClientGameTest {
         if (!hasPosition || !hasCCounter || !facesSouth) {
             throw new AssertionError(
                     "Expected Position HUD to show the fixture position, rendered-section C-counter and south-facing direction, but got "
+                            + lines
+                            + ".");
+        }
+    }
+
+    /**
+     * The Position HUD's C and E lines read what the debug screen's (F3) chunk and entity lines
+     * read, with the renderer this run installs: vanilla's, or Sodium's in {@code
+     * runProductionClientGameTestSodium}.
+     */
+    private static void assertCountersMatchDebugScreen(Minecraft client) {
+        boolean sodiumRun = Boolean.getBoolean(SODIUM_RUN_PROPERTY);
+        if (FabricLoader.getInstance().isModLoaded("sodium") != sodiumRun) {
+            throw new AssertionError(
+                    "Expected Sodium to be "
+                            + (sodiumRun ? "installed" : "absent")
+                            + " in this client GameTest run.");
+        }
+
+        List<String> lines =
+                new PositionHud().getLines().stream().map(line -> line.getString()).toList();
+        String sectionStatistics = client.levelExtractor.sectionStatistics();
+        Matcher debugCounts =
+                DEBUG_SECTION_COUNTS.matcher(sectionStatistics == null ? "" : sectionStatistics);
+        if (!debugCounts.lookingAt() || Integer.parseInt(debugCounts.group(2)) <= 1) {
+            throw new AssertionError(
+                    "Expected the debug screen's chunk line to count rendered sections out of more than one, but it reads "
+                            + sectionStatistics
+                            + ".");
+        }
+        String expectedCCounter = debugCounts.group() + (client.smartCull ? " (s)" : "");
+        if (!lines.contains(expectedCCounter)) {
+            throw new AssertionError(
+                    "Expected the Position HUD's C counter to read \""
+                            + expectedCCounter
+                            + "\" like the debug screen's \""
+                            + sectionStatistics
+                            + "\", but the HUD shows "
+                            + lines
+                            + ".");
+        }
+
+        String entityStatistics = client.levelExtractor.entityStatistics();
+        if (!lines.contains(entityStatistics)) {
+            throw new AssertionError(
+                    "Expected the Position HUD's E counter to read \""
+                            + entityStatistics
+                            + "\" like the debug screen, but the HUD shows "
                             + lines
                             + ".");
         }
