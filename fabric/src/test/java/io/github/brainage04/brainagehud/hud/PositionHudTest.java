@@ -62,6 +62,12 @@ class PositionHudTest {
     }
 
     @Test
+    void takesTheCCounterFromSodiumsSectionStatisticsInLocalDigits() {
+        // Sodium formats the line with the default locale, so a Persian client gets Persian digits
+        assertEquals("C: ۴/۶۱۶۸ (s)", PositionHud.getCCounter("C: ۴/۶۱۶۸ (R) D: ۱۲", true));
+    }
+
+    @Test
     void showsSectionStatisticsWithoutCountsUnchanged() {
         assertEquals("Chunks: 4", PositionHud.getCCounter("Chunks: 4", true));
         assertNull(PositionHud.getCCounter(null, true));
