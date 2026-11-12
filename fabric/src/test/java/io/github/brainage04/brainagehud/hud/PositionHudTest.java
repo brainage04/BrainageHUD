@@ -3,6 +3,7 @@ package io.github.brainage04.brainagehud.hud;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.Map;
@@ -44,6 +45,26 @@ class PositionHudTest {
         assertTrue(PositionHud.isFarmingToolName("Rookie Axe"));
         assertFalse(PositionHud.isFarmingToolName("Diamond Pickaxe"));
         assertFalse(PositionHud.isFarmingToolName("Shovel"));
+    }
+
+    @Test
+    void takesTheCCounterFromVanillasSectionStatistics() {
+        // the form of LevelExtractor.sectionStatistics() in 26.3
+        String statistics = "C: 4/6168 (s) D: 12, pC: 000, aB: 12";
+        assertEquals("C: 4/6168 (s)", PositionHud.getCCounter(statistics, true));
+        assertEquals("C: 4/6168", PositionHud.getCCounter(statistics, false));
+    }
+
+    @Test
+    void takesTheCCounterFromSodiumsSectionStatistics() {
+        // the form of RenderSectionManager.getChunksDebugString() in Sodium 0.9.3
+        assertEquals("C: 4/6168 (s)", PositionHud.getCCounter("C: 4/6168 (R) D: 12", true));
+    }
+
+    @Test
+    void showsSectionStatisticsWithoutCountsUnchanged() {
+        assertEquals("Chunks: 4", PositionHud.getCCounter("Chunks: 4", true));
+        assertNull(PositionHud.getCCounter(null, true));
     }
 
     private static void assertLabels(Map<Float, String> expectedLabels) {
