@@ -565,11 +565,7 @@ public final class BrainageHUDClientGameTest implements FabricClientGameTest {
                         }
                         client.player.getInventory().setSelectedSlot(8);
                         for (int i = 0; i < placed.size(); i++) {
-                            CoreSettings settings = placed.get(i);
-                            CoreSettings place = defaultPlaces.get(i);
-                            settings.elementAnchor = place.elementAnchor;
-                            settings.x = place.x;
-                            settings.y = place.y;
+                            new HudPlacement(defaultPlaces.get(i)).applyTo(placed.get(i));
                         }
                         config.enchantInfoHudConfig.compactMode = true;
                         config.enchantInfoHudConfig.coreSettings.elementOverrides.maxWidth.enabled =
@@ -581,8 +577,8 @@ public final class BrainageHUDClientGameTest implements FabricClientGameTest {
                             + context.takeScreenshot("enchant-owner-1080p-gui3"));
             context.runOnClient(
                     client -> {
-                        var enchant = drawnBounds(config.enchantInfoHudConfig.coreSettings);
-                        var clock = drawnBounds(config.dateTimeHudConfig.coreSettings);
+                        ElementCorners enchant = bounds(config.enchantInfoHudConfig.coreSettings);
+                        ElementCorners clock = bounds(config.dateTimeHudConfig.coreSettings);
                         System.out.printf(
                                 "[STDOUT]: Owner's Enchant Info panel: x %d to %d, %d lines; clock"
                                         + " from x %d; screen %d GUI pixels wide%n",
@@ -623,44 +619,33 @@ public final class BrainageHUDClientGameTest implements FabricClientGameTest {
         }
     }
 
-    /** The element's bounds as it was last drawn. */
-    private static io.github.brainage04.hudrendererlib.config.core.ElementCorners drawnBounds(
-            CoreSettings settings) {
-        var corners = HudElementEditor.CORE_SETTINGS_ELEMENTS.get(settings.elementId).corners;
-        if (corners.right <= corners.left) {
-            throw new AssertionError(settings.elementName + " was not drawn.");
-        }
-        return corners;
-    }
-
-    /**
-     * The compact Iron Sword panel on a server with Skyport's enchantments, without a max width.
-     */
+    /** The compact Iron Sword panel on a server with Skyport's enchantments, with Max Width off. */
     private static final List<String> SKYPORT_IRON_SWORD_LINES =
             List.of(
                     "Iron Sword",
-                    "Missing: Blinding, Bloodlust, Crippling, Dread, Drifting, Eclipse,",
-                    "Enfeebling, Famine, Fire Aspect, Infestation, Insight, Looting,",
-                    "Mending, Oozing, Plague, Pyre, Sapping, Siphon, Soulbound,",
-                    "Stormcaller, Sweeping Edge, Unbreaking, Updraft, Venom, Vertigo,",
-                    "Warden's Wrath, Warding, Withering",
-                    "Annihilation / Bane of Illagers / Bane of the Deep / Bane of the End /",
-                    "Bane of the Nether / Duelist / Sharpness",
+                    "Missing: Blinding, Bloodlust, Crippling, Dread, Drifting, Eclipse, Enfeebling,"
+                            + " Famine, Fire Aspect, Infestation, Insight, Looting, Mending, Oozing,"
+                            + " Plague, Pyre, Sapping, Siphon, Soulbound, Stormcaller, Sweeping Edge,"
+                            + " Unbreaking, Updraft, Venom, Vertigo, Warden's Wrath, Warding,"
+                            + " Withering",
+                    "Annihilation / Bane of Illagers / Bane of the Deep / Bane of the End / Bane of"
+                            + " the Nether / Duelist / Sharpness",
                     "Cataclysm / Volatile");
 
     /** The gap the max width leaves between the Enchant Info panel and its neighbour. */
     private static final int MAX_WIDTH_GAP = 6;
 
     /**
-     * The owner's case of 9 Nov 2026 (A-0293): an Iron Sword on a server that registers Skyport's
-     * custom enchantments (this GameTest mod's datapack, {@code data/skyport}), the compact Enchant
-     * Info panel at its default place in the top left and the Date/Time HUD at its default place in
-     * the top right. In a 1920x1080 window at GUI scale 3 the panel without a max width reaches the
-     * clock; a max width set by dragging the HUD Element Editor's handle wraps it at its separators
-     * before the clock. Anchored top right next to the clock, the panel may reach the Position HUD
-     * instead, and its max width keeps it clear while its right edge stays where it was. Last, the
-     * owner's own GUI size (854x480) without a max width. It resizes the window, so like the other
-     * resizing checks it runs only outside recordings.
+     * The owner's case of 9 and 12 Nov 2026 (A-0293, A-0751): an Iron Sword on a server that
+     * registers Skyport's custom enchantments (this GameTest mod's datapack, {@code data/skyport}),
+     * the compact Enchant Info panel at its default place in the top left and the Date/Time HUD at
+     * its default place in the top right, in a 1920x1080 window at GUI scale 3. With Max Width
+     * turned off the panel reaches the clock; at the default max width every line fits it in GUI
+     * pixels and the panel ends before the clock; a max width set by dragging the HUD Element
+     * Editor's handle wraps it at its separators before the clock. Anchored top right next to the
+     * clock, the panel may reach the Position HUD instead, and its max width keeps it clear while
+     * its right edge stays where it was. Last, the owner's own GUI size (854x480) at the default.
+     * It resizes the window, so like the other resizing checks it runs only outside recordings.
      */
     private static void exerciseEnchantMaxWidth(
             ClientGameTestContext context,
@@ -670,7 +655,7 @@ public final class BrainageHUDClientGameTest implements FabricClientGameTest {
                 context,
                 "enchant-max-width",
                 "Enchant Info max width",
-                "An Iron Sword with Skyport's enchantments: without a max width the panel reaches the clock; a max width dragged in the HUD Element Editor wraps it at its separators, never inside a name, and keeps its anchored edge.");
+                "An Iron Sword with Skyport's enchantments: with Max Width off the panel reaches the clock; the default max width and one dragged in the HUD Element Editor wrap it at its separators, never inside a name, and keep its anchored edge.");
         int[] original =
                 context.computeOnClient(
                         client ->
@@ -711,25 +696,21 @@ public final class BrainageHUDClientGameTest implements FabricClientGameTest {
             context.runOnClient(
                     client -> {
                         ModConfig config = ConfigUtils.getConfig();
+                        ModConfig defaults = new ModConfig();
                         client.player.getInventory().setSelectedSlot(8);
                         CoreSettings enchant = config.enchantInfoHudConfig.coreSettings;
-                        enchant.elementAnchor = ElementAnchor.TOP_LEFT;
-                        enchant.x = 150;
-                        enchant.y = 5;
-                        HudElementEditor.clearMaxWidth(enchant);
+                        new HudPlacement(defaults.enchantInfoHudConfig.coreSettings)
+                                .applyTo(enchant);
+                        turnMaxWidthOff(enchant);
                         config.enchantInfoHudConfig.compactMode = true;
-                        CoreSettings clock = config.dateTimeHudConfig.coreSettings;
-                        clock.elementAnchor = ElementAnchor.TOP_RIGHT;
-                        clock.x = -77;
-                        clock.y = 5;
-                        CoreSettings keystrokes = config.keystrokesHudConfig.coreSettings;
-                        keystrokes.elementAnchor = ElementAnchor.TOP_RIGHT;
-                        keystrokes.x = -5;
-                        keystrokes.y = 5;
+                        new HudPlacement(defaults.dateTimeHudConfig.coreSettings)
+                                .applyTo(config.dateTimeHudConfig.coreSettings);
+                        new HudPlacement(defaults.keystrokesHudConfig.coreSettings)
+                                .applyTo(config.keystrokesHudConfig.coreSettings);
                     });
             context.waitTicks(10);
 
-            // left-anchored, no max width: the panel reaches the clock
+            // left-anchored, Max Width off: the panel reaches the clock
             int[] leftBefore =
                     context.computeOnClient(
                             client -> {
@@ -741,12 +722,48 @@ public final class BrainageHUDClientGameTest implements FabricClientGameTest {
                                 ElementCorners clock = bounds(clockSettings());
                                 if (enchant.right <= clock.left) {
                                     throw new AssertionError(
-                                            "Expected the Enchant Info panel without a max width to reach the clock at %d, but it ends at %d"
+                                            "Expected the Enchant Info panel with Max Width off to reach the clock at %d, but it ends at %d"
                                                     .formatted(clock.left, enchant.right));
                                 }
                                 return new int[] {enchant.left, enchant.right, clock.left};
                             });
             printScreenshot(context, "Enchant max width, left, off", "enchant-max-width-left-off");
+
+            // left-anchored, the default max width: every line fits it and the panel ends before
+            // the clock
+            context.runOnClient(client -> HudElementEditor.clearMaxWidth(enchantSettings()));
+            context.waitTicks(5);
+            context.runOnClient(
+                    client -> {
+                        List<Component> lines = new EnchantInfoHud().getLines();
+                        int widest = widestLine(client, lines);
+                        if (widest > EnchantInfoHud.DEFAULT_MAX_WIDTH) {
+                            throw new AssertionError(
+                                    "Expected every Enchant Info line within the default max width %d, but the widest is %d: %s"
+                                            .formatted(
+                                                    EnchantInfoHud.DEFAULT_MAX_WIDTH,
+                                                    widest,
+                                                    lines.stream()
+                                                            .map(Component::getString)
+                                                            .toList()));
+                        }
+                        assertWrappedBetweenNames(lines);
+                        ElementCorners enchant = enchantBounds();
+                        if (enchant.left != leftBefore[0] || enchant.right >= leftBefore[2]) {
+                            throw new AssertionError(
+                                    "Expected the panel at the default max width to keep its left edge %d and end before the clock at %d, got %d to %d"
+                                            .formatted(
+                                                    leftBefore[0],
+                                                    leftBefore[2],
+                                                    enchant.left,
+                                                    enchant.right));
+                        }
+                        System.out.printf(
+                                "[STDOUT]: Enchant Info at the default max width: x %d to %d, widest line %d, %d lines; clock from x %d%n",
+                                enchant.left, enchant.right, widest, lines.size(), leftBefore[2]);
+                    });
+            printScreenshot(
+                    context, "Enchant max width, left, default", "enchant-max-width-left-default");
 
             // the HUD Element Editor's handle, dragged to just before the clock
             context.runOnClient(client -> client.gui.setScreen(new HudElementEditor()));
@@ -765,11 +782,16 @@ public final class BrainageHUDClientGameTest implements FabricClientGameTest {
                             throw new AssertionError(
                                     "Clicking the Enchant Info panel did not select it in the editor.");
                         }
+                        // the handle starts at the default max width, past the widest line
                         int handleX = HudElementEditor.getMaxWidthHandleX(element);
-                        if (handleX != corners.right) {
+                        int expectedHandleX =
+                                corners.right
+                                        + EnchantInfoHud.DEFAULT_MAX_WIDTH
+                                        - widestLine(client, new EnchantInfoHud().getLines());
+                        if (handleX != expectedHandleX) {
                             throw new AssertionError(
-                                    "Expected the max width handle on the panel's right edge %d, got %d"
-                                            .formatted(corners.right, handleX));
+                                    "Expected the max width handle at the default max width's edge %d, got %d"
+                                            .formatted(expectedHandleX, handleX));
                         }
                         double target = leftBefore[2] - MAX_WIDTH_GAP;
                         editor.mouseClicked(editorMouse(handleX, corners.top + 3), false);
@@ -816,11 +838,11 @@ public final class BrainageHUDClientGameTest implements FabricClientGameTest {
                     });
             printScreenshot(context, "Enchant max width, left, on", "enchant-max-width-left-on");
 
-            // right-anchored next to the clock, no max width: the panel reaches the Position HUD
+            // right-anchored next to the clock, Max Width off: the panel reaches the Position HUD
             context.runOnClient(
                     client -> {
                         CoreSettings settings = enchantSettings();
-                        HudElementEditor.clearMaxWidth(settings);
+                        turnMaxWidthOff(settings);
                         settings.elementAnchor = ElementAnchor.TOP_RIGHT;
                         settings.x = leftBefore[2] - MAX_WIDTH_GAP - HudRenderer.getScaledWidth();
                     });
@@ -842,7 +864,7 @@ public final class BrainageHUDClientGameTest implements FabricClientGameTest {
                                                             enchant.right));
                                 }
                                 System.out.println(
-                                        "[STDOUT]: Right-anchored Enchant Info without a max width: %d to %d, Position HUD ends at %d"
+                                        "[STDOUT]: Right-anchored Enchant Info with Max Width off: %d to %d, Position HUD ends at %d"
                                                 .formatted(
                                                         enchant.left,
                                                         enchant.right,
@@ -884,14 +906,13 @@ public final class BrainageHUDClientGameTest implements FabricClientGameTest {
                     });
             printScreenshot(context, "Enchant max width, right, on", "enchant-max-width-right-on");
 
-            // the owner's GUI size (2560x1440 at GUI scale 3 is 853x480): without a max width
-            // the panel now ends well before the clock
+            // the owner's GUI size (2560x1440 at GUI scale 3 is 853x480) at the default max width
             context.runOnClient(
                     client -> {
                         CoreSettings settings = enchantSettings();
                         HudElementEditor.clearMaxWidth(settings);
-                        settings.elementAnchor = ElementAnchor.TOP_LEFT;
-                        settings.x = 150;
+                        new HudPlacement(new ModConfig().enchantInfoHudConfig.coreSettings)
+                                .applyTo(settings);
                     });
             setWindow(context, 1708, 960, 2);
             context.waitTicks(5);
@@ -907,7 +928,7 @@ public final class BrainageHUDClientGameTest implements FabricClientGameTest {
                     });
             printScreenshot(
                     context,
-                    "Enchant max width, owner's GUI size, off",
+                    "Enchant max width, owner's GUI size, default",
                     "enchant-max-width-owner-gui");
         } finally {
             context.runOnClient(
@@ -995,6 +1016,19 @@ public final class BrainageHUDClientGameTest implements FabricClientGameTest {
 
     private static ElementCorners enchantBounds() {
         return bounds(enchantSettings());
+    }
+
+    /** Max Width as the config screen turns it off: the element's own override, on at 0. */
+    private static void turnMaxWidthOff(CoreSettings settings) {
+        settings.elementOverrides.maxWidth.enabled = true;
+        settings.elementOverrides.maxWidth.value = 0;
+    }
+
+    /** The width of the widest line in GUI pixels, as the game's font measures it. */
+    private static int widestLine(Minecraft client, List<Component> lines) {
+        int widest = 0;
+        for (Component line : lines) widest = Math.max(widest, client.font.width(line));
+        return widest;
     }
 
     /** The element's bounds as it was last drawn. */
@@ -1606,9 +1640,13 @@ public final class BrainageHUDClientGameTest implements FabricClientGameTest {
         }
 
         private void restore() {
-            settings.x = x;
-            settings.y = y;
-            settings.elementAnchor = anchor;
+            applyTo(settings);
+        }
+
+        private void applyTo(CoreSettings target) {
+            target.x = x;
+            target.y = y;
+            target.elementAnchor = anchor;
         }
     }
 
