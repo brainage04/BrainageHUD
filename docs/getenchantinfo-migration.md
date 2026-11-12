@@ -68,13 +68,13 @@ Rules:
 - Blacklisted enchantments are never suggested as missing; the same `enchantInfoConfig.blacklistedEnchantmentIds` list
   drives `/getenchants`, `/blacklistedenchants` and this element.
 - **Compact mode** (`compactMode`, on by default) joins each section onto one line: the present enchantments with their
-  levels and no maximum suffix (`Sharpness III, Unbreaking III`), and the missing enchantments without levels, groups
-  separated by `, ` and each group's choices by ` / ` (`Missing: Breach / Density, Wind Burst, Mending`). The `Missing:`
-  text is bold inside the line, so the header does not need a line of its own. A line longer than 70 characters wraps
-  between its groups (never inside one), which keeps the widest line on screen at ordinary GUI scales. The panel is
-  then two or three lines tall (name, enchantments, missing) instead of one line per enchantment and per missing group,
-  which is half the height of the full format on a sword with five missing enchantments. The Toggle Enchant Info Compact
-  key switches the same setting.
+  levels and no maximum suffix (`Sharpness III, Unbreaking III`), and the missing enchantments that can all be added
+  without levels (`Missing: Wind Burst, Mending`); each conflict group follows on a line of its own with its choices
+  joined by ` / ` (`Breach / Density`). The `Missing:` text is bold inside the line, so the header does not need a line
+  of its own. Lines wrap at the element's max width, 300 GUI pixels unless the user sets one, only at `, ` and ` / `
+  and never inside a name, which keeps the panel clear of the top-right elements at ordinary GUI scales. The panel is
+  then a few lines tall instead of one line per enchantment and per missing group. The Toggle Enchant Info Compact key
+  switches the same setting.
 
 Observed output from `fabric/src/test/java/.../EnchantInfoHudTest.java` (a controlled enchantment registry with
 Sharpness/Smite/Bane exclusivity, Breach/Density exclusivity and a blacklisted Fire Aspect), with compact mode off:

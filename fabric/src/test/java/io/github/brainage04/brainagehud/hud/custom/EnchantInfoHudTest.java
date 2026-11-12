@@ -24,8 +24,9 @@ import net.minecraft.world.item.enchantment.Enchantment;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
-
 class EnchantInfoHudTest {
+    // max widths in characters, so that the expected lines can be counted by hand; in game they
+    // are GUI pixels measured with the font (BrainageHUDClientGameTest checks those)
     private static final ToIntFunction<FormattedText> CHARACTERS =
             text -> text.getString().length();
 
@@ -239,7 +240,7 @@ class EnchantInfoHudTest {
     }
 
     @Test
-    void compactModeWithoutAMaxWidthWrapsLongLinesAtSeventyCharacters() {
+    void compactModeWithoutAMaxWidthKeepsEachSectionOnOneLine() {
         EnchantInfoHudConfig config = new EnchantInfoHudConfig();
         config.compactMode = true;
 
@@ -252,18 +253,18 @@ class EnchantInfoHudTest {
 
         printLines("compact: Skyport iron sword, no max width", lines);
 
-        // the owner's case of 9 Nov 2026; the default blacklist hides Smite, Bane of Arthropods
-        // and Knockback
+        // the owner's case of 9 and 12 Nov 2026; the default blacklist hides Smite, Bane of
+        // Arthropods and Knockback
         assertEquals(
                 List.of(
                         "Iron Sword",
-                        "Missing: Blinding, Bloodlust, Crippling, Dread, Drifting, Eclipse,",
-                        "Enfeebling, Famine, Fire Aspect, Infestation, Insight, Looting,",
-                        "Mending, Oozing, Plague, Pyre, Sapping, Siphon, Soulbound,",
-                        "Stormcaller, Sweeping Edge, Unbreaking, Updraft, Venom, Vertigo,",
-                        "Warden's Wrath, Warding, Withering",
-                        "Annihilation / Bane of Illagers / Bane of the Deep / Bane of the End /",
-                        "Bane of the Nether / Duelist / Sharpness",
+                        "Missing: Blinding, Bloodlust, Crippling, Dread, Drifting, Eclipse,"
+                                + " Enfeebling, Famine, Fire Aspect, Infestation, Insight, Looting,"
+                                + " Mending, Oozing, Plague, Pyre, Sapping, Siphon, Soulbound,"
+                                + " Stormcaller, Sweeping Edge, Unbreaking, Updraft, Venom, Vertigo,"
+                                + " Warden's Wrath, Warding, Withering",
+                        "Annihilation / Bane of Illagers / Bane of the Deep / Bane of the End /"
+                                + " Bane of the Nether / Duelist / Sharpness",
                         "Cataclysm / Volatile"),
                 rendered(lines));
     }

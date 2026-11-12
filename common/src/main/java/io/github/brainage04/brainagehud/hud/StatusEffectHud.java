@@ -26,7 +26,6 @@ import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.util.Mth;
 import net.minecraft.world.effect.MobEffectInstance;
 
-
 public class StatusEffectHud implements CoreHudElement<StatusEffectHudConfig> {
     /**
      * The vanilla effect sprite's size: exactly two text lines, so the name and time left span the
@@ -65,7 +64,7 @@ public class StatusEffectHud implements CoreHudElement<StatusEffectHudConfig> {
         if (!config.showIcons) {
             // getLines already wrapped the lines at the max width
             HudRenderer.renderElement(
-                    renderer, drawContext, getLines(player, effects), config.coreSettings, true);
+                    renderer, drawContext, getLines(player, effects), config.coreSettings, 0);
             return;
         }
         if (effects.isEmpty()) return;
@@ -152,7 +151,6 @@ public class StatusEffectHud implements CoreHudElement<StatusEffectHudConfig> {
     private static List<MobEffectInstance> getSortedEffects(LocalPlayer player) {
         return Ordering.natural().sortedCopy(player.getActiveEffects());
     }
-
 
     private TextList getLines(LocalPlayer player, List<MobEffectInstance> effects) {
         TextList lines = new TextList();

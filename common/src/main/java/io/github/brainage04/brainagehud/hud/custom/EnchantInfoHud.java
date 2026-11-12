@@ -36,20 +36,17 @@ import net.minecraft.world.item.enchantment.ItemEnchantments;
  *
  * <p>Separators: {@code ", "} only ever joins enchantments that can all be added, and {@code " / "}
  * only ever joins the alternatives of one conflict group, which starts a line of its own. Lines
- * wrap only at these separators, never inside an enchantment's name, and a wrapped line keeps the
- * separator it broke at ({@code ","} or {@code " /"}) at its end. With the element's Max Width set,
- * every line wraps at it; without, compact lines wrap at {@link #COMPACT_LINE_LENGTH} characters
- * and the full format does not wrap.
+ * wrap at the element's max width in GUI pixels, {@link #DEFAULT_MAX_WIDTH} unless the user sets
+ * one, only at these separators and never inside an enchantment's name; a wrapped line keeps the
+ * separator it broke at ({@code ","} or {@code " /"}) at its end.
  */
 public class EnchantInfoHud implements BasicCoreHudElement<EnchantInfoHudConfig> {
     /**
-     * The longest compact line in characters while the element has no max width, so that a long
-     * missing list cannot run off the screen at the usual GUI scales.
+     * The default max width in GUI pixels. At the default place (x 150, top left) the panel then
+     * ends before the default Date/Time HUD in the top right of a 1920x1080 window at GUI scale 3,
+     * 640 GUI pixels wide, as BrainageHUDClientGameTest checks.
      */
-    static final int COMPACT_LINE_LENGTH = 70;
-
-    private static final ToIntFunction<FormattedText> CHARACTERS =
-            text -> text.getString().length();
+    public static final int DEFAULT_MAX_WIDTH = 300;
 
     // the lines only change with their inputs, so they are rebuilt only when an input changes
     // rather than walking the enchantment registry every frame
@@ -60,10 +57,14 @@ public class EnchantInfoHud implements BasicCoreHudElement<EnchantInfoHudConfig>
     private int cachedMaxWidth;
     private List<String> cachedBlacklist = List.of();
 
-    /** The lines are wrapped at the element's max width here, at the enchantment separators. */
     @Override
     public boolean wrapsOwnLines() {
         return true;
+    }
+
+    @Override
+    public int getDefaultMaxWidth() {
+        return DEFAULT_MAX_WIDTH;
     }
 
     @Override
@@ -79,7 +80,7 @@ public class EnchantInfoHud implements BasicCoreHudElement<EnchantInfoHudConfig>
         ItemStack stack = player.getMainHandItem();
         EnchantInfoHudConfig config = getElementConfig();
         int configFlags = configFlags(config);
-        int maxWidth = HudRendererLib.getMaxWidth(config.coreSettings);
+        int maxWidth = HudRendererLib.getMaxWidth(this);
         List<String> blacklist = getConfig().enchantInfoConfig.blacklistedEnchantmentIds;
 
         if (cachedLines == null
@@ -114,19 +115,19 @@ public class EnchantInfoHud implements BasicCoreHudElement<EnchantInfoHudConfig>
                 | (config.compactMode ? 32 : 0);
     }
 
-    /** The lines without a max width, as {@link #getLines()} gives them while it is off. */
+    /** The lines without a max width. */
     public static TextList getLines(
             HolderLookup.RegistryLookup<Enchantment> enchantmentRegistry,
             ItemStack itemStack,
             EnchantInfoHudConfig config,
             Collection<String> blacklistedEnchantmentIds) {
         return getLines(
-                enchantmentRegistry, itemStack, config, blacklistedEnchantmentIds, 0, CHARACTERS);
+                enchantmentRegistry, itemStack, config, blacklistedEnchantmentIds, 0, text -> 0);
     }
 
     /**
      * The lines wrapped at {@code maxWidth} as measured by {@code width}; a {@code maxWidth} of 0
-     * or less means the element has none.
+     * or less means none.
      */
     public static TextList getLines(
             HolderLookup.RegistryLookup<Enchantment> enchantmentRegistry,
@@ -136,9 +137,6 @@ public class EnchantInfoHud implements BasicCoreHudElement<EnchantInfoHudConfig>
             int maxWidth,
             ToIntFunction<FormattedText> width) {
         TextList lines = new TextList();
-        // compact lines keep their own limit while the element has no max width
-        int compactMaxWidth = maxWidth > 0 ? maxWidth : COMPACT_LINE_LENGTH;
-        ToIntFunction<FormattedText> compactWidth = maxWidth > 0 ? width : CHARACTERS;
 
         if (!itemStack.isEnchantable() && !itemStack.isEnchanted()) return lines;
 
@@ -167,11 +165,7 @@ public class EnchantInfoHud implements BasicCoreHudElement<EnchantInfoHudConfig>
                 if (!presentEnchantments.isEmpty()) {
                     lines.addAll(
                             TextWrapper.wrapParts(
-                                    Component.empty(),
-                                    presentEnchantments,
-                                    ", ",
-                                    compactMaxWidth,
-                                    compactWidth));
+                                    Component.empty(), presentEnchantments, ", ", maxWidth, width));
                 }
             } else {
                 // one enchantment per line, and a name is never split
@@ -214,16 +208,12 @@ public class EnchantInfoHud implements BasicCoreHudElement<EnchantInfoHudConfig>
                 // the enchantments that can all be added share the "Missing:" line(s), and each
                 // conflict group follows on lines of its own, as in the full format
                 if (!compatible.isEmpty()) {
-                    lines.addAll(
-                            TextWrapper.wrapParts(
-                                    prefix, compatible, ", ", compactMaxWidth, compactWidth));
+                    lines.addAll(TextWrapper.wrapParts(prefix, compatible, ", ", maxWidth, width));
                     prefix = Component.empty();
                 }
 
                 for (List<Component> names : alternatives) {
-                    lines.addAll(
-                            TextWrapper.wrapParts(
-                                    prefix, names, " / ", compactMaxWidth, compactWidth));
+                    lines.addAll(TextWrapper.wrapParts(prefix, names, " / ", maxWidth, width));
                     prefix = Component.empty();
                 }
 
