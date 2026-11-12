@@ -1,3 +1,6 @@
+import io.github.brainage04.minecraftmodconventions.gradle.production.ClientGameTestProductionRunTask
+import io.github.brainage04.minecraftmodconventions.gradle.production.PrepareProductionGameTestRunsTask
+
 repositories {
 	exclusiveContent {
 		forRepository { maven { url = "https://maven.shedaniel.me/" } }
@@ -34,4 +37,59 @@ dependencies {
 	// ModMenu
 	implementation("com.terraformersmc:modmenu:${rootProject.modmenu_version}") { exclude group: "net.fabricmc.fabric-api" }
 	productionRuntimeMods("com.terraformersmc:modmenu:${rootProject.modmenu_version}") { exclude group: "net.fabricmc.fabric-api" }
+}
+
+// Sodium client GameTest: the production client GameTests again with Sodium installed, for the HUD
+// lines that read the renderer's statistics. Sodium is a test mod of this run only, never a
+// dependency of BrainageHUD.
+repositories {
+	exclusiveContent {
+		forRepository { maven { url = "https://api.modrinth.com/maven" } }
+		filter { includeGroup "maven.modrinth" }
+	}
+}
+
+configurations {
+	sodiumClientGameTestMods {
+		canBeConsumed = false
+		canBeResolved = true
+		transitive = false
+	}
+}
+
+dependencies {
+	sodiumClientGameTestMods "maven.modrinth:sodium:${project.sodium_gametest_version}"
+}
+
+def sodiumClientGameTestRunDir = layout.buildDirectory.dir('run/clientGameTestSodium')
+
+// The options and EULA the conventions write for the vanilla run, in this run's directory.
+def prepareSodiumClientGameTestRun = tasks.register('prepareSodiumClientGameTestRun', PrepareProductionGameTestRunsTask) {
+	def prepareVanillaRun = tasks.getByName('prepareProductionGameTestRuns') as PrepareProductionGameTestRunsTask
+	clientEulaFile = sodiumClientGameTestRunDir.map { it.file('eula.txt') }
+	serverEulaFile = clientEulaFile
+	clientOptionsFile = sodiumClientGameTestRunDir.map { it.file('options.txt') }
+	clientOptionsProfile = prepareVanillaRun.clientOptionsProfile
+	clientSoundDevice = prepareVanillaRun.clientSoundDevice
+	clientRecorderScreen = prepareVanillaRun.clientRecorderScreen
+	disableSocialInteractionsToast = prepareVanillaRun.disableSocialInteractionsToast
+}
+
+tasks.register('runProductionClientGameTestSodium', ClientGameTestProductionRunTask) {
+	group = 'verification'
+	description = 'Runs the Fabric client GameTests in the production client with Sodium installed.'
+	def vanillaRun = tasks.getByName('runProductionClientGameTest') as ClientGameTestProductionRunTask
+	runDir = sodiumClientGameTestRunDir
+	dependsOn prepareSodiumClientGameTestRun
+	mods.from(tasks.named('productionGameTestJar', Jar).flatMap { it.archiveFile })
+	mods.from(configurations.sodiumClientGameTestMods)
+	runtimeLibraries.from(configurations.productionGameTestRuntimeLibraries)
+	includeRuntimeLibrariesInClasspath()
+	useXVFB = vanillaRun.useXVFB.get()
+	silenceAudio = vanillaRun.silenceAudio.get()
+	// Each client run gets its own startup-ready file (ClientGameTestRecorderPlugin, conventions 3.1.2),
+	// so the vanilla run's is left out.
+	jvmArgs.addAll(vanillaRun.jvmArgs.get().findAll { !it.startsWith('-Dminecraftmodconventions.clientReadyFile=') })
+	jvmArgs.add('-Dbrainagehud.gametest.sodium=true')
+	programArgs.addAll(vanillaRun.programArgs.get())
 }

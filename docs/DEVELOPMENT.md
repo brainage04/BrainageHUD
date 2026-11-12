@@ -7,7 +7,7 @@ heavy status
 heavy --mem 6G -- ./gradlew --no-daemon build runAllGameTests
 ```
 
-The client-only mod has unit tests in `fabric/src/test` and a Fabric production client GameTest in `fabric/src/gametest`. The client scenario starts and stops its own dedicated-server fixture. NeoForge server GameTests are disabled; `build` still compiles and packages both loaders.
+The client-only mod has unit tests in `fabric/src/test` and a Fabric production client GameTest in `fabric/src/gametest`. The client scenario starts and stops its own dedicated-server fixture. `runAllGameTests` runs it twice: `:fabric:runProductionClientGameTest` with vanilla rendering and `:fabric:runProductionClientGameTestSodium` with Sodium (`sodium_gametest_version`, test only), so HUD lines that read the renderer's statistics are checked against both. NeoForge server GameTests are disabled; `build` still compiles and packages both loaders.
 
 ## Headless recording
 
