@@ -62,9 +62,11 @@ public class PositionHud implements BasicCoreHudElement<PositionHudConfig> {
      * The rendered/total sections at the start of the debug screen's chunk line. Sodium (0.9.3)
      * replaces vanilla's view area with a one-section stub (IgnoringViewArea) and overwrites
      * sectionStatistics() and countRenderedSections() (LevelExtractorMixin), so only that line has
-     * the real total with every renderer; vanilla's ViewArea.size() reads 1 under Sodium.
+     * the real total with every renderer; vanilla's ViewArea.size() reads 1 under Sodium. Sodium
+     * formats the line with the default locale (RenderSectionManager.getChunksDebugString()), so
+     * the counts may be in any script's decimal digits.
      */
-    private static final Pattern SECTION_COUNTS = Pattern.compile("C: \\d+/\\d+");
+    private static final Pattern SECTION_COUNTS = Pattern.compile("C: \\p{Nd}+/\\p{Nd}+");
 
     /** A line without the counts is shown as it is. */
     static @Nullable String getCCounter(@Nullable String sectionStatistics, boolean smartCull) {
