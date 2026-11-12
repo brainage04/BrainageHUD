@@ -39,6 +39,7 @@ import java.util.Set;
 import javax.imageio.ImageIO;
 import net.fabricmc.fabric.api.client.gametest.v1.FabricClientGameTest;
 import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext;
+import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElementRegistry;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
@@ -153,6 +154,7 @@ public final class BrainageHUDClientGameTest implements FabricClientGameTest {
                         System.out.println(
                                 "[STDOUT]: Enchant info HUD screenshot: "
                                         + context.takeScreenshot("enchant-info-hud"));
+                        exerciseOwnersEnchantPanel(context, server);
 
                         ClientGameTestRecorder.showStep(
                                 context,
@@ -496,6 +498,161 @@ public final class BrainageHUDClientGameTest implements FabricClientGameTest {
             context.runOnClient(client -> client.options.guiScale().set(original[2]));
             context.getInput().resizeWindow(original[0], original[1]);
             context.waitTick();
+        }
+    }
+
+    /**
+     * The owner's case of 12 Nov 2026 (A-0751): an Iron Sword on a server that registers Skyport's
+     * enchantments (this GameTest mod's datapack, {@code data/skyport}), with the compact Enchant
+     * Info HUD and the Date/Time HUD at their default places, in a 1920x1080 window at GUI scale 3.
+     * The panel must end before the clock. It resizes the window, so like the other resizing checks
+     * it runs only outside recordings.
+     */
+    private static void exerciseOwnersEnchantPanel(
+            ClientGameTestContext context,
+            net.fabricmc.fabric.api.client.gametest.v1.context.TestDedicatedServerContext server) {
+        if (ClientGameTestRecordingSession.isEnabled()) return;
+        int[] original =
+                context.computeOnClient(
+                        client ->
+                                new int[] {
+                                    client.getWindow().getWidth(),
+                                    client.getWindow().getHeight(),
+                                    client.options.guiScale().get(),
+                                    client.player.getInventory().getSelectedSlot()
+                                });
+        ModConfig config = context.computeOnClient(client -> ConfigUtils.getConfig());
+        ModConfig defaults = new ModConfig();
+        List<CoreSettings> placed =
+                List.of(
+                        config.enchantInfoHudConfig.coreSettings,
+                        config.dateTimeHudConfig.coreSettings,
+                        config.keystrokesHudConfig.coreSettings);
+        List<CoreSettings> defaultPlaces =
+                List.of(
+                        defaults.enchantInfoHudConfig.coreSettings,
+                        defaults.dateTimeHudConfig.coreSettings,
+                        defaults.keystrokesHudConfig.coreSettings);
+        List<HudPlacement> placements = placed.stream().map(HudPlacement::new).toList();
+        boolean compactMode = config.enchantInfoHudConfig.compactMode;
+        boolean maxWidthOverride =
+                config.enchantInfoHudConfig.coreSettings.elementOverrides.maxWidth.enabled;
+        server.runOnServer(
+                minecraftServer ->
+                        minecraftServer
+                                .getPlayerList()
+                                .getPlayers()
+                                .getFirst()
+                                .getInventory()
+                                .setItem(8, new ItemStack(Items.IRON_SWORD)));
+        try {
+            // the recorder's step panel in the top right would cover the clock and the panel
+            context.runOnClient(client -> setRecorderPanelHidden(true));
+            context.getInput().resizeWindow(1920, 1080);
+            context.runOnClient(
+                    client -> {
+                        client.options.guiScale().set(3);
+                        client.resizeGui();
+                        if (client.getWindow().getGuiScale() != 3) {
+                            throw new AssertionError(
+                                    "Expected GUI scale 3 in a 1920x1080 window, got "
+                                            + client.getWindow().getGuiScale());
+                        }
+                        client.player.getInventory().setSelectedSlot(8);
+                        for (int i = 0; i < placed.size(); i++) {
+                            CoreSettings settings = placed.get(i);
+                            CoreSettings place = defaultPlaces.get(i);
+                            settings.elementAnchor = place.elementAnchor;
+                            settings.x = place.x;
+                            settings.y = place.y;
+                        }
+                        config.enchantInfoHudConfig.compactMode = true;
+                        config.enchantInfoHudConfig.coreSettings.elementOverrides.maxWidth.enabled =
+                                false;
+                    });
+            context.waitTicks(10);
+            System.out.println(
+                    "[STDOUT]: Owner's Enchant Info panel at 1920x1080, GUI scale 3, screenshot: "
+                            + context.takeScreenshot("enchant-owner-1080p-gui3"));
+            context.runOnClient(
+                    client -> {
+                        var enchant = drawnBounds(config.enchantInfoHudConfig.coreSettings);
+                        var clock = drawnBounds(config.dateTimeHudConfig.coreSettings);
+                        System.out.printf(
+                                "[STDOUT]: Owner's Enchant Info panel: x %d to %d, %d lines; clock"
+                                        + " from x %d; screen %d GUI pixels wide%n",
+                                enchant.left,
+                                enchant.right,
+                                new EnchantInfoHud().getLines().size(),
+                                clock.left,
+                                HudRenderer.getScaledWidth());
+                        if (enchant.right >= clock.left) {
+                            throw new AssertionError(
+                                    "Expected the Enchant Info panel at its default place to end"
+                                            + " before the Date/Time HUD at x %d, but it ends at x %d"
+                                                    .formatted(clock.left, enchant.right));
+                        }
+                    });
+        } finally {
+            context.runOnClient(
+                    client -> {
+                        placements.forEach(HudPlacement::restore);
+                        setRecorderPanelHidden(false);
+                        config.enchantInfoHudConfig.compactMode = compactMode;
+                        config.enchantInfoHudConfig.coreSettings.elementOverrides.maxWidth.enabled =
+                                maxWidthOverride;
+                        client.player.getInventory().setSelectedSlot(original[3]);
+                        client.options.guiScale().set(original[2]);
+                    });
+            server.runOnServer(
+                    minecraftServer ->
+                            minecraftServer
+                                    .getPlayerList()
+                                    .getPlayers()
+                                    .getFirst()
+                                    .getInventory()
+                                    .setItem(8, ItemStack.EMPTY));
+            context.getInput().resizeWindow(original[0], original[1]);
+            context.runOnClient(Minecraft::resizeGui);
+            context.waitTicks(5);
+        }
+    }
+
+    /** The element's bounds as it was last drawn. */
+    private static io.github.brainage04.hudrendererlib.config.core.ElementCorners drawnBounds(
+            CoreSettings settings) {
+        var corners = HudElementEditor.CORE_SETTINGS_ELEMENTS.get(settings.elementId).corners;
+        if (corners.right <= corners.left) {
+            throw new AssertionError(settings.elementName + " was not drawn.");
+        }
+        return corners;
+    }
+
+    private static final Identifier RECORDER_PANEL =
+            Identifier.fromNamespaceAndPath(
+                    "minecraftmodconventions", "gametest_recording_feedback");
+    private static volatile boolean recorderPanelHidden;
+    private static boolean recorderPanelWrapped;
+
+    /**
+     * Hides or shows MinecraftModConventions' GameTest step panel, which is drawn in the top right
+     * while the recorder environment is on. Runs on the client thread.
+     */
+    private static void setRecorderPanelHidden(boolean hidden) {
+        recorderPanelHidden = hidden;
+        if (recorderPanelWrapped) return;
+        recorderPanelWrapped = true;
+        try {
+            HudElementRegistry.replaceElement(
+                    RECORDER_PANEL,
+                    panel ->
+                            (graphics, deltaTracker) -> {
+                                if (!recorderPanelHidden) {
+                                    panel.extractRenderState(graphics, deltaTracker);
+                                }
+                            });
+        } catch (IllegalArgumentException notRegistered) {
+            // the panel is registered only while the recorder environment is on
         }
     }
 
