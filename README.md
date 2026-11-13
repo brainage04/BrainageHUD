@@ -42,11 +42,13 @@ The Enchant Info HUD shows the held item's name, its enchantments, then a "Missi
 
 Tooltip lines of enchantments at their maximum level are shown in bold (Enchant Info > Highlight Max Level Enchants).
 
+On screens narrower than about 640 GUI pixels (Auto GUI scale at 1080p, or Force Unicode Font), the panel can still reach the clock: lower its Max Width in the HUD editor or config.
+
 ## Getting started
 
 - Minecraft 26.3; Java 25 or later.
 - Fabric Loader 0.19.5 or later with [Fabric API](https://modrinth.com/mod/fabric-api), or NeoForge 26.3.0.99 or later.
-- [HudRendererLib](https://modrinth.com/mod/hudrendererlib) 1.1.0 or later and [Cloth Config](https://modrinth.com/mod/cloth-config) 26.3.159 or later, for your loader.
+- [HudRendererLib](https://modrinth.com/mod/hudrendererlib) 1.1.1 or later and [Cloth Config](https://modrinth.com/mod/cloth-config) 26.3.159 or later, for your loader.
 - Recommended on Fabric: [Mod Menu](https://modrinth.com/mod/modmenu), for a config button in the mods list.
 
 Install the BrainageHUD JAR for your loader (Fabric or NeoForge) and its requirements into the client's `mods` folder. BrainageHUD is client-only and isn't needed on servers.
