@@ -4,7 +4,7 @@
   "key.brainagehud.manageWaypoints": "Manage Waypoints",
   "key.brainagehud.openConfig": "Open Config",
   "key.brainagehud.toggleEnchantInfoCompact": "Toggle Enchant Info Compact",
-  "key.category.brainagehud.keys": "BrainageHUD",
+  "key.category.brainagehud.keys": "Brainage HUD",
   "text.autoconfig.brainagehud.option.armourInfoHudConfig": "Armour Info HUD",
   "text.autoconfig.brainagehud.option.armourInfoHudConfig.coreSettings": "Core Settings",
   "text.autoconfig.brainagehud.option.armourInfoHudConfig.coreSettings.elementAnchor": "Element Anchor",
@@ -498,5 +498,5 @@
   "text.autoconfig.brainagehud.option.waypointConfig.showWorldCentre": "Show World Centre",
   "text.autoconfig.brainagehud.option.waypointConfig.showWorldCentre.@Tooltip": "A built-in waypoint at 0, 63, 0 in every dimension.",
   "text.autoconfig.brainagehud.option.waypointConfig.worldCentreColour": "World Centre Colour",
-  "text.autoconfig.brainagehud.title": "BrainageHUD Config Editor"
+  "text.autoconfig.brainagehud.title": "Brainage HUD Config Editor"
 }

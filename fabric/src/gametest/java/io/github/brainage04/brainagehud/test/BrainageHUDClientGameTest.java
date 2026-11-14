@@ -341,7 +341,7 @@ public final class BrainageHUDClientGameTest implements FabricClientGameTest {
                                 context,
                                 "chat-feedback",
                                 "Chat feedback",
-                                "Every message starts with a grey [BrainageHUD] prefix: the Create Waypoint key's confirmation is green, wrong /waypoints input gets a red usage error, and /waypoints list sends one white header followed by unprefixed lines.");
+                                "Every message starts with a grey [Brainage HUD] prefix: the Create Waypoint key's confirmation is green, wrong /waypoints input gets a red usage error, and /waypoints list sends one white header followed by unprefixed lines.");
                         Set<Component> chat = new LinkedHashSet<>();
                         // the filter sees every chat message, including those already shown,
                         // whenever the chat is laid out again
@@ -367,22 +367,22 @@ public final class BrainageHUDClientGameTest implements FabricClientGameTest {
                                             .setVisibleMessageFilter(message -> true);
                                     assertChatMessage(
                                             chat,
-                                            "[BrainageHUD] Created waypoint Waypoint 1 at 12, -60, -9.",
+                                            "[Brainage HUD] Created waypoint Waypoint 1 at 12, -60, -9.",
                                             "Created waypoint ",
                                             ChatFormatting.GREEN);
                                     assertChatMessage(
                                             chat,
-                                            "[BrainageHUD] Usage: /waypoints add <name> [<x> <y> <z>]",
+                                            "[Brainage HUD] Usage: /waypoints add <name> [<x> <y> <z>]",
                                             "Usage: ",
                                             ChatFormatting.RED);
                                     assertChatMessage(
                                             chat,
-                                            "[BrainageHUD] X, Y and Z must be whole numbers.",
+                                            "[Brainage HUD] X, Y and Z must be whole numbers.",
                                             "X, Y and Z",
                                             ChatFormatting.RED);
                                     assertChatMessage(
                                             chat,
-                                            "[BrainageHUD] Waypoints:",
+                                            "[Brainage HUD] Waypoints:",
                                             "Waypoints:",
                                             ChatFormatting.WHITE);
                                     assertChatMessage(
@@ -529,29 +529,29 @@ public final class BrainageHUDClientGameTest implements FabricClientGameTest {
                     context,
                     chat,
                     "getenchants",
-                    "[BrainageHUD] Acceptable enchants for Diamond Pickaxe:");
+                    "[Brainage HUD] Acceptable enchants for Diamond Pickaxe:");
             commandAndCheck(
                     context,
                     chat,
                     "getenchants minecraft:mace",
-                    "[BrainageHUD] Acceptable enchants for Mace:");
+                    "[Brainage HUD] Acceptable enchants for Mace:");
             commandAndCheck(
                     context, chat, "getenchantinfo minecraft:fortune", "ID: minecraft:fortune");
             commandAndCheck(
                     context,
                     chat,
                     "getenchantinfo \"Fortune\"",
-                    "[BrainageHUD] Enchant info for Fortune:");
+                    "[Brainage HUD] Enchant info for Fortune:");
             commandAndCheck(
                     context,
                     chat,
                     "getenchantinfo \"protect\"",
-                    "[BrainageHUD] No exact match found. Potential matches:");
+                    "[Brainage HUD] No exact match found. Potential matches:");
             commandAndCheck(
                     context,
                     chat,
                     "getenchantinfo \"not an enchantment\"",
-                    "[BrainageHUD] No potential matches found!");
+                    "[Brainage HUD] No potential matches found!");
             context.runOnClient(
                     client ->
                             ConfigUtils.getConfig()
@@ -562,23 +562,23 @@ public final class BrainageHUDClientGameTest implements FabricClientGameTest {
                     context,
                     chat,
                     "blacklistedenchants add minecraft:unbreaking",
-                    "[BrainageHUD] Unbreaking is now blacklisted.");
+                    "[Brainage HUD] Unbreaking is now blacklisted.");
             commandAndCheck(
                     context,
                     chat,
                     "blacklistedenchants add minecraft:unbreaking",
-                    "[BrainageHUD] Unbreaking is already blacklisted!");
+                    "[Brainage HUD] Unbreaking is already blacklisted!");
             commandAndCheck(context, chat, "blacklistedenchants query", " - Unbreaking");
             commandAndCheck(
                     context,
                     chat,
                     "blacklistedenchants remove minecraft:unbreaking",
-                    "[BrainageHUD] Unbreaking is no longer blacklisted.");
+                    "[Brainage HUD] Unbreaking is no longer blacklisted.");
             commandAndCheck(
                     context,
                     chat,
                     "blacklistedenchants remove minecraft:unbreaking",
-                    "[BrainageHUD] Unbreaking is not blacklisted!");
+                    "[Brainage HUD] Unbreaking is not blacklisted!");
         } finally {
             context.runOnClient(
                     client -> {
@@ -842,24 +842,24 @@ public final class BrainageHUDClientGameTest implements FabricClientGameTest {
                     context,
                     chat,
                     "waypoints add \"Quoted Base\" 1 -60 3",
-                    "[BrainageHUD] Created waypoint Quoted Base at 1, -60, 3.");
+                    "[Brainage HUD] Created waypoint Quoted Base at 1, -60, 3.");
             context.runOnClient(client -> assertSavedWaypoint(client, "Quoted Base", true));
             commandAndCheck(
                     context,
                     chat,
                     "waypoints add \"quoted base\"",
-                    "[BrainageHUD] A waypoint called \"quoted base\" already exists.");
+                    "[Brainage HUD] A waypoint called \"quoted base\" already exists.");
             commandAndCheck(
                     context,
                     chat,
                     "waypoints remove \"QUOTED BASE\"",
-                    "[BrainageHUD] Removed waypoint Quoted Base.");
+                    "[Brainage HUD] Removed waypoint Quoted Base.");
             context.runOnClient(client -> assertSavedWaypoint(client, "Quoted Base", false));
             commandAndCheck(
                     context,
                     chat,
                     "waypoints remove \"Quoted Base\"",
-                    "[BrainageHUD] There is no waypoint called \"Quoted Base\".");
+                    "[Brainage HUD] There is no waypoint called \"Quoted Base\".");
         } finally {
             context.runOnClient(
                     client -> client.gui.hud.getChat().setVisibleMessageFilter(message -> true));

@@ -84,7 +84,7 @@ public class EnglishLangProvider extends FabricLanguageProvider {
             HolderLookup.Provider registryLookup, TranslationBuilder translationBuilder) {
         translationBuilder.add(
                 "text.autoconfig.%s.title".formatted(BrainageHUD.MOD_ID),
-                "BrainageHUD Config Editor");
+                "Brainage HUD Config Editor");
 
         addAutomaticTranslations(
                 new String[] {

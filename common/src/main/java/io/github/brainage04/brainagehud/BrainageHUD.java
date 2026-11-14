@@ -27,7 +27,7 @@ import org.slf4j.LoggerFactory;
 
 public final class BrainageHUD {
     public static final String MOD_ID = "brainagehud";
-    public static final String MOD_NAME = "BrainageHUD";
+    public static final String MOD_NAME = "Brainage HUD";
     public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
 
     private static volatile boolean initialized;
