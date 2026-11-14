@@ -17,8 +17,10 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
  */
 @Mixin(LightmapRenderStateExtractor.class)
 public class MixinLightmapRenderStateExtractor {
-    // TAIL is the return after the state is fully extracted, not the early "nothing changed"
-    // returns.
+    // extract has a single return, so this runs every frame. On frames without needsUpdate the
+    // state keeps last frame's values and gets lifted again, but Lightmap.render reads the state
+    // only when needsUpdate is set, after a fresh extract
+    // (26.3 LightmapRenderStateExtractor.java:44, Lightmap.java:61).
     @Inject(method = "extract", at = @At("TAIL"))
     private void brainagehud$applyFullbright(
             LightmapRenderState state, float partialTicks, CallbackInfo ci) {
