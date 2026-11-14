@@ -67,6 +67,16 @@ class WaypointStoreTest {
         assertEquals("Local", loaded.get("server/[::1]").get(0).name);
     }
 
+    @Test
+    void theServerKeyDropsOnlyTheDefaultPort() {
+        assertEquals("server/play.example.net", WaypointStore.serverKey("Play.Example.NET:25565"));
+        assertEquals("server/play.example.net", WaypointStore.serverKey("play.example.net"));
+        assertEquals(
+                "server/play.example.net:25570", WaypointStore.serverKey("play.example.net:25570"));
+        assertEquals("server/[::1]", WaypointStore.serverKey("[::1]:25565"));
+        assertEquals("server/127.0.0.1:25566", WaypointStore.serverKey("127.0.0.1:25566"));
+    }
+
     private static String json(String name) {
         return """
                 { "name": "%s", "x": 1, "y": 64, "z": 2, "dimension": "minecraft:overworld",
