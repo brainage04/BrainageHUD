@@ -16,7 +16,7 @@ jobs:
     with:
       prepare_siblings: HudRendererLib
       additional_artifact_pattern: brainagehud-neoforge-*.jar
-      release_name: ${{ format('BrainageHUD {0}', github.ref_name) }}
+      release_name: ${{ format('Brainage HUD {0}', github.ref_name) }}
       modrinth_project_id: ${{ vars.MODRINTH_PROJECT_ID }}
       publish_curseforge: false
     secrets:

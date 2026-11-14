@@ -6,7 +6,7 @@ issueTrackerURL="https://github.com/brainage04/BrainageHUD/issues"
 [[mods]]
 modId="brainagehud"
 version="${version}"
-displayName="BrainageHUD"
+displayName="Brainage HUD"
 description="A NeoForge mod that adds useful HUD elements to Minecraft."
 iconFile="assets/brainagehud/icon.png"
 authors="brainage04"
