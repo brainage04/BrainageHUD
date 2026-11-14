@@ -5,10 +5,22 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import io.github.brainage04.brainagehud.BrainageHUD;
 import io.github.brainage04.brainagehud.config.core.ModConfig;
+import io.github.brainage04.brainagehud.config.hud.basic.NetworkHudConfig;
 import io.github.brainage04.brainagehud.config.hud.custom.armour_info.DurabilityFormat;
 import io.github.brainage04.brainagehud.config.hud.custom.keystrokes.ClicksPerSecondFormat;
+import io.github.brainage04.brainagehud.config.other.WaypointConfig;
 import io.github.brainage04.hudrendererlib.config.core.ElementAnchor;
+import java.util.ArrayList;
+import java.util.List;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.core.LogEvent;
+import org.apache.logging.log4j.core.Logger;
+import org.apache.logging.log4j.core.appender.AbstractAppender;
+import org.apache.logging.log4j.core.config.Configurator;
+import org.apache.logging.log4j.core.config.Property;
 import org.junit.jupiter.api.Test;
 
 class ModConfigTest {
@@ -130,5 +142,59 @@ class ModConfigTest {
         assertEquals("Date/Time HUD", config.dateTimeHudConfig.coreSettings.elementName);
         assertEquals(ElementAnchor.BOTTOM, config.dateTimeHudConfig.coreSettings.elementAnchor);
         assertEquals("My fishing panel", config.fishingHudConfig.coreSettings.elementName);
+    }
+
+    @Test
+    void aSectionSetToNullLoadsAsItsDefaultAndIsLoggedOnce() {
+        ModConfig config =
+                GSON.fromJson(
+                        """
+                        {
+                          "networkHudConfig": null,
+                          "waypointConfig": null,
+                          "fishingHudConfig": { "coreSettings": {
+                            "elementName": "Fishing HUD", "enabled": false, "x": 3, "y": 4,
+                            "elementAnchor": "LEFT"
+                          } }
+                        }
+                        """,
+                        ModConfig.class);
+
+        List<String> warnings = warningsDuring(config::validatePostLoad);
+
+        assertEquals(GSON.toJson(new NetworkHudConfig()), GSON.toJson(config.networkHudConfig));
+        assertEquals(GSON.toJson(new WaypointConfig()), GSON.toJson(config.waypointConfig));
+        assertFalse(config.fishingHudConfig.coreSettings.enabled);
+        assertEquals(
+                List.of(
+                        "Config value ModConfig.networkHudConfig is missing, using the default",
+                        "Config value ModConfig.waypointConfig is missing, using the default"),
+                warnings.stream().sorted().toList());
+    }
+
+    private static List<String> warningsDuring(Runnable action) {
+        Logger logger = (Logger) LogManager.getLogger(BrainageHUD.MOD_ID);
+        List<String> warnings = new ArrayList<>();
+        AbstractAppender appender =
+                new AbstractAppender("ModConfigTest", null, null, true, Property.EMPTY_ARRAY) {
+                    @Override
+                    public void append(LogEvent event) {
+                        if (event.getLevel() == Level.WARN) {
+                            warnings.add(event.getMessage().getFormattedMessage());
+                        }
+                    }
+                };
+        appender.start();
+        logger.addAppender(appender);
+        Level level = logger.getLevel();
+        Configurator.setLevel(BrainageHUD.MOD_ID, Level.WARN);
+        try {
+            action.run();
+        } finally {
+            Configurator.setLevel(BrainageHUD.MOD_ID, level);
+            logger.removeAppender(appender);
+            appender.stop();
+        }
+        return warnings;
     }
 }
