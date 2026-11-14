@@ -1055,43 +1055,6 @@ public final class BrainageHUDClientGameTest implements FabricClientGameTest {
         return widest;
     }
 
-    /**
-     * With Update On Attack Click, a click pressed and released between two frames (low frame
-     * rates) must still update the Reach HUD: the attack key is never seen down.
-     */
-    private static void assertReachUpdatesOnAClickBetweenFrames() {
-        Minecraft client = Minecraft.getInstance();
-        var reach = ConfigUtils.getConfig().reachHudConfig;
-        boolean updateOnAttackClick = reach.updateOnAttackClick;
-        HitResult target = client.hitResult;
-        try {
-            reach.updateOnAttackClick = true;
-            ReachHud hud = new ReachHud();
-            BlockPos below = client.player.blockPosition().below();
-            client.hitResult =
-                    new BlockHitResult(Vec3.atCenterOf(below), Direction.UP, below, false);
-            if (hud.getLines().isEmpty()) {
-                throw new AssertionError("The Reach HUD shows nothing for a block in reach.");
-            }
-            client.hitResult = BlockHitResult.miss(Vec3.atCenterOf(below), Direction.UP, below);
-            if (hud.getLines().isEmpty()) {
-                throw new AssertionError("The Reach HUD updated without an attack click.");
-            }
-            KeyMapping.click(InputConstants.getKey(client.options.keyAttack.saveString()));
-            if (!hud.getLines().isEmpty()) {
-                throw new AssertionError(
-                        "The Reach HUD missed an attack click pressed and released between two"
-                                + " frames.");
-            }
-        } finally {
-            while (client.options.keyAttack.consumeClick()) {
-                // the click above must not attack on the next tick
-            }
-            client.hitResult = target;
-            reach.updateOnAttackClick = updateOnAttackClick;
-        }
-    }
-
     /** The element's bounds as it was last drawn. */
     private static ElementCorners bounds(CoreSettings settings) {
         ElementCorners corners =
@@ -2126,6 +2089,43 @@ public final class BrainageHUDClientGameTest implements FabricClientGameTest {
                     "Expected the idle dedicated server to measure close to 20 TPS, but got "
                             + lines
                             + ".");
+        }
+    }
+
+    /**
+     * With Update On Attack Click, a click pressed and released between two frames (low frame
+     * rates) must still update the Reach HUD: the attack key is never seen down.
+     */
+    private static void assertReachUpdatesOnAClickBetweenFrames() {
+        Minecraft client = Minecraft.getInstance();
+        var reach = ConfigUtils.getConfig().reachHudConfig;
+        boolean updateOnAttackClick = reach.updateOnAttackClick;
+        HitResult target = client.hitResult;
+        try {
+            reach.updateOnAttackClick = true;
+            ReachHud hud = new ReachHud();
+            BlockPos below = client.player.blockPosition().below();
+            client.hitResult =
+                    new BlockHitResult(Vec3.atCenterOf(below), Direction.UP, below, false);
+            if (hud.getLines().isEmpty()) {
+                throw new AssertionError("The Reach HUD shows nothing for a block in reach.");
+            }
+            client.hitResult = BlockHitResult.miss(Vec3.atCenterOf(below), Direction.UP, below);
+            if (hud.getLines().isEmpty()) {
+                throw new AssertionError("The Reach HUD updated without an attack click.");
+            }
+            KeyMapping.click(InputConstants.getKey(client.options.keyAttack.saveString()));
+            if (!hud.getLines().isEmpty()) {
+                throw new AssertionError(
+                        "The Reach HUD missed an attack click pressed and released between two"
+                                + " frames.");
+            }
+        } finally {
+            while (client.options.keyAttack.consumeClick()) {
+                // the click above must not attack on the next tick
+            }
+            client.hitResult = target;
+            reach.updateOnAttackClick = updateOnAttackClick;
         }
     }
 
