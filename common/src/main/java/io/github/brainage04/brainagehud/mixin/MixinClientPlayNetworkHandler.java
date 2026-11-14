@@ -19,7 +19,8 @@ public class MixinClientPlayNetworkHandler {
             "Lnet/minecraft/network/protocol/PacketUtils;ensureRunningOnSameThread(Lnet/minecraft/network/protocol/Packet;Lnet/minecraft/network/PacketListener;Lnet/minecraft/network/PacketProcessor;)V";
 
     /**
-     * Sends pings while the Network HUD shows ping, not only while the debug network chart is open.
+     * Sends pings while the Network HUD is on and shows ping, not only while the debug network
+     * chart is open.
      */
     @ModifyExpressionValue(
             method = "tick",
@@ -30,7 +31,8 @@ public class MixinClientPlayNetworkHandler {
                                     "Lnet/minecraft/client/gui/components/DebugScreenOverlay;showNetworkCharts()Z"))
     private boolean sendPingForNetworkHud(boolean showNetworkCharts) {
         return showNetworkCharts
-                || (getConfig().networkHudConfig.showPing
+                || (getConfig().networkHudConfig.coreSettings.enabled
+                        && getConfig().networkHudConfig.showPing
                         && ModTickEvents.getTicks()
                                         % getConfig().networkHudConfig.updatePingTickInterval
                                 == 0);
