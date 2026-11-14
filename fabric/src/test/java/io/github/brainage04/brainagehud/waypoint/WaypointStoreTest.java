@@ -27,6 +27,65 @@ class WaypointStoreTest {
     }
 
     @Test
+    void anAddressWithTheDefaultPortSharesTheWaypointsOfTheBareAddress() {
+        // The game connects to "host" and "host:25565" alike, SRV lookup included, so waypoints
+        // saved under either key belong to one server. Another port is another server.
+        String saved =
+                """
+                {
+                  "server/play.example.net": [%s, %s],
+                  "server/play.example.net:25565": [%s, %s],
+                  "server/play.example.net:25570": [%s],
+                  "server/[::1]:25565": [%s],
+                  "singleplayer/New World": [%s]
+                }
+                """
+                        .formatted(
+                                json("Base"),
+                                json("Farm"),
+                                json("Mine"),
+                                json("base"),
+                                json("Other"),
+                                json("Local"),
+                                json("Home"));
+
+        Map<String, List<Waypoint>> loaded = WaypointStore.read(new StringReader(saved));
+
+        assertEquals(
+                List.of(
+                        "server/play.example.net",
+                        "server/play.example.net:25570",
+                        "server/[::1]",
+                        "singleplayer/New World"),
+                List.copyOf(loaded.keySet()));
+        assertEquals(
+                List.of("Base", "Farm", "Mine", "base (2)"),
+                loaded.get("server/play.example.net").stream()
+                        .map(waypoint -> waypoint.name)
+                        .toList());
+        assertEquals("Other", loaded.get("server/play.example.net:25570").get(0).name);
+        assertEquals("Local", loaded.get("server/[::1]").get(0).name);
+    }
+
+    @Test
+    void theServerKeyDropsOnlyTheDefaultPort() {
+        assertEquals("server/play.example.net", WaypointStore.serverKey("Play.Example.NET:25565"));
+        assertEquals("server/play.example.net", WaypointStore.serverKey("play.example.net"));
+        assertEquals(
+                "server/play.example.net:25570", WaypointStore.serverKey("play.example.net:25570"));
+        assertEquals("server/[::1]", WaypointStore.serverKey("[::1]:25565"));
+        assertEquals("server/127.0.0.1:25566", WaypointStore.serverKey("127.0.0.1:25566"));
+    }
+
+    private static String json(String name) {
+        return """
+                { "name": "%s", "x": 1, "y": 64, "z": 2, "dimension": "minecraft:overworld",
+                  "colour": 16777215, "visible": true }
+                """
+                .formatted(name);
+    }
+
+    @Test
     void aWaypointWithoutVisibleLoadsVisible() {
         // The mod writes visible for every waypoint, so only a hand-edited or partial file leaves
         // it out; such a waypoint must still load visible, not hidden.

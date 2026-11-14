@@ -26,7 +26,7 @@ Motion and Entity are off by default; turn them on in the config editor. Every e
 
 ### Waypoints
 
-Waypoints are saved per world (singleplayer save or server address) in `config/brainagehud/waypoints.json`. Each visible waypoint in your current dimension is drawn in the world, in its own colour:
+Waypoints are saved per world (singleplayer save or server address, where `play.example.net` and `play.example.net:25565` are one server) in `config/brainagehud/waypoints.json`. Each visible waypoint in your current dimension is drawn in the world, in its own colour:
 
 - A beacon beam through the whole height of the dimension, which widens with distance so it can be found from far away.
 - A spinning gem hovering above the spot, with a pulse spreading over the ground below it when you are near.

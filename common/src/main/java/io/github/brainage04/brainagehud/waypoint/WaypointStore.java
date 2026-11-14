@@ -1,5 +1,6 @@
 package io.github.brainage04.brainagehud.waypoint;
 
+import com.google.common.net.HostAndPort;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonParseException;
@@ -21,10 +22,12 @@ import java.util.Objects;
 import java.util.Optional;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ServerData;
+import net.minecraft.client.multiplayer.resolver.ServerAddress;
 import net.minecraft.client.server.IntegratedServer;
 import net.minecraft.world.level.storage.LevelResource;
 
 public final class WaypointStore {
+    private static final String SERVER_PREFIX = "server/";
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
     private static final Type WORLDS_TYPE =
             new TypeToken<LinkedHashMap<String, ArrayList<Waypoint>>>() {}.getType();
@@ -53,8 +56,7 @@ public final class WaypointStore {
         }
 
         ServerData serverData = minecraft.getCurrentServer();
-        if (serverData != null)
-            return Optional.of("server/" + serverData.ip.toLowerCase(Locale.ROOT));
+        if (serverData != null) return Optional.of(serverKey(serverData.ip));
 
         return Optional.empty();
     }
@@ -135,7 +137,66 @@ public final class WaypointStore {
                                 world);
                     }
                 });
-        return loaded;
+        return mergeServerKeys(loaded);
+    }
+
+    /**
+     * The key of a server's waypoints: the address in lower case, without a port that the game
+     * treats as no port at all, so {@code host} and {@code host:25565} share one list.
+     */
+    static String serverKey(String address) {
+        String lowerCase = address.toLowerCase(Locale.ROOT);
+        try {
+            HostAndPort hostAndPort = HostAndPort.fromString(lowerCase);
+            String host = hostAndPort.getHost();
+            String bare = HostAndPort.fromHost(host).toString();
+            // ServerAddress gives an address without a port the default one, and the game resolves
+            // both forms alike, SRV lookup included (26.3 ServerAddress.java:40,
+            // ServerRedirectHandler.java:35).
+            if (hostAndPort.hasPort()
+                    && !host.isEmpty()
+                    && ServerAddress.parseString(lowerCase)
+                            .equals(ServerAddress.parseString(bare))) {
+                return SERVER_PREFIX + bare;
+            }
+        } catch (IllegalArgumentException ignored) {
+            // not an address the game can connect to: keep it as it is
+        }
+        return SERVER_PREFIX + lowerCase;
+    }
+
+    /**
+     * Moves waypoints saved under an older form of a server's key into {@link #serverKey}'s list. A
+     * moved waypoint whose name is taken there gets a number, as {@code find()} needs unique names.
+     */
+    private static Map<String, List<Waypoint>> mergeServerKeys(Map<String, List<Waypoint>> loaded) {
+        Map<String, List<Waypoint>> merged = new LinkedHashMap<>();
+        loaded.forEach(
+                (world, waypoints) -> {
+                    String key =
+                            world.startsWith(SERVER_PREFIX)
+                                    ? serverKey(world.substring(SERVER_PREFIX.length()))
+                                    : world;
+                    List<Waypoint> target = merged.get(key);
+                    if (target == null) {
+                        merged.put(key, waypoints);
+                        return;
+                    }
+                    BrainageHUD.LOGGER.info("Moving the waypoints of {} to {}", world, key);
+                    for (Waypoint waypoint : waypoints) {
+                        waypoint.name = freeName(target, waypoint.name);
+                        target.add(waypoint);
+                    }
+                });
+        return merged;
+    }
+
+    private static String freeName(List<Waypoint> waypoints, String name) {
+        if (find(waypoints, name).isEmpty()) return name;
+        for (int number = 2; ; number++) {
+            String numbered = "%s (%d)".formatted(name, number);
+            if (find(waypoints, numbered).isEmpty()) return numbered;
+        }
     }
 
     private static boolean isIncomplete(Waypoint waypoint) {
