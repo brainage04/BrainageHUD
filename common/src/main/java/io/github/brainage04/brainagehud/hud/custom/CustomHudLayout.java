@@ -33,4 +33,12 @@ final class CustomHudLayout {
 
         return new Origin(posX, posY);
     }
+
+    /**
+     * Clears the editor bounds of an element that draws nothing this frame, as {@link
+     * HudRenderer#renderElement} does for empty text, so the editor drops the element.
+     */
+    static void clear(CoreSettings coreSettings) {
+        HudRenderer.setElementBounds(coreSettings, -1, -1, -1, -1);
+    }
 }

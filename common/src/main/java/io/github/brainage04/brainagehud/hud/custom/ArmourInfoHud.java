@@ -76,7 +76,10 @@ public class ArmourInfoHud implements CoreHudElement<ArmourInfoHudConfig> {
             addItem(items, player.getItemBySlot(EquipmentSlot.LEGS), config, renderer);
             addItem(items, player.getItemBySlot(EquipmentSlot.FEET), config, renderer);
         }
-        if (items.isEmpty()) return;
+        if (items.isEmpty()) {
+            CustomHudLayout.clear(config.coreSettings);
+            return;
+        }
 
         int elementPadding = HudRendererLib.getPadding(config.coreSettings);
         int maxLineWidth = 0;
