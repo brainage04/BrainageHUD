@@ -5,11 +5,19 @@
   ],
   "additional_categories": [],
   "dependency_overrides": {
+    "fabric-api": {
+      "curseforge_slug": "fabric-api"
+    },
     "cloth-config": {
-      "project_slug": "cloth-config"
+      "project_slug": "cloth-config",
+      "curseforge_slug": "cloth-config"
     },
     "hudrendererlib": {
-      "project_slug": "hudrendererlib"
+      "project_slug": "hudrendererlib",
+      "curseforge_slug": "hudrendererlib"
+    },
+    "modmenu": {
+      "curseforge_slug": "modmenu"
     }
   }
 }
