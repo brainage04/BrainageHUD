@@ -22,10 +22,13 @@ import io.github.brainage04.brainagehud.config.other.WaypointConfig;
 import io.github.brainage04.brainagehud.util.MathUtils;
 import io.github.brainage04.hudrendererlib.config.core.CoreSettings;
 import io.github.brainage04.hudrendererlib.config.core.CoreSettingsIdAssigner;
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.util.function.Supplier;
 import me.shedaniel.autoconfig.ConfigData;
 import me.shedaniel.autoconfig.annotation.Config;
 import me.shedaniel.autoconfig.annotation.ConfigEntry;
+import me.shedaniel.autoconfig.util.Utils;
 
 @SuppressWarnings("CanBeFinal")
 @Config(name = BrainageHUD.MOD_ID)
@@ -83,6 +86,8 @@ public class ModConfig implements ConfigData {
 
     @Override
     public void validatePostLoad() {
+        restoreMissingSections();
+
         qualityOfLifeConfig.fullbright = Math.clamp(qualityOfLifeConfig.fullbright, -1.0F, 1.0F);
 
         networkHudConfig.updatePingTickInterval =
@@ -125,6 +130,23 @@ public class ModConfig implements ConfigData {
                         dateTimeHudConfig.coreSettings,
                         "Date Time HUD",
                         () -> new DateTimeHudConfig().coreSettings);
+    }
+
+    /**
+     * Gson reads a section the file sets to {@code null} as null. On the first load AutoConfig runs
+     * this method before HudRendererLib's load listener could restore an element section.
+     */
+    private void restoreMissingSections() {
+        ModConfig defaults = null;
+        for (Field field : ModConfig.class.getDeclaredFields()) {
+            if (Modifier.isStatic(field.getModifiers()) || Utils.getUnsafely(field, this) != null) {
+                continue;
+            }
+            if (defaults == null) defaults = new ModConfig();
+            BrainageHUD.LOGGER.warn(
+                    "Config value ModConfig.{} is missing, using the default", field.getName());
+            Utils.setUnsafely(field, this, Utils.getUnsafely(field, defaults));
+        }
     }
 
     /**
