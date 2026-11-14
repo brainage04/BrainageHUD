@@ -11,6 +11,7 @@ import io.github.brainage04.brainagehud.hud.FoodHud;
 import io.github.brainage04.brainagehud.hud.NetworkHud;
 import io.github.brainage04.brainagehud.hud.PositionHud;
 import io.github.brainage04.brainagehud.hud.ProjectileHud;
+import io.github.brainage04.brainagehud.hud.ReachHud;
 import io.github.brainage04.brainagehud.hud.StatusEffectHud;
 import io.github.brainage04.brainagehud.hud.custom.EnchantInfoHud;
 import io.github.brainage04.brainagehud.screen.WaypointEditScreen;
@@ -53,6 +54,7 @@ import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.input.MouseButtonInfo;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.Registries;
@@ -70,6 +72,9 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.ItemEnchantments;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.HitResult;
+import net.minecraft.world.phys.Vec3;
 import org.lwjgl.sdl.SDLVideo;
 
 @SuppressWarnings("UnstableApiUsage")
@@ -157,6 +162,7 @@ public final class BrainageHUDClientGameTest implements FabricClientGameTest {
                         }
                         context.runOnClient(client -> assertAttackClicksCounted(3));
                         context.waitTicks(60);
+                        context.runOnClient(client -> assertReachUpdatesOnAClickBetweenFrames());
 
                         ClientGameTestRecorder.showStep(
                                 context,
@@ -1047,6 +1053,43 @@ public final class BrainageHUDClientGameTest implements FabricClientGameTest {
         int widest = 0;
         for (Component line : lines) widest = Math.max(widest, client.font.width(line));
         return widest;
+    }
+
+    /**
+     * With Update On Attack Click, a click pressed and released between two frames (low frame
+     * rates) must still update the Reach HUD: the attack key is never seen down.
+     */
+    private static void assertReachUpdatesOnAClickBetweenFrames() {
+        Minecraft client = Minecraft.getInstance();
+        var reach = ConfigUtils.getConfig().reachHudConfig;
+        boolean updateOnAttackClick = reach.updateOnAttackClick;
+        HitResult target = client.hitResult;
+        try {
+            reach.updateOnAttackClick = true;
+            ReachHud hud = new ReachHud();
+            BlockPos below = client.player.blockPosition().below();
+            client.hitResult =
+                    new BlockHitResult(Vec3.atCenterOf(below), Direction.UP, below, false);
+            if (hud.getLines().isEmpty()) {
+                throw new AssertionError("The Reach HUD shows nothing for a block in reach.");
+            }
+            client.hitResult = BlockHitResult.miss(Vec3.atCenterOf(below), Direction.UP, below);
+            if (hud.getLines().isEmpty()) {
+                throw new AssertionError("The Reach HUD updated without an attack click.");
+            }
+            KeyMapping.click(InputConstants.getKey(client.options.keyAttack.saveString()));
+            if (!hud.getLines().isEmpty()) {
+                throw new AssertionError(
+                        "The Reach HUD missed an attack click pressed and released between two"
+                                + " frames.");
+            }
+        } finally {
+            while (client.options.keyAttack.consumeClick()) {
+                // the click above must not attack on the next tick
+            }
+            client.hitResult = target;
+            reach.updateOnAttackClick = updateOnAttackClick;
+        }
     }
 
     /** The element's bounds as it was last drawn. */
