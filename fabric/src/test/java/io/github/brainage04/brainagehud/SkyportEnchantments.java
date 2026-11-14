@@ -31,6 +31,8 @@ import net.minecraft.world.item.enchantment.Enchantment;
  * the order a server loads datapack enchantments in, so the missing list comes out in the order the
  * panel showed.
  */
+// HolderSet.emptyNamed is @Deprecated @VisibleForTesting in 26.3 (HolderSet.java:37), still there.
+// deprecated-api: a test registry needs that unbound exclusive-set tag without a resource reload.
 @SuppressWarnings("deprecation")
 public final class SkyportEnchantments {
     public static final List<String> DAMAGE =

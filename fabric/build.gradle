@@ -73,6 +73,7 @@ def prepareSodiumClientGameTestRun = tasks.register('prepareSodiumClientGameTest
 	clientSoundDevice = prepareVanillaRun.clientSoundDevice
 	clientRecorderScreen = prepareVanillaRun.clientRecorderScreen
 	disableSocialInteractionsToast = prepareVanillaRun.disableSocialInteractionsToast
+	captureFrameRate = prepareVanillaRun.captureFrameRate
 }
 
 tasks.register('runProductionClientGameTestSodium', ClientGameTestProductionRunTask) {
