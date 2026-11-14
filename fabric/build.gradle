@@ -48,3 +48,14 @@ tasks.matching { it.name == 'runProductionClientGameTest' }.configureEach { run 
 		}
 	}
 }
+
+// Red control only, not for merge: after the client exits and before the x11 guard runs, its log gains a second window
+// line naming another SDL driver, so the guard must fail the run.
+gradle.taskGraph.whenReady { graph ->
+	if (graph.hasTask(':fabric:runProductionClientGameTest')) {
+		def run = tasks.getByName('runProductionClientGameTest')
+		run.actions.add(run.actions.size() - 1, { task ->
+			task.runDir.file('logs/latest.log').get().asFile << '[00:00:00] [Render thread/INFO]: Created window using SDL video driver: wayland\n'
+		} as Action)
+	}
+}
