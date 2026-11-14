@@ -4,6 +4,7 @@ import com.mojang.blaze3d.platform.InputConstants;
 import com.mojang.blaze3d.platform.Window;
 import io.github.brainage04.brainagehud.BrainageHUD;
 import io.github.brainage04.brainagehud.config.core.ModConfig;
+import io.github.brainage04.brainagehud.config.hud.custom.keystrokes.ClicksPerSecondFormat;
 import io.github.brainage04.brainagehud.event.ModClickEvents;
 import io.github.brainage04.brainagehud.event.ModTooltipEvents;
 import io.github.brainage04.brainagehud.hud.FishingHud;
@@ -270,6 +271,7 @@ public final class BrainageHUDClientGameTest implements FabricClientGameTest {
                                                 .getFirst()
                                                 .removeAllEffects());
                         context.waitTicks(5);
+                        assertEmptyCustomElementsLeaveNoBounds(context);
 
                         ClientGameTestRecorder.showStep(
                                 context,
@@ -1047,6 +1049,76 @@ public final class BrainageHUDClientGameTest implements FabricClientGameTest {
         int widest = 0;
         for (Component line : lines) widest = Math.max(widest, client.font.width(line));
         return widest;
+    }
+
+    /**
+     * Custom elements that stop drawing (effects run out, nothing to show) must clear their editor
+     * bounds, or the editor keeps a selectable box where they were.
+     */
+    private static void assertEmptyCustomElementsLeaveNoBounds(ClientGameTestContext context) {
+        boolean[] shown = new boolean[6];
+        ClicksPerSecondFormat[] clicksPerSecond = new ClicksPerSecondFormat[1];
+        context.runOnClient(
+                client -> {
+                    var config = ConfigUtils.getConfig();
+                    assertNotDrawn(config.statusEffectHudConfig.coreSettings);
+                    var armour = config.armourInfoHudConfig;
+                    var keys = config.keystrokesHudConfig;
+                    bounds(armour.coreSettings);
+                    bounds(keys.coreSettings);
+                    shown[0] = armour.showArmour;
+                    shown[1] = armour.showMainHand;
+                    shown[2] = armour.showOffHand;
+                    shown[3] = keys.showWasd;
+                    shown[4] = keys.showSpace;
+                    shown[5] = keys.showMouseButtons;
+                    clicksPerSecond[0] = keys.clicksPerSecondFormat;
+                    armour.showArmour = false;
+                    armour.showMainHand = false;
+                    armour.showOffHand = false;
+                    keys.showWasd = false;
+                    keys.showSpace = false;
+                    keys.showMouseButtons = false;
+                    keys.clicksPerSecondFormat = ClicksPerSecondFormat.NONE;
+                });
+        context.waitTicks(3);
+        context.runOnClient(
+                client -> {
+                    var config = ConfigUtils.getConfig();
+                    var armour = config.armourInfoHudConfig;
+                    var keys = config.keystrokesHudConfig;
+                    try {
+                        assertNotDrawn(armour.coreSettings);
+                        assertNotDrawn(keys.coreSettings);
+                    } finally {
+                        armour.showArmour = shown[0];
+                        armour.showMainHand = shown[1];
+                        armour.showOffHand = shown[2];
+                        keys.showWasd = shown[3];
+                        keys.showSpace = shown[4];
+                        keys.showMouseButtons = shown[5];
+                        keys.clicksPerSecondFormat = clicksPerSecond[0];
+                    }
+                });
+        context.waitTicks(3);
+    }
+
+    private static void assertNotDrawn(CoreSettings settings) {
+        ElementCorners corners =
+                HudElementEditor.CORE_SETTINGS_ELEMENTS.get(settings.elementId).corners;
+        if (corners.right > corners.left) {
+            throw new AssertionError(
+                    settings.elementName
+                            + " draws nothing but keeps its editor bounds "
+                            + corners.left
+                            + ","
+                            + corners.top
+                            + " to "
+                            + corners.right
+                            + ","
+                            + corners.bottom
+                            + ".");
+        }
     }
 
     /** The element's bounds as it was last drawn. */
