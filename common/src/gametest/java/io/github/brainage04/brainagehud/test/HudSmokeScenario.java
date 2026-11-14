@@ -70,8 +70,7 @@ public final class HudSmokeScenario {
 
     private static List<CoreSettings> positionAndNetwork() {
         ModConfig config = ConfigUtils.getConfig();
-        return List.of(
-                config.positionHudConfig.coreSettings, config.networkHudConfig.coreSettings);
+        return List.of(config.positionHudConfig.coreSettings, config.networkHudConfig.coreSettings);
     }
 
     private static void assertConfigLoaded() {
