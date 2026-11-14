@@ -169,7 +169,10 @@ public class KeystrokesHud implements CoreHudElement<KeystrokesHudConfig> {
         KeystrokesHudConfig settings = getElementConfig();
         Minecraft minecraft = Minecraft.getInstance();
         List<KeyStrokesItem> keystrokesList = getKeyStrokesItems(settings);
-        if (keystrokesList.isEmpty()) return;
+        if (keystrokesList.isEmpty()) {
+            CustomHudLayout.clear(settings.coreSettings);
+            return;
+        }
         int elementWidth = keystrokesList.getLast().x + keystrokesList.getLast().width;
         int elementHeight = keystrokesList.getLast().y + keystrokesList.getLast().height;
         CustomHudLayout.Origin origin =

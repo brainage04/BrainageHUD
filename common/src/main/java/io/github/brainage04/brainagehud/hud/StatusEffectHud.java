@@ -68,7 +68,11 @@ public class StatusEffectHud implements CoreHudElement<StatusEffectHudConfig> {
                     renderer, drawContext, getLines(player, effects), config.coreSettings, 0);
             return;
         }
-        if (effects.isEmpty()) return;
+        if (effects.isEmpty()) {
+            // as HudRenderer.renderElement does for empty text, so the editor drops the element
+            HudRenderer.setElementBounds(config.coreSettings, -1, -1, -1, -1);
+            return;
+        }
 
         CoreSettings coreSettings = config.coreSettings;
         int elementPadding = HudRendererLib.getPadding(coreSettings);
