@@ -9,7 +9,8 @@
 	],
 	"contact": {
 		"homepage": "https://github.com/brainage04/BrainageHUD",
-		"sources": "https://github.com/brainage04/BrainageHUD"
+		"sources": "https://github.com/brainage04/BrainageHUD",
+		"issues": "https://github.com/brainage04/BrainageHUD/issues"
 	},
 	"license": "MIT",
 	"icon": "assets/brainagehud/icon.png",
