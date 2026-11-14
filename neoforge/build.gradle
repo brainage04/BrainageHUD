@@ -16,3 +16,70 @@ dependencies {
 	implementation "me.shedaniel.cloth:cloth-config-neoforge:${rootProject.cloth_config_version}"
 	implementation "io.github.brainage04:hudrendererlib-neoforge:${rootProject.hudrendererlib_version}"
 }
+
+// NeoForge has no client GameTest framework, so the HUD smoke scenario runs in a development client
+// (BrainageHUDNeoForgeClientGameTest), as HudRendererLib's NeoForge client GameTest does.
+def clientGameTestDirectory = layout.buildDirectory.dir('run/clientGameTest').get().asFile
+
+loom {
+	runs {
+		clientGameTest {
+			client()
+			name 'BrainageHUD NeoForge Client GameTest'
+			source sourceSets.gametest
+			runDir clientGameTestDirectory.absolutePath
+			property 'brainagehud.clientGameTest', 'true'
+		}
+	}
+}
+
+tasks.register('clearClientGameTestWorld', Delete) {
+	delete new File(clientGameTestDirectory, 'saves/brainagehud-client-gametest')
+}
+
+tasks.register('prepareClientGameTestRun', io.github.brainage04.minecraftmodconventions.gradle.recorder.PrepareClientGameTestRunTask) {
+	profile.set('test')
+	recordingAudioDevice.set('')
+	disableSocialInteractionsToast.set(true)
+	optionsFile.set(new File(clientGameTestDirectory, 'options.txt'))
+}
+
+tasks.named('runClientGameTest') {
+	group = 'verification'
+	description = 'Runs the HUD smoke scenario in a NeoForge development client, in Xvfb.'
+	dependsOn clearClientGameTestWorld
+	dependsOn prepareClientGameTestRun
+	getUseXvfb().set(true)
+	// A log left by an earlier run must not pass this one.
+	doFirst { new File(clientGameTestDirectory, 'logs/latest.log').delete() }
+	doLast {
+		def log = new File(clientGameTestDirectory, 'logs/latest.log')
+		if (!log.exists() || !log.text.contains('BRAINAGEHUD_NEOFORGE_CLIENT_GAMETEST_PASS')) {
+			throw new GradleException("NeoForge client GameTest did not complete its assertions; see ${log}.")
+		}
+	}
+}
+
+rootProject.tasks.named('runAllGameTests') {
+	dependsOn ':neoforge:runClientGameTest'
+}
+
+gradle.projectsEvaluated {
+	def assetDownloads = [
+			project(':fabric').tasks.named('downloadAssets'),
+			tasks.named('downloadAssets')
+	]
+	// Both loaders download into Loom's shared asset cache, which every client run reads.
+	project(':fabric').tasks.named('runProductionClientGameTest') {
+		mustRunAfter assetDownloads
+	}
+	project(':fabric').tasks.named('runProductionClientGameTestSodium') {
+		mustRunAfter assetDownloads
+	}
+	tasks.named('runClientGameTest') {
+		mustRunAfter assetDownloads
+		// one client at a time, also with --parallel
+		mustRunAfter project(':fabric').tasks.named('runProductionClientGameTest')
+		mustRunAfter project(':fabric').tasks.named('runProductionClientGameTestSodium')
+	}
+}
