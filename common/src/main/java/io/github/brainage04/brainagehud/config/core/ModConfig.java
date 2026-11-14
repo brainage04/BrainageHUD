@@ -20,6 +20,9 @@ import io.github.brainage04.brainagehud.config.other.EnchantInfoConfig;
 import io.github.brainage04.brainagehud.config.other.QualityOfLifeConfig;
 import io.github.brainage04.brainagehud.config.other.WaypointConfig;
 import io.github.brainage04.brainagehud.util.MathUtils;
+import io.github.brainage04.hudrendererlib.config.core.CoreSettings;
+import io.github.brainage04.hudrendererlib.config.core.CoreSettingsIdAssigner;
+import java.util.function.Supplier;
 import me.shedaniel.autoconfig.ConfigData;
 import me.shedaniel.autoconfig.annotation.Config;
 import me.shedaniel.autoconfig.annotation.ConfigEntry;
@@ -111,6 +114,39 @@ public class ModConfig implements ConfigData {
         if (armourInfoHudConfig.durabilityFormat == null) {
             armourInfoHudConfig.durabilityFormat = new ArmourInfoHudConfig().durabilityFormat;
         }
+
+        armourInfoHudConfig.coreSettings =
+                renamedFrom103(
+                        armourInfoHudConfig.coreSettings,
+                        "Armor Info HUD",
+                        () -> new ArmourInfoHudConfig().coreSettings);
+        dateTimeHudConfig.coreSettings =
+                renamedFrom103(
+                        dateTimeHudConfig.coreSettings,
+                        "Date Time HUD",
+                        () -> new DateTimeHudConfig().coreSettings);
+    }
+
+    /**
+     * {@code settings} with the current default name when the file still has the name {@code
+     * oldName} that BrainageHUD 1.0.3 saved; a name the player chose stays.
+     */
+    private static CoreSettings renamedFrom103(
+            CoreSettings settings, String oldName, Supplier<CoreSettings> defaults) {
+        if (settings == null || !oldName.equals(settings.elementName)) return settings;
+
+        CoreSettings renamed =
+                new CoreSettings(
+                        defaults.get().elementName,
+                        settings.enabled,
+                        settings.x,
+                        settings.y,
+                        settings.elementAnchor);
+        renamed.elementOverrides = settings.elementOverrides;
+        if (settings.elementId != CoreSettingsIdAssigner.INVALID_ID) {
+            renamed.elementId = settings.elementId;
+        }
+        return renamed;
     }
 
     private static int clampDecimalPlaces(int decimalPlaces) {
