@@ -3,6 +3,7 @@ package io.github.brainage04.brainagehud.hud;
 import static io.github.brainage04.brainagehud.util.ConfigUtils.getConfig;
 
 import io.github.brainage04.brainagehud.config.hud.basic.ReachHudConfig;
+import io.github.brainage04.brainagehud.event.ModClickEvents;
 import io.github.brainage04.brainagehud.util.MathUtils;
 import io.github.brainage04.hudrendererlib.hud.core.BasicCoreHudElement;
 import io.github.brainage04.hudrendererlib.util.TextList;
@@ -18,7 +19,7 @@ import net.minecraft.world.phys.HitResult;
 
 public class ReachHud implements BasicCoreHudElement<ReachHudConfig> {
     private TextList cachedLines = new TextList();
-    private boolean attackWasDown;
+    private long attackClicks;
     private boolean wasClickMode;
 
     @Override
@@ -26,16 +27,17 @@ public class ReachHud implements BasicCoreHudElement<ReachHudConfig> {
         ReachHudConfig config = getElementConfig();
         if (!config.updateOnAttackClick) {
             wasClickMode = false;
-            attackWasDown = false;
             return calculateLines(config);
         }
 
-        boolean attackDown = Minecraft.getInstance().options.keyAttack.isDown();
-        if (!wasClickMode || attackDown && !attackWasDown) {
+        // counts clicks rather than sampling isDown() once a frame, which misses a click pressed
+        // and released between two frames
+        long clicks = ModClickEvents.getAttackClicks();
+        if (!wasClickMode || clicks != attackClicks) {
             cachedLines = calculateLines(config);
         }
 
-        attackWasDown = attackDown;
+        attackClicks = clicks;
         wasClickMode = true;
         return cachedLines;
     }
