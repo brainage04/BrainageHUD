@@ -102,6 +102,15 @@ public class ModConfig implements ConfigData {
         waypointConfig.labelScalePercent = Math.clamp(waypointConfig.labelScalePercent, 50, 200);
         keystrokesHudConfig.keyBackdropOpacity =
                 Math.clamp(keystrokesHudConfig.keyBackdropOpacity, 0, 255);
+
+        // Gson reads a format name it does not know as null.
+        if (keystrokesHudConfig.clicksPerSecondFormat == null) {
+            keystrokesHudConfig.clicksPerSecondFormat =
+                    new KeystrokesHudConfig().clicksPerSecondFormat;
+        }
+        if (armourInfoHudConfig.durabilityFormat == null) {
+            armourInfoHudConfig.durabilityFormat = new ArmourInfoHudConfig().durabilityFormat;
+        }
     }
 
     private static int clampDecimalPlaces(int decimalPlaces) {
