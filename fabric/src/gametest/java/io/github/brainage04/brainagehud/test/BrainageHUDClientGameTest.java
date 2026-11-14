@@ -1050,52 +1050,6 @@ public final class BrainageHUDClientGameTest implements FabricClientGameTest {
         return widest;
     }
 
-    /**
-     * The Network HUD's pings go out only while the HUD is on: with it off, and the debug network
-     * chart closed, the game's ping log stays empty.
-     */
-    private static void assertPingsOnlyWhileNetworkHudIsOn(ClientGameTestContext context) {
-        boolean[] previous = new boolean[2];
-        context.runOnClient(
-                client -> {
-                    var network = ConfigUtils.getConfig().networkHudConfig;
-                    previous[0] = network.coreSettings.enabled;
-                    previous[1] = network.showPing;
-                    network.coreSettings.enabled = false;
-                    network.showPing = true;
-                    client.getDebugOverlay().getPingLogger().reset();
-                });
-        try {
-            context.waitTicks(45);
-            context.runOnClient(
-                    client -> {
-                        int pongs = client.getDebugOverlay().getPingLogger().size();
-                        if (pongs != 0) {
-                            throw new AssertionError(
-                                    "The disabled Network HUD sent pings: "
-                                            + pongs
-                                            + " pongs came back in 45 ticks.");
-                        }
-                        ConfigUtils.getConfig().networkHudConfig.coreSettings.enabled = true;
-                    });
-            context.waitTicks(45);
-            context.runOnClient(
-                    client -> {
-                        if (client.getDebugOverlay().getPingLogger().size() == 0) {
-                            throw new AssertionError(
-                                    "The Network HUD showing ping sent no pings in 45 ticks.");
-                        }
-                    });
-        } finally {
-            context.runOnClient(
-                    client -> {
-                        var network = ConfigUtils.getConfig().networkHudConfig;
-                        network.coreSettings.enabled = previous[0];
-                        network.showPing = previous[1];
-                    });
-        }
-    }
-
     /** The element's bounds as it was last drawn. */
     private static ElementCorners bounds(CoreSettings settings) {
         ElementCorners corners =
@@ -2096,6 +2050,52 @@ public final class BrainageHUDClientGameTest implements FabricClientGameTest {
                             + "\" like the debug screen, but the HUD shows "
                             + lines
                             + ".");
+        }
+    }
+
+    /**
+     * The Network HUD's pings go out only while the HUD is on: with it off, and the debug network
+     * chart closed, the game's ping log stays empty.
+     */
+    private static void assertPingsOnlyWhileNetworkHudIsOn(ClientGameTestContext context) {
+        boolean[] previous = new boolean[2];
+        context.runOnClient(
+                client -> {
+                    var network = ConfigUtils.getConfig().networkHudConfig;
+                    previous[0] = network.coreSettings.enabled;
+                    previous[1] = network.showPing;
+                    network.coreSettings.enabled = false;
+                    network.showPing = true;
+                    client.getDebugOverlay().getPingLogger().reset();
+                });
+        try {
+            context.waitTicks(45);
+            context.runOnClient(
+                    client -> {
+                        int pongs = client.getDebugOverlay().getPingLogger().size();
+                        if (pongs != 0) {
+                            throw new AssertionError(
+                                    "The disabled Network HUD sent pings: "
+                                            + pongs
+                                            + " pongs came back in 45 ticks.");
+                        }
+                        ConfigUtils.getConfig().networkHudConfig.coreSettings.enabled = true;
+                    });
+            context.waitTicks(45);
+            context.runOnClient(
+                    client -> {
+                        if (client.getDebugOverlay().getPingLogger().size() == 0) {
+                            throw new AssertionError(
+                                    "The Network HUD showing ping sent no pings in 45 ticks.");
+                        }
+                    });
+        } finally {
+            context.runOnClient(
+                    client -> {
+                        var network = ConfigUtils.getConfig().networkHudConfig;
+                        network.coreSettings.enabled = previous[0];
+                        network.showPing = previous[1];
+                    });
         }
     }
 
