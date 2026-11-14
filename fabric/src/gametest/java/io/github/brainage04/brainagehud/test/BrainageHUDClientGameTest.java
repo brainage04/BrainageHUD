@@ -19,8 +19,10 @@ import io.github.brainage04.brainagehud.util.ConfigUtils;
 import io.github.brainage04.brainagehud.waypoint.Waypoint;
 import io.github.brainage04.brainagehud.waypoint.WaypointActions;
 import io.github.brainage04.brainagehud.waypoint.WaypointStore;
+import io.github.brainage04.hudrendererlib.HudRendererLib;
 import io.github.brainage04.hudrendererlib.config.core.CoreSettings;
 import io.github.brainage04.hudrendererlib.config.core.ElementAnchor;
+import io.github.brainage04.hudrendererlib.config.core.ElementCorners;
 import io.github.brainage04.hudrendererlib.config.core.HudRendererLibConfig;
 import io.github.brainage04.hudrendererlib.hud.core.HudElementEditor;
 import io.github.brainage04.hudrendererlib.hud.core.HudRenderer;
@@ -36,14 +38,20 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import javax.imageio.ImageIO;
 import net.fabricmc.fabric.api.client.gametest.v1.FabricClientGameTest;
 import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext;
+import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElementRegistry;
+import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.EditBox;
+import net.minecraft.client.input.MouseButtonEvent;
+import net.minecraft.client.input.MouseButtonInfo;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.component.DataComponents;
@@ -66,6 +74,11 @@ import org.lwjgl.sdl.SDLVideo;
 
 @SuppressWarnings("UnstableApiUsage")
 public final class BrainageHUDClientGameTest implements FabricClientGameTest {
+    /** Set by the build on the client GameTest run that installs Sodium. */
+    private static final String SODIUM_RUN_PROPERTY = "brainagehud.gametest.sodium";
+
+    private static final Pattern DEBUG_SECTION_COUNTS = Pattern.compile("C: (\\d+)/(\\d+)");
+
     @Override
     public void runTest(ClientGameTestContext context) {
         Properties serverProperties = ClientGameTestServers.flatServerProperties();
@@ -120,6 +133,8 @@ public final class BrainageHUDClientGameTest implements FabricClientGameTest {
                                 "Position and corrected C-counter",
                                 "The top-left HUD shows the fixed player position, chunk coordinates, rendered-section C-counter, entity counter, and direction.");
                         context.waitTicks(80);
+                        context.runOnClient(
+                                BrainageHUDClientGameTest::assertCountersMatchDebugScreen);
 
                         ClientGameTestRecorder.showStep(
                                 context,
@@ -153,6 +168,8 @@ public final class BrainageHUDClientGameTest implements FabricClientGameTest {
                         System.out.println(
                                 "[STDOUT]: Enchant info HUD screenshot: "
                                         + context.takeScreenshot("enchant-info-hud"));
+                        exerciseOwnersEnchantPanel(context, server);
+                        exerciseEnchantMaxWidth(context, server);
 
                         ClientGameTestRecorder.showStep(
                                 context,
@@ -496,6 +513,595 @@ public final class BrainageHUDClientGameTest implements FabricClientGameTest {
             context.runOnClient(client -> client.options.guiScale().set(original[2]));
             context.getInput().resizeWindow(original[0], original[1]);
             context.waitTick();
+        }
+    }
+
+    /**
+     * The owner's case of 12 Nov 2026 (A-0751): an Iron Sword on a server that registers Skyport's
+     * enchantments (this GameTest mod's datapack, {@code data/skyport}), with the compact Enchant
+     * Info HUD and the Date/Time HUD at their default places, in a 1920x1080 window at GUI scale 3.
+     * The panel must end before the clock. It resizes the window, so like the other resizing checks
+     * it runs only outside recordings.
+     */
+    private static void exerciseOwnersEnchantPanel(
+            ClientGameTestContext context,
+            net.fabricmc.fabric.api.client.gametest.v1.context.TestDedicatedServerContext server) {
+        if (ClientGameTestRecordingSession.isEnabled()) return;
+        int[] original =
+                context.computeOnClient(
+                        client ->
+                                new int[] {
+                                    client.getWindow().getWidth(),
+                                    client.getWindow().getHeight(),
+                                    client.options.guiScale().get(),
+                                    client.player.getInventory().getSelectedSlot()
+                                });
+        ModConfig config = context.computeOnClient(client -> ConfigUtils.getConfig());
+        ModConfig defaults = new ModConfig();
+        List<CoreSettings> placed =
+                List.of(
+                        config.enchantInfoHudConfig.coreSettings,
+                        config.dateTimeHudConfig.coreSettings,
+                        config.keystrokesHudConfig.coreSettings);
+        List<CoreSettings> defaultPlaces =
+                List.of(
+                        defaults.enchantInfoHudConfig.coreSettings,
+                        defaults.dateTimeHudConfig.coreSettings,
+                        defaults.keystrokesHudConfig.coreSettings);
+        List<HudPlacement> placements = placed.stream().map(HudPlacement::new).toList();
+        boolean compactMode = config.enchantInfoHudConfig.compactMode;
+        boolean maxWidthOverride =
+                config.enchantInfoHudConfig.coreSettings.elementOverrides.maxWidth.enabled;
+        server.runOnServer(
+                minecraftServer ->
+                        minecraftServer
+                                .getPlayerList()
+                                .getPlayers()
+                                .getFirst()
+                                .getInventory()
+                                .setItem(8, new ItemStack(Items.IRON_SWORD)));
+        try {
+            // the recorder's step panel in the top right would cover the clock and the panel
+            context.runOnClient(client -> setRecorderPanelHidden(true));
+            context.getInput().resizeWindow(1920, 1080);
+            context.runOnClient(
+                    client -> {
+                        client.options.guiScale().set(3);
+                        client.resizeGui();
+                        if (client.getWindow().getGuiScale() != 3) {
+                            throw new AssertionError(
+                                    "Expected GUI scale 3 in a 1920x1080 window, got "
+                                            + client.getWindow().getGuiScale());
+                        }
+                        client.player.getInventory().setSelectedSlot(8);
+                        for (int i = 0; i < placed.size(); i++) {
+                            new HudPlacement(defaultPlaces.get(i)).applyTo(placed.get(i));
+                        }
+                        config.enchantInfoHudConfig.compactMode = true;
+                        config.enchantInfoHudConfig.coreSettings.elementOverrides.maxWidth.enabled =
+                                false;
+                    });
+            context.waitTicks(10);
+            System.out.println(
+                    "[STDOUT]: Owner's Enchant Info panel at 1920x1080, GUI scale 3, screenshot: "
+                            + context.takeScreenshot("enchant-owner-1080p-gui3"));
+            context.runOnClient(
+                    client -> {
+                        ElementCorners enchant = bounds(config.enchantInfoHudConfig.coreSettings);
+                        ElementCorners clock = bounds(config.dateTimeHudConfig.coreSettings);
+                        System.out.printf(
+                                "[STDOUT]: Owner's Enchant Info panel: x %d to %d, %d lines; clock"
+                                        + " from x %d; screen %d GUI pixels wide%n",
+                                enchant.left,
+                                enchant.right,
+                                new EnchantInfoHud().getLines().size(),
+                                clock.left,
+                                HudRenderer.getScaledWidth());
+                        if (enchant.right >= clock.left) {
+                            throw new AssertionError(
+                                    "Expected the Enchant Info panel at its default place to end"
+                                            + " before the Date/Time HUD at x %d, but it ends at x %d"
+                                                    .formatted(clock.left, enchant.right));
+                        }
+                    });
+        } finally {
+            context.runOnClient(
+                    client -> {
+                        placements.forEach(HudPlacement::restore);
+                        setRecorderPanelHidden(false);
+                        config.enchantInfoHudConfig.compactMode = compactMode;
+                        config.enchantInfoHudConfig.coreSettings.elementOverrides.maxWidth.enabled =
+                                maxWidthOverride;
+                        client.player.getInventory().setSelectedSlot(original[3]);
+                        client.options.guiScale().set(original[2]);
+                    });
+            server.runOnServer(
+                    minecraftServer ->
+                            minecraftServer
+                                    .getPlayerList()
+                                    .getPlayers()
+                                    .getFirst()
+                                    .getInventory()
+                                    .setItem(8, ItemStack.EMPTY));
+            context.getInput().resizeWindow(original[0], original[1]);
+            context.runOnClient(Minecraft::resizeGui);
+            context.waitTicks(5);
+        }
+    }
+
+    /** The compact Iron Sword panel on a server with Skyport's enchantments, with Max Width off. */
+    private static final List<String> SKYPORT_IRON_SWORD_LINES =
+            List.of(
+                    "Iron Sword",
+                    "Missing: Blinding, Bloodlust, Crippling, Dread, Drifting, Eclipse, Enfeebling,"
+                            + " Famine, Fire Aspect, Infestation, Insight, Looting, Mending, Oozing,"
+                            + " Plague, Pyre, Sapping, Siphon, Soulbound, Stormcaller, Sweeping Edge,"
+                            + " Unbreaking, Updraft, Venom, Vertigo, Warden's Wrath, Warding,"
+                            + " Withering",
+                    "Annihilation / Bane of Illagers / Bane of the Deep / Bane of the End / Bane of"
+                            + " the Nether / Duelist / Sharpness",
+                    "Cataclysm / Volatile");
+
+    /** The gap the max width leaves between the Enchant Info panel and its neighbour. */
+    private static final int MAX_WIDTH_GAP = 6;
+
+    /**
+     * The owner's case of 9 and 12 Nov 2026 (A-0293, A-0751): an Iron Sword on a server that
+     * registers Skyport's custom enchantments (this GameTest mod's datapack, {@code data/skyport}),
+     * the compact Enchant Info panel at its default place in the top left and the Date/Time HUD at
+     * its default place in the top right, in a 1920x1080 window at GUI scale 3. With Max Width
+     * turned off the panel reaches the clock; at the default max width every line fits it in GUI
+     * pixels and the panel ends before the clock; a max width set by dragging the HUD Element
+     * Editor's handle wraps it at its separators before the clock. Anchored top right next to the
+     * clock, the panel may reach the Position HUD instead, and its max width keeps it clear while
+     * its right edge stays where it was. Last, the owner's own GUI size (854x480) at the default.
+     * It resizes the window, so like the other resizing checks it runs only outside recordings.
+     */
+    private static void exerciseEnchantMaxWidth(
+            ClientGameTestContext context,
+            net.fabricmc.fabric.api.client.gametest.v1.context.TestDedicatedServerContext server) {
+        if (ClientGameTestRecordingSession.isEnabled()) return;
+        ClientGameTestRecorder.showStep(
+                context,
+                "enchant-max-width",
+                "Enchant Info max width",
+                "An Iron Sword with Skyport's enchantments: with Max Width off the panel reaches the clock; the default max width and one dragged in the HUD Element Editor wrap it at its separators, never inside a name, and keep its anchored edge.");
+        int[] original =
+                context.computeOnClient(
+                        client ->
+                                new int[] {
+                                    client.getWindow().getWidth(),
+                                    client.getWindow().getHeight(),
+                                    client.options.guiScale().get(),
+                                    client.player.getInventory().getSelectedSlot()
+                                });
+        List<HudPlacement> placements =
+                context.computeOnClient(
+                        client ->
+                                List.of(
+                                        new HudPlacement(
+                                                ConfigUtils.getConfig()
+                                                        .enchantInfoHudConfig
+                                                        .coreSettings),
+                                        new HudPlacement(
+                                                ConfigUtils.getConfig()
+                                                        .dateTimeHudConfig
+                                                        .coreSettings),
+                                        new HudPlacement(
+                                                ConfigUtils.getConfig()
+                                                        .keystrokesHudConfig
+                                                        .coreSettings)));
+        server.runOnServer(
+                minecraftServer ->
+                        minecraftServer
+                                .getPlayerList()
+                                .getPlayers()
+                                .getFirst()
+                                .getInventory()
+                                .setItem(8, new ItemStack(Items.IRON_SWORD)));
+        try {
+            // the recorder's step panel in the top right would cover the clock and the panel
+            context.runOnClient(client -> setRecorderPanelHidden(true));
+            setWindow(context, 1920, 1080, 3);
+            context.runOnClient(
+                    client -> {
+                        ModConfig config = ConfigUtils.getConfig();
+                        ModConfig defaults = new ModConfig();
+                        client.player.getInventory().setSelectedSlot(8);
+                        CoreSettings enchant = config.enchantInfoHudConfig.coreSettings;
+                        new HudPlacement(defaults.enchantInfoHudConfig.coreSettings)
+                                .applyTo(enchant);
+                        turnMaxWidthOff(enchant);
+                        config.enchantInfoHudConfig.compactMode = true;
+                        new HudPlacement(defaults.dateTimeHudConfig.coreSettings)
+                                .applyTo(config.dateTimeHudConfig.coreSettings);
+                        new HudPlacement(defaults.keystrokesHudConfig.coreSettings)
+                                .applyTo(config.keystrokesHudConfig.coreSettings);
+                    });
+            context.waitTicks(10);
+
+            // left-anchored, Max Width off: the panel reaches the clock
+            int[] leftBefore =
+                    context.computeOnClient(
+                            client -> {
+                                assertHudLines(
+                                        "Enchant Info",
+                                        new EnchantInfoHud().getLines(),
+                                        SKYPORT_IRON_SWORD_LINES);
+                                ElementCorners enchant = enchantBounds();
+                                ElementCorners clock = bounds(clockSettings());
+                                if (enchant.right <= clock.left) {
+                                    throw new AssertionError(
+                                            "Expected the Enchant Info panel with Max Width off to reach the clock at %d, but it ends at %d"
+                                                    .formatted(clock.left, enchant.right));
+                                }
+                                return new int[] {enchant.left, enchant.right, clock.left};
+                            });
+            printScreenshot(context, "Enchant max width, left, off", "enchant-max-width-left-off");
+
+            // left-anchored, the default max width: every line fits it and the panel ends before
+            // the clock
+            context.runOnClient(client -> HudElementEditor.clearMaxWidth(enchantSettings()));
+            context.waitTicks(5);
+            context.runOnClient(
+                    client -> {
+                        int settingsMaxWidth = HudRendererLib.getMaxWidth(enchantSettings());
+                        if (settingsMaxWidth != EnchantInfoHud.DEFAULT_MAX_WIDTH) {
+                            throw new AssertionError(
+                                    "Expected HudRendererLib.getMaxWidth(settings) to give Enchant Info's default %d, got %d"
+                                            .formatted(
+                                                    EnchantInfoHud.DEFAULT_MAX_WIDTH,
+                                                    settingsMaxWidth));
+                        }
+                        List<Component> lines = new EnchantInfoHud().getLines();
+                        int widest = widestLine(client, lines);
+                        if (widest > EnchantInfoHud.DEFAULT_MAX_WIDTH) {
+                            throw new AssertionError(
+                                    "Expected every Enchant Info line within the default max width %d, but the widest is %d: %s"
+                                            .formatted(
+                                                    EnchantInfoHud.DEFAULT_MAX_WIDTH,
+                                                    widest,
+                                                    lines.stream()
+                                                            .map(Component::getString)
+                                                            .toList()));
+                        }
+                        assertWrappedBetweenNames(lines);
+                        ElementCorners enchant = enchantBounds();
+                        if (enchant.left != leftBefore[0] || enchant.right >= leftBefore[2]) {
+                            throw new AssertionError(
+                                    "Expected the panel at the default max width to keep its left edge %d and end before the clock at %d, got %d to %d"
+                                            .formatted(
+                                                    leftBefore[0],
+                                                    leftBefore[2],
+                                                    enchant.left,
+                                                    enchant.right));
+                        }
+                        System.out.printf(
+                                "[STDOUT]: Enchant Info at the default max width: x %d to %d, widest line %d, %d lines; clock from x %d%n",
+                                enchant.left, enchant.right, widest, lines.size(), leftBefore[2]);
+                    });
+            printScreenshot(
+                    context, "Enchant max width, left, default", "enchant-max-width-left-default");
+
+            // the HUD Element Editor's handle, dragged to just before the clock
+            context.runOnClient(client -> client.gui.setScreen(new HudElementEditor()));
+            context.waitTicks(5);
+            context.runOnClient(
+                    client -> {
+                        HudElementEditor editor = (HudElementEditor) client.gui.screen();
+                        CoreSettings settings = enchantSettings();
+                        var element =
+                                HudElementEditor.CORE_SETTINGS_ELEMENTS.get(settings.elementId);
+                        ElementCorners corners = element.corners;
+                        editor.mouseClicked(
+                                editorMouse((corners.left + corners.right) / 2.0, corners.top + 3),
+                                false);
+                        if (editor.selectedElementIndex != settings.elementId) {
+                            throw new AssertionError(
+                                    "Clicking the Enchant Info panel did not select it in the editor.");
+                        }
+                        // the handle starts at the default max width, past the widest line
+                        int handleX = HudElementEditor.getMaxWidthHandleX(element);
+                        int expectedHandleX =
+                                corners.right
+                                        + EnchantInfoHud.DEFAULT_MAX_WIDTH
+                                        - widestLine(client, new EnchantInfoHud().getLines());
+                        if (handleX != expectedHandleX) {
+                            throw new AssertionError(
+                                    "Expected the max width handle at the default max width's edge %d, got %d"
+                                            .formatted(expectedHandleX, handleX));
+                        }
+                        double target = leftBefore[2] - MAX_WIDTH_GAP;
+                        editor.mouseClicked(editorMouse(handleX, corners.top + 3), false);
+                        editor.mouseDragged(editorMouse(target, corners.top + 3), 0, 0);
+                        editor.mouseReleased(editorMouse(target, corners.top + 3));
+                        if (!settings.elementOverrides.maxWidth.enabled) {
+                            throw new AssertionError(
+                                    "Dragging the handle did not turn on the panel's max width.");
+                        }
+                    });
+            // the pointer over the panel, so the editor describes it and its max width
+            int[] pointer =
+                    context.computeOnClient(
+                            client -> {
+                                ElementCorners corners = enchantBounds();
+                                int scale = client.getWindow().getGuiScale();
+                                return new int[] {
+                                    (corners.left + corners.right) / 2 * scale,
+                                    (corners.bottom - 6) * scale
+                                };
+                            });
+            context.getInput().setCursorPos(pointer[0], pointer[1]);
+            context.waitTicks(5);
+            printScreenshot(context, "Enchant max width, editor", "enchant-max-width-editor");
+            // Save & Close: the max width is written to the config file
+            context.runOnClient(client -> ((HudElementEditor) client.gui.screen()).onClose());
+            context.waitTicks(5);
+            context.runOnClient(
+                    client -> {
+                        ElementCorners enchant = enchantBounds();
+                        if (enchant.left != leftBefore[0]
+                                || enchant.right > leftBefore[2] - MAX_WIDTH_GAP) {
+                            throw new AssertionError(
+                                    "Expected the capped panel to keep its left edge %d and end by %d, got %d to %d"
+                                            .formatted(
+                                                    leftBefore[0],
+                                                    leftBefore[2] - MAX_WIDTH_GAP,
+                                                    enchant.left,
+                                                    enchant.right));
+                        }
+                        assertSavedEnchantMaxWidth(
+                                client, enchantSettings().elementOverrides.maxWidth.value);
+                        assertWrappedBetweenNames(new EnchantInfoHud().getLines());
+                    });
+            printScreenshot(context, "Enchant max width, left, on", "enchant-max-width-left-on");
+
+            // right-anchored next to the clock, Max Width off: the panel reaches the Position HUD
+            context.runOnClient(
+                    client -> {
+                        CoreSettings settings = enchantSettings();
+                        turnMaxWidthOff(settings);
+                        settings.elementAnchor = ElementAnchor.TOP_RIGHT;
+                        settings.x = leftBefore[2] - MAX_WIDTH_GAP - HudRenderer.getScaledWidth();
+                    });
+            context.waitTicks(5);
+            int[] rightBefore =
+                    context.computeOnClient(
+                            client -> {
+                                ElementCorners enchant = enchantBounds();
+                                ElementCorners position =
+                                        bounds(
+                                                ConfigUtils.getConfig()
+                                                        .positionHudConfig
+                                                        .coreSettings);
+                                if (enchant.right != leftBefore[2] - MAX_WIDTH_GAP) {
+                                    throw new AssertionError(
+                                            "Expected the right-anchored panel to end at %d, got %d"
+                                                    .formatted(
+                                                            leftBefore[2] - MAX_WIDTH_GAP,
+                                                            enchant.right));
+                                }
+                                System.out.println(
+                                        "[STDOUT]: Right-anchored Enchant Info with Max Width off: %d to %d, Position HUD ends at %d"
+                                                .formatted(
+                                                        enchant.left,
+                                                        enchant.right,
+                                                        position.right));
+                                return new int[] {enchant.right, position.right};
+                            });
+            printScreenshot(
+                    context, "Enchant max width, right, off", "enchant-max-width-right-off");
+
+            // the max width as the config screen sets it: Style Overrides > Max Width
+            context.runOnClient(
+                    client -> {
+                        CoreSettings settings = enchantSettings();
+                        int padding = HudRendererLib.getPadding(settings);
+                        settings.elementOverrides.maxWidth.enabled = true;
+                        settings.elementOverrides.maxWidth.value =
+                                Math.min(
+                                        240,
+                                        rightBefore[0]
+                                                - rightBefore[1]
+                                                - MAX_WIDTH_GAP
+                                                - padding * 4);
+                    });
+            context.waitTicks(5);
+            context.runOnClient(
+                    client -> {
+                        ElementCorners enchant = enchantBounds();
+                        if (enchant.right != rightBefore[0]
+                                || enchant.left < rightBefore[1] + MAX_WIDTH_GAP) {
+                            throw new AssertionError(
+                                    "Expected the capped right-anchored panel to keep its right edge %d and start after %d, got %d to %d"
+                                            .formatted(
+                                                    rightBefore[0],
+                                                    rightBefore[1] + MAX_WIDTH_GAP,
+                                                    enchant.left,
+                                                    enchant.right));
+                        }
+                        assertWrappedBetweenNames(new EnchantInfoHud().getLines());
+                    });
+            printScreenshot(context, "Enchant max width, right, on", "enchant-max-width-right-on");
+
+            // the owner's GUI size (2560x1440 at GUI scale 3 is 853x480) at the default max width
+            context.runOnClient(
+                    client -> {
+                        CoreSettings settings = enchantSettings();
+                        HudElementEditor.clearMaxWidth(settings);
+                        new HudPlacement(new ModConfig().enchantInfoHudConfig.coreSettings)
+                                .applyTo(settings);
+                    });
+            setWindow(context, 1708, 960, 2);
+            context.waitTicks(5);
+            context.runOnClient(
+                    client -> {
+                        ElementCorners enchant = enchantBounds();
+                        ElementCorners clock = bounds(clockSettings());
+                        if (enchant.right >= clock.left) {
+                            throw new AssertionError(
+                                    "Expected the panel to end before the clock at %d at the owner's GUI size, but it ends at %d"
+                                            .formatted(clock.left, enchant.right));
+                        }
+                    });
+            printScreenshot(
+                    context,
+                    "Enchant max width, owner's GUI size, default",
+                    "enchant-max-width-owner-gui");
+        } finally {
+            context.runOnClient(
+                    client -> {
+                        placements.forEach(HudPlacement::restore);
+                        setRecorderPanelHidden(false);
+                        HudElementEditor.clearMaxWidth(enchantSettings());
+                        client.player.getInventory().setSelectedSlot(original[3]);
+                        ConfigUtils.saveConfig();
+                    });
+            server.runOnServer(
+                    minecraftServer ->
+                            minecraftServer
+                                    .getPlayerList()
+                                    .getPlayers()
+                                    .getFirst()
+                                    .getInventory()
+                                    .setItem(8, ItemStack.EMPTY));
+            context.runOnClient(client -> client.options.guiScale().set(original[2]));
+            context.getInput().resizeWindow(original[0], original[1]);
+            context.runOnClient(Minecraft::resizeGui);
+            context.waitTicks(5);
+        }
+    }
+
+    private static final Identifier RECORDER_PANEL =
+            Identifier.fromNamespaceAndPath(
+                    "minecraftmodconventions", "gametest_recording_feedback");
+    private static volatile boolean recorderPanelHidden;
+    private static boolean recorderPanelWrapped;
+
+    /**
+     * Hides or shows MinecraftModConventions' GameTest step panel, which is drawn in the top right
+     * while the recorder environment is on. Runs on the client thread.
+     */
+    private static void setRecorderPanelHidden(boolean hidden) {
+        recorderPanelHidden = hidden;
+        if (recorderPanelWrapped) return;
+        recorderPanelWrapped = true;
+        try {
+            HudElementRegistry.replaceElement(
+                    RECORDER_PANEL,
+                    panel ->
+                            (graphics, deltaTracker) -> {
+                                if (!recorderPanelHidden) {
+                                    panel.extractRenderState(graphics, deltaTracker);
+                                }
+                            });
+        } catch (IllegalArgumentException notRegistered) {
+            // the panel is registered only while the recorder environment is on
+        }
+    }
+
+    /** Resizes the window, then sets the GUI scale, which only accepts scales the window fits. */
+    private static void setWindow(ClientGameTestContext context, int width, int height, int scale) {
+        context.getInput().resizeWindow(width, height);
+        context.runOnClient(
+                client -> {
+                    client.options.guiScale().set(scale);
+                    client.resizeGui();
+                    if (client.getWindow().getGuiScale() != scale) {
+                        throw new AssertionError(
+                                "Expected GUI scale %d in a %dx%d window, got %d"
+                                        .formatted(
+                                                scale,
+                                                width,
+                                                height,
+                                                client.getWindow().getGuiScale()));
+                    }
+                });
+        context.waitTick();
+    }
+
+    private static void printScreenshot(ClientGameTestContext context, String label, String name) {
+        System.out.println("[STDOUT]: " + label + " screenshot: " + context.takeScreenshot(name));
+    }
+
+    private static CoreSettings enchantSettings() {
+        return ConfigUtils.getConfig().enchantInfoHudConfig.coreSettings;
+    }
+
+    private static CoreSettings clockSettings() {
+        return ConfigUtils.getConfig().dateTimeHudConfig.coreSettings;
+    }
+
+    private static ElementCorners enchantBounds() {
+        return bounds(enchantSettings());
+    }
+
+    /** Max Width as the config screen turns it off: the element's own override, on at 0. */
+    private static void turnMaxWidthOff(CoreSettings settings) {
+        settings.elementOverrides.maxWidth.enabled = true;
+        settings.elementOverrides.maxWidth.value = 0;
+    }
+
+    /** The width of the widest line in GUI pixels, as the game's font measures it. */
+    private static int widestLine(Minecraft client, List<Component> lines) {
+        int widest = 0;
+        for (Component line : lines) widest = Math.max(widest, client.font.width(line));
+        return widest;
+    }
+
+    /** The element's bounds as it was last drawn. */
+    private static ElementCorners bounds(CoreSettings settings) {
+        ElementCorners corners =
+                HudElementEditor.CORE_SETTINGS_ELEMENTS.get(settings.elementId).corners;
+        if (corners.right <= corners.left) {
+            throw new AssertionError(settings.elementName + " was not drawn.");
+        }
+        return corners;
+    }
+
+    private static MouseButtonEvent editorMouse(double x, double y) {
+        return new MouseButtonEvent(x, y, new MouseButtonInfo(InputConstants.MOUSE_BUTTON_LEFT, 0));
+    }
+
+    /**
+     * Every line of the capped panel breaks at a separator: it ends in "," or " /" unless it ends
+     * its section, and every enchantment name appears whole.
+     */
+    private static void assertWrappedBetweenNames(List<Component> lines) {
+        List<String> rendered = lines.stream().map(Component::getString).toList();
+        String text = String.join("\n", rendered);
+        for (String line : SKYPORT_IRON_SWORD_LINES.subList(1, SKYPORT_IRON_SWORD_LINES.size())) {
+            for (String name : line.replace("Missing: ", "").split(", |,$| / | /$")) {
+                if (!name.isBlank() && !text.contains(name)) {
+                    throw new AssertionError(
+                            "Expected \"%s\" whole on one line of %s".formatted(name, rendered));
+                }
+            }
+        }
+        if (rendered.size() <= SKYPORT_IRON_SWORD_LINES.size()) {
+            throw new AssertionError("Expected the max width to wrap the panel, got " + rendered);
+        }
+    }
+
+    private static void assertSavedEnchantMaxWidth(Minecraft client, int expected) {
+        Path file = client.gameDirectory.toPath().resolve("config/brainagehud.json");
+        try {
+            var saved =
+                    com.google.gson.JsonParser.parseString(Files.readString(file))
+                            .getAsJsonObject();
+            var maxWidth =
+                    saved.getAsJsonObject("enchantInfoHudConfig")
+                            .getAsJsonObject("coreSettings")
+                            .getAsJsonObject("elementOverrides")
+                            .getAsJsonObject("maxWidth");
+            if (!maxWidth.get("enabled").getAsBoolean()
+                    || maxWidth.get("value").getAsInt() != expected) {
+                throw new AssertionError(
+                        "Expected the saved Enchant Info max width %d, got %s"
+                                .formatted(expected, maxWidth));
+            }
+        } catch (IOException exception) {
+            throw new AssertionError("Could not read " + file, exception);
         }
     }
 
@@ -1052,9 +1658,13 @@ public final class BrainageHUDClientGameTest implements FabricClientGameTest {
         }
 
         private void restore() {
-            settings.x = x;
-            settings.y = y;
-            settings.elementAnchor = anchor;
+            applyTo(settings);
+        }
+
+        private void applyTo(CoreSettings target) {
+            target.x = x;
+            target.y = y;
+            target.elementAnchor = anchor;
         }
     }
 
@@ -1389,6 +1999,54 @@ public final class BrainageHUDClientGameTest implements FabricClientGameTest {
         if (!hasPosition || !hasCCounter || !facesSouth) {
             throw new AssertionError(
                     "Expected Position HUD to show the fixture position, rendered-section C-counter and south-facing direction, but got "
+                            + lines
+                            + ".");
+        }
+    }
+
+    /**
+     * The Position HUD's C and E lines read what the debug screen's (F3) chunk and entity lines
+     * read, with the renderer this run installs: vanilla's, or Sodium's in {@code
+     * runProductionClientGameTestSodium}.
+     */
+    private static void assertCountersMatchDebugScreen(Minecraft client) {
+        boolean sodiumRun = Boolean.getBoolean(SODIUM_RUN_PROPERTY);
+        if (FabricLoader.getInstance().isModLoaded("sodium") != sodiumRun) {
+            throw new AssertionError(
+                    "Expected Sodium to be "
+                            + (sodiumRun ? "installed" : "absent")
+                            + " in this client GameTest run.");
+        }
+
+        List<String> lines =
+                new PositionHud().getLines().stream().map(line -> line.getString()).toList();
+        String sectionStatistics = client.levelExtractor.sectionStatistics();
+        Matcher debugCounts =
+                DEBUG_SECTION_COUNTS.matcher(sectionStatistics == null ? "" : sectionStatistics);
+        if (!debugCounts.lookingAt() || Integer.parseInt(debugCounts.group(2)) <= 1) {
+            throw new AssertionError(
+                    "Expected the debug screen's chunk line to count rendered sections out of more than one, but it reads "
+                            + sectionStatistics
+                            + ".");
+        }
+        String expectedCCounter = debugCounts.group() + (client.smartCull ? " (s)" : "");
+        if (!lines.contains(expectedCCounter)) {
+            throw new AssertionError(
+                    "Expected the Position HUD's C counter to read \""
+                            + expectedCCounter
+                            + "\" like the debug screen's \""
+                            + sectionStatistics
+                            + "\", but the HUD shows "
+                            + lines
+                            + ".");
+        }
+
+        String entityStatistics = client.levelExtractor.entityStatistics();
+        if (!lines.contains(entityStatistics)) {
+            throw new AssertionError(
+                    "Expected the Position HUD's E counter to read \""
+                            + entityStatistics
+                            + "\" like the debug screen, but the HUD shows "
                             + lines
                             + ".");
         }

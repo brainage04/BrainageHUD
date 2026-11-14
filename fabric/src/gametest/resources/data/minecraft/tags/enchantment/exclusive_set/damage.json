@@ -1,0 +1,11 @@
+{
+  "replace": false,
+  "values": [
+    "skyport:annihilation",
+    "skyport:bane_of_illagers",
+    "skyport:bane_of_the_deep",
+    "skyport:bane_of_the_end",
+    "skyport:bane_of_the_nether",
+    "skyport:duelist"
+  ]
+}

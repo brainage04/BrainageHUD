@@ -4,11 +4,14 @@ import static io.github.brainage04.brainagehud.util.ConfigUtils.getConfig;
 
 import io.github.brainage04.brainagehud.config.hud.custom.enchant_info.EnchantInfoHudConfig;
 import io.github.brainage04.brainagehud.util.EnchantmentUtils;
+import io.github.brainage04.hudrendererlib.HudRendererLib;
 import io.github.brainage04.hudrendererlib.hud.core.BasicCoreHudElement;
 import io.github.brainage04.hudrendererlib.util.TextList;
+import io.github.brainage04.hudrendererlib.util.TextWrapper;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.function.ToIntFunction;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
@@ -17,6 +20,7 @@ import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.FormattedText;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.tags.EnchantmentTags;
 import net.minecraft.world.item.ItemStack;
@@ -27,23 +31,40 @@ import net.minecraft.world.item.enchantment.ItemEnchantments;
  * Displays the enchantments on the held item, followed by the enchantments that could still be
  * added to it. Enchantments that cannot coexist are collapsed onto a single "choose one" line, and
  * blacklisted enchantments are never shown as missing. Compact mode puts the enchantments on one
- * line and the missing enchantments on another, without maximum levels, so that a panel that was
- * one line per enchantment becomes at most three lines tall.
+ * line and the missing enchantments that can all be added on another, without maximum levels,
+ * followed by one line per conflict group.
+ *
+ * <p>Separators: {@code ", "} only ever joins enchantments that can all be added, and {@code " / "}
+ * only ever joins the alternatives of one conflict group, which starts a line of its own. Lines
+ * wrap at the element's max width in GUI pixels, {@link #DEFAULT_MAX_WIDTH} unless the user sets
+ * one, only at these separators and never inside an enchantment's name; a wrapped line keeps the
+ * separator it broke at ({@code ","} or {@code " /"}) at its end.
  */
 public class EnchantInfoHud implements BasicCoreHudElement<EnchantInfoHudConfig> {
     /**
-     * The longest compact line in characters. Compact lines are wrapped between their parts beyond
-     * this, so that a long missing list cannot run off the screen at the usual GUI scales.
+     * The default max width in GUI pixels. At the default place (x 150, top left) the panel then
+     * ends before the default Date/Time HUD in the top right of a 1920x1080 window at GUI scale 3,
+     * 640 GUI pixels wide, as BrainageHUDClientGameTest checks.
      */
-    static final int COMPACT_LINE_LENGTH = 70;
+    public static final int DEFAULT_MAX_WIDTH = 300;
 
-    // the lines only change with their inputs, so they are rebuilt only when an input changes
+    // the sections only change with their inputs, so they are rebuilt only when an input changes
     // rather than walking the enchantment registry every frame
-    private TextList cachedLines;
+    private List<Section> cachedSections;
     private HolderLookup.RegistryLookup<Enchantment> cachedRegistry;
     private ItemStack cachedStack = ItemStack.EMPTY;
     private int cachedConfigFlags;
     private List<String> cachedBlacklist = List.of();
+
+    @Override
+    public boolean wrapsOwnLines() {
+        return true;
+    }
+
+    @Override
+    public int getDefaultMaxWidth() {
+        return DEFAULT_MAX_WIDTH;
+    }
 
     @Override
     public TextList getLines() {
@@ -53,26 +74,41 @@ public class EnchantInfoHud implements BasicCoreHudElement<EnchantInfoHudConfig>
 
         if (player == null || level == null) return new TextList();
 
-        HolderLookup.RegistryLookup<Enchantment> registry =
-                level.registryAccess().lookupOrThrow(Registries.ENCHANTMENT);
-        ItemStack stack = player.getMainHandItem();
-        EnchantInfoHudConfig config = getElementConfig();
-        int configFlags = configFlags(config);
-        List<String> blacklist = getConfig().enchantInfoConfig.blacklistedEnchantmentIds;
+        return cachedLines(
+                level.registryAccess().lookupOrThrow(Registries.ENCHANTMENT),
+                player.getMainHandItem(),
+                getElementConfig(),
+                getConfig().enchantInfoConfig.blacklistedEnchantmentIds,
+                HudRendererLib.getMaxWidth(this),
+                TextWrapper.widthOf(minecraft.font));
+    }
 
-        if (cachedLines == null
+    /**
+     * {@link #getLines(HolderLookup.RegistryLookup, ItemStack, EnchantInfoHudConfig, Collection,
+     * int, ToIntFunction)} with the registry walk cached across calls. The wrap is not cached:
+     * Force Unicode Font, the language and resource packs change {@code width} while every other
+     * input stays the same.
+     */
+    TextList cachedLines(
+            HolderLookup.RegistryLookup<Enchantment> registry,
+            ItemStack stack,
+            EnchantInfoHudConfig config,
+            List<String> blacklist,
+            int maxWidth,
+            ToIntFunction<FormattedText> width) {
+        int configFlags = configFlags(config);
+        if (cachedSections == null
                 || registry != cachedRegistry
                 || configFlags != cachedConfigFlags
                 || !ItemStack.matches(stack, cachedStack)
                 || !blacklist.equals(cachedBlacklist)) {
-            cachedLines = getLines(registry, stack, config, blacklist);
+            cachedSections = getSections(registry, stack, config, blacklist);
             cachedRegistry = registry;
             cachedStack = stack.copy();
             cachedConfigFlags = configFlags;
             cachedBlacklist = List.copyOf(blacklist);
         }
-
-        return cachedLines;
+        return wrap(cachedSections, maxWidth, width);
     }
 
     private static int configFlags(EnchantInfoHudConfig config) {
@@ -84,18 +120,77 @@ public class EnchantInfoHud implements BasicCoreHudElement<EnchantInfoHudConfig>
                 | (config.compactMode ? 32 : 0);
     }
 
+    /** The lines without a max width. */
     public static TextList getLines(
             HolderLookup.RegistryLookup<Enchantment> enchantmentRegistry,
             ItemStack itemStack,
             EnchantInfoHudConfig config,
             Collection<String> blacklistedEnchantmentIds) {
-        TextList lines = new TextList();
+        return getLines(
+                enchantmentRegistry, itemStack, config, blacklistedEnchantmentIds, 0, text -> 0);
+    }
 
-        if (!itemStack.isEnchantable() && !itemStack.isEnchanted()) return lines;
+    /**
+     * The lines wrapped at {@code maxWidth} as measured by {@code width}; a {@code maxWidth} of 0
+     * or less means none.
+     */
+    public static TextList getLines(
+            HolderLookup.RegistryLookup<Enchantment> enchantmentRegistry,
+            ItemStack itemStack,
+            EnchantInfoHudConfig config,
+            Collection<String> blacklistedEnchantmentIds,
+            int maxWidth,
+            ToIntFunction<FormattedText> width) {
+        return wrap(
+                getSections(enchantmentRegistry, itemStack, config, blacklistedEnchantmentIds),
+                maxWidth,
+                width);
+    }
+
+    private static TextList wrap(
+            List<Section> sections, int maxWidth, ToIntFunction<FormattedText> width) {
+        TextList lines = new TextList();
+        for (Section section : sections) lines.addAll(section.wrap(maxWidth, width));
+        return lines;
+    }
+
+    /**
+     * The panel's text before wrapping: a header wraps between words, every other section only
+     * between its parts.
+     */
+    private record Section(Component prefix, List<Component> parts, String separator) {
+        private static Section header(Component text) {
+            return new Section(
+                    Component.empty().append(text).withStyle(ChatFormatting.BOLD), List.of(), null);
+        }
+
+        private static Section parts(Component prefix, List<Component> parts, String separator) {
+            return new Section(prefix, parts, separator);
+        }
+
+        private static Section line(Component line) {
+            return new Section(Component.empty(), List.of(line), ", ");
+        }
+
+        private List<Component> wrap(int maxWidth, ToIntFunction<FormattedText> width) {
+            return separator == null
+                    ? TextWrapper.wrapWords(prefix, maxWidth, width)
+                    : TextWrapper.wrapParts(prefix, parts, separator, maxWidth, width);
+        }
+    }
+
+    private static List<Section> getSections(
+            HolderLookup.RegistryLookup<Enchantment> enchantmentRegistry,
+            ItemStack itemStack,
+            EnchantInfoHudConfig config,
+            Collection<String> blacklistedEnchantmentIds) {
+        List<Section> sections = new ArrayList<>();
+
+        if (!itemStack.isEnchantable() && !itemStack.isEnchanted()) return sections;
 
         ItemEnchantments enchantments = itemStack.getEnchantments();
 
-        if (config.showItemName) lines.addHeader(itemStack.getHoverName());
+        if (config.showItemName) sections.add(Section.header(itemStack.getHoverName()));
 
         if (config.showEnchantments) {
             List<Component> presentEnchantments = new ArrayList<>();
@@ -116,10 +211,13 @@ public class EnchantInfoHud implements BasicCoreHudElement<EnchantInfoHudConfig>
 
             if (config.compactMode) {
                 if (!presentEnchantments.isEmpty()) {
-                    addCompactLine(lines, Component.empty(), presentEnchantments);
+                    sections.add(Section.parts(Component.empty(), presentEnchantments, ", "));
                 }
             } else {
-                lines.addAll(presentEnchantments);
+                // one enchantment per line, and a name is never split
+                for (Component enchantment : presentEnchantments) {
+                    sections.add(Section.line(enchantment));
+                }
             }
         }
 
@@ -134,10 +232,15 @@ public class EnchantInfoHud implements BasicCoreHudElement<EnchantInfoHudConfig>
             List<List<Holder.Reference<Enchantment>>> conflictGroups =
                     EnchantmentUtils.groupConflictingEnchantments(missingEnchantments);
 
-            if (missingEnchantments.isEmpty()) return lines;
+            if (missingEnchantments.isEmpty()) return sections;
 
             if (config.compactMode) {
-                List<Component> groupLines = new ArrayList<>();
+                Component prefix =
+                        config.showMissingHeader
+                                ? Component.literal("Missing: ").withStyle(ChatFormatting.BOLD)
+                                : Component.empty();
+                List<Component> compatible = new ArrayList<>();
+                List<List<Component>> alternatives = new ArrayList<>();
 
                 for (List<Holder.Reference<Enchantment>> conflictGroup : conflictGroups) {
                     List<Component> names = new ArrayList<>();
@@ -146,28 +249,39 @@ public class EnchantInfoHud implements BasicCoreHudElement<EnchantInfoHudConfig>
                         names.add(formatCompactEnchantmentName(enchantmentHolder));
                     }
 
-                    groupLines.add(join(" / ", names));
+                    if (names.size() == 1) compatible.addAll(names);
+                    else alternatives.add(names);
                 }
 
-                Component prefix =
-                        config.showMissingHeader
-                                ? Component.literal("Missing: ").withStyle(ChatFormatting.BOLD)
-                                : Component.empty();
+                // the enchantments that can all be added share the "Missing:" line(s), and each
+                // conflict group follows on lines of its own, as in the full format
+                if (!compatible.isEmpty()) {
+                    sections.add(Section.parts(prefix, compatible, ", "));
+                    prefix = Component.empty();
+                }
 
-                addCompactLine(lines, prefix, groupLines);
-                return lines;
+                for (List<Component> names : alternatives) {
+                    sections.add(Section.parts(prefix, names, " / "));
+                    prefix = Component.empty();
+                }
+
+                return sections;
             }
 
             if (config.showMissingHeader) {
-                lines.addHeader(Component.literal("Missing:"));
+                sections.add(Section.header(Component.literal("Missing:")));
             }
 
             for (List<Holder.Reference<Enchantment>> conflictGroup : conflictGroups) {
-                lines.add(formatMissingEnchantments(conflictGroup));
+                sections.add(
+                        Section.parts(
+                                Component.empty(),
+                                formatMissingEnchantments(conflictGroup),
+                                " / "));
             }
         }
 
-        return lines;
+        return sections;
     }
 
     private static Component formatPresentEnchantment(
@@ -184,67 +298,18 @@ public class EnchantInfoHud implements BasicCoreHudElement<EnchantInfoHudConfig>
         return text;
     }
 
-    private static Component formatMissingEnchantments(
+    /** The enchantments of a conflict group at their maximum levels. */
+    private static List<Component> formatMissingEnchantments(
             List<Holder.Reference<Enchantment>> enchantments) {
-        MutableComponent text = Component.empty();
+        List<Component> names = new ArrayList<>();
 
-        for (int i = 0; i < enchantments.size(); i++) {
-            if (i > 0) text.append(" / ");
-
-            Holder<Enchantment> enchantmentHolder = enchantments.get(i);
-
-            text.append(
+        for (Holder<Enchantment> enchantmentHolder : enchantments) {
+            names.add(
                     Enchantment.getFullname(
                             enchantmentHolder, enchantmentHolder.value().getMaxLevel()));
         }
 
-        return text;
-    }
-
-    /**
-     * Adds the compact form of one section: its parts joined with {@code ", "} on one line, wrapped
-     * between parts once the line reaches {@link #COMPACT_LINE_LENGTH} characters. A wrapped part
-     * is never split, so conflict groups stay together.
-     */
-    private static void addCompactLine(TextList lines, Component prefix, List<Component> parts) {
-        MutableComponent line = Component.empty().append(prefix);
-        int lineLength = prefix.getString().length();
-        boolean lineHasPart = false;
-
-        for (Component part : parts) {
-            int partLength = part.getString().length();
-
-            if (lineHasPart && lineLength + 2 + partLength > COMPACT_LINE_LENGTH) {
-                lines.add(line);
-                line = Component.empty();
-                lineLength = 0;
-                lineHasPart = false;
-            }
-
-            if (lineHasPart) {
-                line.append(", ");
-                lineLength += 2;
-            }
-
-            line.append(part);
-            lineLength += partLength;
-            lineHasPart = true;
-        }
-
-        lines.add(line);
-    }
-
-    /** Joins the parts onto one line, separated by {@code separator}. */
-    private static MutableComponent join(String separator, List<Component> parts) {
-        MutableComponent text = Component.empty();
-
-        for (int i = 0; i < parts.size(); i++) {
-            if (i > 0) text.append(separator);
-
-            text.append(parts.get(i));
-        }
-
-        return text;
+        return names;
     }
 
     /**

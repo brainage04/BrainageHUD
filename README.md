@@ -38,15 +38,17 @@ Each part can be turned off, and the label resized, under Waypoint Config in the
 
 ### Enchant Info
 
-The Enchant Info HUD shows the held item's name, its enchantments, then a "Missing:" list of the enchantments it could still get. Compact mode is on by default: all of the item's enchantments share one line with their levels (`Sharpness III, Unbreaking III`), and the missing enchantments share another (`Missing: Fire Aspect, Looting, Mending`), without maximum levels, so a plain sword takes three lines instead of eight. A missing list too long for one line wraps between its entries, never through one. With Compact Mode off (Enchant Info HUD > Compact Mode, or the Toggle Enchant Info Compact key, `K`) the full format is used: one line per enchantment, with the maximum level after any enchantment below it, and one line per missing choice. In both formats, enchantments that cannot be combined share one line in the missing list, e.g. `Fortune / Silk Touch`. Blacklisted enchantments are never listed as missing; by default the blacklist holds the curses and the enchantments that are usually a worse choice (such as Blast Protection, Smite and Knockback). Each part can be turned off under Enchant Info HUD in the config editor, and the key switches compact mode without opening it.
+The Enchant Info HUD shows the held item's name, its enchantments, then a "Missing:" list of the enchantments it could still get. Compact mode is on by default: all of the item's enchantments share one line with their levels (`Sharpness III, Unbreaking III`), and the missing enchantments that can all be added share another (`Missing: Fire Aspect, Looting, Mending`), without maximum levels, so a plain sword takes three lines instead of eight. Enchantments that cannot be combined are a choice of one: each such group gets a line of its own after the missing list, e.g. `Sharpness / Smite / Bane of Arthropods`. So `,` always separates enchantments you can all add, and `/` always separates the alternatives of one choice. With Compact Mode off (Enchant Info HUD > Compact Mode, or the Toggle Enchant Info Compact key, `K`) the full format is used: one line per enchantment, with the maximum level after any enchantment below it, and one line per missing choice. Lines wrap at the element's Max Width (see Configuration), 300 GUI pixels by default, only at those separators and never inside a name, and a wrapped line keeps its `,` or `/` at the end, so a line ending in `/` continues the same choice. At its default place the panel then ends before the Date/Time HUD in a 1920x1080 window at GUI scale 3. Blacklisted enchantments are never listed as missing; by default the blacklist holds the curses and the enchantments that are usually a worse choice (such as Blast Protection, Smite and Knockback). Each part can be turned off under Enchant Info HUD in the config editor, and the key switches compact mode without opening it.
 
 Tooltip lines of enchantments at their maximum level are shown in bold (Enchant Info > Highlight Max Level Enchants).
+
+On screens narrower than about 640 GUI pixels (Auto GUI scale at 1080p, or Force Unicode Font), the panel can still reach the clock: lower its Max Width in the HUD editor or config.
 
 ## Getting started
 
 - Minecraft 26.3; Java 25 or later.
 - Fabric Loader 0.19.5 or later with [Fabric API](https://modrinth.com/mod/fabric-api), or NeoForge 26.3.0.99 or later.
-- [HudRendererLib](https://modrinth.com/mod/hudrendererlib) 1.1.0 or later and [Cloth Config](https://modrinth.com/mod/cloth-config) 26.3.159 or later, for your loader.
+- [HudRendererLib](https://modrinth.com/mod/hudrendererlib) 1.1.1 or later and [Cloth Config](https://modrinth.com/mod/cloth-config) 26.3.159 or later, for your loader.
 - Recommended on Fabric: [Mod Menu](https://modrinth.com/mod/modmenu), for a config button in the mods list.
 
 Install the BrainageHUD JAR for your loader (Fabric or NeoForge) and its requirements into the client's `mods` folder. BrainageHUD is client-only and isn't needed on servers.
@@ -72,9 +74,11 @@ The element editor key and HudRendererLib's own config key (Numpad Enter) are in
 
 The config editor holds every element's settings. Each element can override the global text colour, text shadows, backdrop opacity, padding and maximum width in its Style Overrides.
 
+Max Width is off by default for every element except the Enchant Info HUD, which wraps at 300 GUI pixels unless its own Max Width or HudRendererLib's global Max Element Width is set. Turned on (Style Overrides > Max Width > Enabled, then the width in GUI pixels, where 0 means no limit), it wraps the element's lines at that width: between words, or for the Enchant Info HUD between enchantments (its item name between words), never inside a word or name. A single word or name wider than the limit stays whole on its own line. The element keeps its alignment: a right-anchored element still ends at its right edge, with every line right-aligned. With Show Icons on, the Status Effect HUD wraps each effect's name and time beside its icon.
+
 The global settings are in HudRendererLib's config editor (Numpad Enter). Screen Margin keeps elements from being moved off-screen or too close to its edge.
 
-In the element editor, drag an element with the mouse or nudge it with the arrow keys (Shift ×10, Ctrl ×5), and press Space to cycle its alignment. Save & Close keeps the changes; Undo & Close or Escape reverts them.
+In the element editor, drag an element with the mouse or nudge it with the arrow keys (Shift ×10, Ctrl ×5), and press Space to cycle its alignment. A selected element that can wrap shows an orange bar on its free edge (the right edge, or the left one for right-anchored elements): drag it to set the element's Max Width, or press `[` and `]` to narrow or widen it by one pixel (Shift ×10, Ctrl ×5), and Backspace to reset it to the global Max Element Width or, without one, the element's default. Save & Close keeps the changes; Undo & Close or Escape reverts them.
 
 While the Status Effect HUD is on, the game's own status effect icons in the top right are hidden (Hide Vanilla Status Effects, on by default in its settings). Whenever those icons are showing, elements anchored to the top right move down so the two don't overlap. Show Vanilla Status Effects in HudRendererLib's config editor turns the vanilla icons off everywhere.
 

@@ -6,6 +6,7 @@ import static io.github.brainage04.brainagehud.util.MathUtils.roundDecimalPlaces
 import io.github.brainage04.brainagehud.config.hud.basic.PositionHudConfig;
 import io.github.brainage04.hudrendererlib.hud.core.BasicCoreHudElement;
 import io.github.brainage04.hudrendererlib.util.TextList;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
@@ -18,6 +19,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.LightLayer;
 import net.minecraft.world.level.biome.Biome;
+import org.jetbrains.annotations.Nullable;
 
 public class PositionHud implements BasicCoreHudElement<PositionHudConfig> {
     // Minecraft yaw 0 faces south (+Z) and increases clockwise: 90 is west, 180/-180 north, -90
@@ -54,6 +56,24 @@ public class PositionHud implements BasicCoreHudElement<PositionHudConfig> {
     /** Whole words only, so that a pickaxe does not count as an axe. */
     static boolean isFarmingToolName(String name) {
         return FARMING_TOOL_NAME.matcher(name).find();
+    }
+
+    /**
+     * The rendered/total sections at the start of the debug screen's chunk line. Sodium (0.9.3)
+     * replaces vanilla's view area with a one-section stub (IgnoringViewArea) and overwrites
+     * sectionStatistics() and countRenderedSections() (LevelExtractorMixin), so only that line has
+     * the real total with every renderer; vanilla's ViewArea.size() reads 1 under Sodium. Sodium
+     * formats the line with the default locale (RenderSectionManager.getChunksDebugString()), so
+     * the counts may be in any script's decimal digits.
+     */
+    private static final Pattern SECTION_COUNTS = Pattern.compile("C: \\p{Nd}+/\\p{Nd}+");
+
+    /** A line without the counts is shown as it is. */
+    static @Nullable String getCCounter(@Nullable String sectionStatistics, boolean smartCull) {
+        if (sectionStatistics == null) return null;
+        Matcher counts = SECTION_COUNTS.matcher(sectionStatistics);
+        if (!counts.lookingAt()) return sectionStatistics;
+        return counts.group() + (smartCull ? " (s)" : "");
     }
 
     @Override
@@ -97,19 +117,11 @@ public class PositionHud implements BasicCoreHudElement<PositionHudConfig> {
         var levelExtractor = Minecraft.getInstance().levelExtractor;
 
         if (getElementConfig().cCounter) {
-            // Matches LevelExtractor.sectionStatistics(): its ViewArea is the vanilla C-counter
-            // denominator.
-            var viewArea = Minecraft.getInstance().levelRenderer.viewArea();
-            if (viewArea != null) {
-                int completedChunks = levelExtractor.countRenderedSections();
-                int totalChunks = viewArea.size();
-
-                lines.add(
-                        "C: %d/%d%s"
-                                .formatted(
-                                        completedChunks,
-                                        totalChunks,
-                                        Minecraft.getInstance().smartCull ? " (s)" : ""));
+            String cCounter =
+                    getCCounter(
+                            levelExtractor.sectionStatistics(), Minecraft.getInstance().smartCull);
+            if (cCounter != null) {
+                lines.add(cCounter);
             }
         }
 

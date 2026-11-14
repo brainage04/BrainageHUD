@@ -16,18 +16,18 @@ permissions:
 
 jobs:
   build:
-    uses: brainage04/MinecraftModConventions/.github/workflows/reusable-mod-build.yml@v3.1.2
+    uses: brainage04/MinecraftModConventions/.github/workflows/reusable-mod-build.yml@v3.4.0
     with:
-      prepare_siblings: HudRendererLib
+      prepare_siblings: HudRendererLib@9c7dbf965d8bad1098591c96d667e81dff6ca68e
 
   client-gametests:
     if: ${{ vars.RUN_CLIENT_GAMETESTS != 'false' && (github.event_name != 'workflow_dispatch' || inputs.run_client_gametests) }}
-    uses: brainage04/MinecraftModConventions/.github/workflows/reusable-client-gametests.yml@v3.1.2
+    uses: brainage04/MinecraftModConventions/.github/workflows/reusable-client-gametests.yml@v3.4.0
     with:
-      prepare_siblings: HudRendererLib
+      prepare_siblings: HudRendererLib@9c7dbf965d8bad1098591c96d667e81dff6ca68e
       run_client_gametests: ${{ github.event_name != 'workflow_dispatch' || inputs.run_client_gametests }}
 
   production-gametests:
-    uses: brainage04/MinecraftModConventions/.github/workflows/reusable-production-gametests.yml@v3.1.2
+    uses: brainage04/MinecraftModConventions/.github/workflows/reusable-production-gametests.yml@v3.4.0
     with:
-      prepare_siblings: HudRendererLib
+      prepare_siblings: HudRendererLib@9c7dbf965d8bad1098591c96d667e81dff6ca68e
