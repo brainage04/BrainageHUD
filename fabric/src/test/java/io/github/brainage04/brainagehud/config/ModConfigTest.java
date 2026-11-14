@@ -1,6 +1,7 @@
 package io.github.brainage04.brainagehud.config;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -93,5 +94,41 @@ class ModConfigTest {
         loaded.validatePostLoad();
 
         assertEquals(file, GSON.toJson(loaded));
+    }
+
+    @Test
+    void namesSavedBy103TakeTheCurrentNamesAndKeepTheirSettings() {
+        ModConfig config =
+                GSON.fromJson(
+                        """
+                        {
+                          "armourInfoHudConfig": { "coreSettings": {
+                            "elementName": "Armor Info HUD", "enabled": false, "x": 7, "y": -9,
+                            "elementAnchor": "TOP_LEFT",
+                            "elementOverrides": { "padding": { "enabled": true, "value": 6 } }
+                          } },
+                          "dateTimeHudConfig": { "coreSettings": {
+                            "elementName": "Date Time HUD", "enabled": true, "x": 1, "y": 2,
+                            "elementAnchor": "BOTTOM"
+                          } },
+                          "fishingHudConfig": { "coreSettings": {
+                            "elementName": "My fishing panel", "enabled": true, "x": 3, "y": 4,
+                            "elementAnchor": "LEFT"
+                          } }
+                        }
+                        """,
+                        ModConfig.class);
+
+        config.validatePostLoad();
+
+        assertEquals("Armour Info HUD", config.armourInfoHudConfig.coreSettings.elementName);
+        assertFalse(config.armourInfoHudConfig.coreSettings.enabled);
+        assertEquals(7, config.armourInfoHudConfig.coreSettings.x);
+        assertEquals(-9, config.armourInfoHudConfig.coreSettings.y);
+        assertEquals(ElementAnchor.TOP_LEFT, config.armourInfoHudConfig.coreSettings.elementAnchor);
+        assertEquals(6, config.armourInfoHudConfig.coreSettings.elementOverrides.padding.value);
+        assertEquals("Date/Time HUD", config.dateTimeHudConfig.coreSettings.elementName);
+        assertEquals(ElementAnchor.BOTTOM, config.dateTimeHudConfig.coreSettings.elementAnchor);
+        assertEquals("My fishing panel", config.fishingHudConfig.coreSettings.elementName);
     }
 }
