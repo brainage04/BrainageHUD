@@ -8,29 +8,31 @@ Motion and Entity are off by default; turn them on in the config editor. Every e
 
 ### HUD elements
 
-- **Position HUD**: block position, position within the chunk, the C and E counters, the direction you face (including +/- X/Z), rotation, light levels and biome. Rotation can include the unwrapped "true" yaw, or show only while you hold an axe, a hoe or a Hypixel SkyBlock farming tool.
-- **Network HUD**: ping and TPS, each of which can be turned off, optionally coloured from green (good) to red (bad). TPS is measured from the game time the server reports each second.
-- **Performance HUD**: FPS, RAM usage, CPU usage, GPU usage and GPU frame time.
-- **Date/Time HUD**: date, time (12 or 24 hour) and timezone.
-- **Motion HUD**: your speed on each axis and your horizontal speed in blocks per second, optionally also in blocks per tick. It measures how far you actually moved, so it stays accurate when you are blocked or riding something.
-- **Entity HUD**: how many entities are loaded, grouped into creatures, water creatures, ambient mobs, monsters and others.
-- **Projectile HUD**: how many arrows, snowballs, eggs, ender pearls and wind charges you carry, optionally per slot.
-- **Food HUD**: how much of each food you carry, optionally per slot.
-- **Reach HUD**: the name, distance and coordinates of the block or entity you are looking at.
-- **Toggle Sprint HUD**: whether you are walking, sneaking or sprinting, and whether that is vanilla or toggled. It can also show the game's toggle setting and the key state, for debugging.
-- **Armour Info HUD**: durability, names and icons of your armour and the items in your hands.
-- **Keystrokes HUD**: WASD, Space and the mouse buttons as they are pressed, and your clicks per second.
-- **Enchant Info HUD**: the held item's enchantments and the enchantments it could still get (see [Enchant Info](#enchant-info)).
-- **Status Effect HUD**: your active status effects with their icons, levels and how long each has left.
-- **Fishing HUD**: while your bobber is out, whether it is in open water (which decides whether treasure can be caught) and the chance of catching a fish, treasure or junk.
+- **Position HUD**: block position, position within the chunk, the C and E counters, the direction you face (including +/- X/Z), rotation, light levels and biome. Rotation can include the unwrapped "true" yaw, or show only while you hold an axe, a hoe or a Hypixel SkyBlock farming tool
+- **Network HUD**: ping and TPS, each of which can be turned off, optionally coloured from green (good) to red (bad). TPS is measured from the game time the server reports each second
+- **Performance HUD**: FPS, RAM usage, CPU usage, GPU usage and GPU frame time
+- **Date/Time HUD**: date, time (12 or 24 hour) and timezone
+- **Motion HUD**: your speed on each axis and your horizontal speed in blocks per second, optionally also in blocks per tick. It measures how far you actually moved, so it stays accurate when you are blocked or riding something
+- **Entity HUD**: how many entities are loaded, grouped into creatures, water creatures, ambient mobs, monsters and others
+- **Projectile HUD**: how many arrows, snowballs, eggs, ender pearls and wind charges you carry, optionally per slot
+- **Food HUD**: how much of each food you carry, optionally per slot
+- **Reach HUD**: the name, distance and coordinates of the block or entity you are looking at
+- **Toggle Sprint HUD**: whether you are walking, sneaking or sprinting, and whether that is vanilla or toggled. It can also show the game's toggle setting and the key state, for debugging
+- **Armour Info HUD**: durability, names and icons of your armour and the items in your hands
+- **Keystrokes HUD**: WASD, Space and the mouse buttons as they are pressed, and your clicks per second
+- **Enchant Info HUD**: the held item's enchantments and the enchantments it could still get (see [Enchant Info](#enchant-info))
+- **Status Effect HUD**: your active status effects with their icons, levels and how long each has left
+- **Fishing HUD**: while your bobber is out, whether it is in open water (which decides whether treasure can be caught) and the chance of catching a fish, treasure or junk
+- **Enchant Info HUD** wraps at 300 GUI pixels by default, between enchantments and between the words of the item name, never inside a word or name
+- Compact mode separates enchantments you can all add with `,` and the alternatives of one choice with `/`
 
 ### Waypoints
 
 Waypoints are saved per world (singleplayer save or server address) in `config/brainagehud/waypoints.json`. Each visible waypoint in your current dimension is drawn in the world, in its own colour:
 
-- A beacon beam through the whole height of the dimension, which widens with distance so it can be found from far away.
-- A spinning gem hovering above the spot, with a pulse spreading over the ground below it when you are near.
-- A label with the name and distance, readable through walls. It keeps its size on screen however far away the waypoint is. Beyond 16 blocks, only the waypoint you look towards shows its name; the others show their distance.
+- A beacon beam through the whole height of the dimension, which widens with distance so it can be found from far away
+- A spinning gem hovering above the spot, with a pulse spreading over the ground below it when you are near
+- A label with the name and distance, readable through walls. It keeps its size on screen however far away the waypoint is. Beyond 16 blocks, only the waypoint you look towards shows its name; the others show their distance
 
 Every dimension also has a built-in "World Centre" waypoint at 0, 63, 0, white by default. It is listed first on the Manage Waypoints screen, where it can be hidden or shown but not edited or deleted. Its colour is World Centre Colour in the config.
 
@@ -42,33 +44,31 @@ The Enchant Info HUD shows the held item's name, its enchantments, then a "Missi
 
 Tooltip lines of enchantments at their maximum level are shown in bold (Enchant Info > Highlight Max Level Enchants).
 
-## Getting started
+## Requirements
 
-- Minecraft 26.3; Java 25 or later.
-- Fabric Loader 0.19.5 or later with [Fabric API](https://modrinth.com/mod/fabric-api), or NeoForge 26.3.0.99 or later.
-- [HudRendererLib](https://modrinth.com/mod/hudrendererlib) 1.1.0 or later and [Cloth Config](https://modrinth.com/mod/cloth-config) 26.3.159 or later, for your loader.
-- Recommended on Fabric: [Mod Menu](https://modrinth.com/mod/modmenu), for a config button in the mods list.
-
-Install the BrainageHUD JAR for your loader (Fabric or NeoForge) and its requirements into the client's `mods` folder. BrainageHUD is client-only and isn't needed on servers.
+- Fabric Loader >=0.19.5 w/ Fabric API or NeoForge >=26.3.0.99
+- [HudRendererLib](https://modrinth.com/mod/hudrendererlib) >=1.1.1 and [Cloth Config](https://modrinth.com/mod/cloth-config) >=26.3.159 for your loader
+- Java >=25
+- Recommended on Fabric: [Mod Menu](https://modrinth.com/mod/modmenu), for a config button in the mods list
 
 ## Commands
 
 - `/waypoints add <name> [<x> <y> <z>]`, `/waypoints remove <name>` and `/waypoints list` – add, remove and list waypoints; `/waypoints` opens the Manage Waypoints screen. Quote names that contain spaces. (Vanilla's `/waypoint` is a server command for the locator bar, so this one is plural.)
-- `/getenchants [<item>]` – lists every enchantment the held item (or the given item) can get, grouping enchantments that conflict with each other.
-- `/getenchantinfo <enchantment>` – shows an enchantment's ID, maximum level, conflicts and the items it applies to. It accepts an ID (`minecraft:fortune` or `fortune`) or a name, ignoring case; a partial name lists every match.
-- `/blacklistedenchants add <enchantment>`, `/blacklistedenchants remove <enchantment>` and `/blacklistedenchants query` – edit and show the Enchant Info blacklist, which is also editable in the config editor.
-- `/fullbright <amount>` – brightens every light level from 0 to 1 (1 lights caves and night-time terrain fully) or darkens it from 0 to -1 (-1 is black); 0 turns it off.
-- `/brainagehudconfig` – opens the config editor.
-- `Numpad Minus` (Open Config) – opens the BrainageHUD config editor.
-- `Numpad Plus` (Open Element Editor) – opens the HUD element editor.
-- `B` (Create Waypoint) – creates a waypoint where you stand, named "Waypoint 1", "Waypoint 2", and so on.
-- `U` (Manage Waypoints) – opens a screen to add, edit, hide/show and delete waypoints.
-- `K` (Toggle Enchant Info Compact) – switches the Enchant Info HUD between compact and full lines, and says in chat which one is on.
-- `Inventory Stats` (Unbound) – lists every occupied inventory slot in chat with its item, count and item data (damage, enchantments, custom name and so on).
+- `/getenchants [<item>]` – lists every enchantment the held item (or the given item) can get, grouping enchantments that conflict with each other
+- `/getenchantinfo <enchantment>` – shows an enchantment's ID, maximum level, conflicts and the items it applies to. It accepts an ID (`minecraft:fortune` or `fortune`) or a name, ignoring case; a partial name lists every match
+- `/blacklistedenchants add <enchantment>`, `/blacklistedenchants remove <enchantment>` and `/blacklistedenchants query` – edit and show the Enchant Info blacklist, which is also editable in the config editor
+- `/fullbright <amount>` – brightens every light level from 0 to 1 (1 lights caves and night-time terrain fully) or darkens it from 0 to -1 (-1 is black); 0 turns it off
+- `/brainagehudconfig` – opens the config editor
+- `Numpad Minus` (Open Config) – opens the BrainageHUD config editor
+- `Numpad Plus` (Open Element Editor) – opens the HUD element editor
+- `B` (Create Waypoint) – creates a waypoint where you stand, named "Waypoint 1", "Waypoint 2", and so on
+- `U` (Manage Waypoints) – opens a screen to add, edit, hide/show and delete waypoints
+- `K` (Toggle Enchant Info Compact) – switches the Enchant Info HUD between compact and full lines, and says in chat which one is on
+- `Inventory Stats` (Unbound) – lists every occupied inventory slot in chat with its item, count and item data (damage, enchantments, custom name and so on)
 
 The element editor key and HudRendererLib's own config key (Numpad Enter) are in the HudRendererLib category of the controls screen; the rest are in the BrainageHUD category.
 
-## Configuration
+## Config
 
 The config editor holds every element's settings. Each element can override the global text colour, text shadows, backdrop opacity, padding and maximum width in its Style Overrides.
 
@@ -76,7 +76,11 @@ The global settings are in HudRendererLib's config editor (Numpad Enter). Screen
 
 In the element editor, drag an element with the mouse or nudge it with the arrow keys (Shift ×10, Ctrl ×5), and press Space to cycle its alignment. Save & Close keeps the changes; Undo & Close or Escape reverts them.
 
-While the Status Effect HUD is on, the game's own status effect icons in the top right are hidden (Hide Vanilla Status Effects, on by default in its settings). Whenever those icons are showing, elements anchored to the top right move down so the two don't overlap. Show Vanilla Status Effects in HudRendererLib's config editor turns the vanilla icons off everywhere.
+While the Status Effect HUD is on, the game's own status effect icons in the top right are hidden (Hide Vanilla Status Effects, on by default in its settings). Whenever those icons are showing, elements anchored to the top right move down so the two don't overlap. Show Vanilla Status Effects in HudRendererLib's config editor turns the vanilla icons off everywhere. The editor clears the bounds of the Armour Info, Keystrokes and Status Effect HUDs when they draw nothing, so they stop being selectable boxes.
+
+On screens narrower than about 640 GUI pixels (Auto GUI scale at 1080p, or Force Unicode Font), the Enchant Info panel can still reach the clock: lower its Max Width in the HUD editor or config.
+
+A config section set to null, or a misspelt Keystrokes or Armour Info format, loads as the default instead of failing to start. 1.0.3's "Armor Info HUD" and "Date Time HUD" names load as the current ones. The Network HUD sends pings only while the Network HUD itself is on, and waypoints for `play.example.net` and `play.example.net:25565` are one server.
 
 ## Compatibility
 
@@ -90,8 +94,8 @@ Source and issues: [github.com/brainage04/BrainageHUD](https://github.com/braina
 
 ## Documentation
 
-- [GetEnchantInfo port details](docs/getenchantinfo-migration.md) – command, HUD and config differences.
-- [Release procedure](docs/RELEASE.md) – maintainer publishing instructions.
-- [Development](docs/DEVELOPMENT.md) – build, test and headless recording commands.
-- [Modrinth description](docs/MODRINTH.md) – project page text.
-- [Icon](docs/icon/README.md) – artwork source and credits.
+- [GetEnchantInfo port details](docs/getenchantinfo-migration.md) – command, HUD and config differences
+- [Release procedure](docs/RELEASE.md) – maintainer publishing instructions
+- [Development](docs/DEVELOPMENT.md) – build, test and headless recording commands
+- [Modrinth description](docs/MODRINTH.md) – project page text
+- [Icon](docs/icon/README.md) – artwork source and credits
