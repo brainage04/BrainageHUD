@@ -7,6 +7,8 @@ heavy status
 heavy --mem 6G -- ./gradlew --no-daemon build runAllGameTests
 ```
 
+Plugins come from Maven Central at `minecraftmodconventions_version` in `gradle.properties`. A `../MinecraftModConventions` checkout beside the project is used only with `-PuseLocalConventions`; without it a stale checkout cannot replace that version.
+
 The client-only mod has unit tests in `fabric/src/test` and a Fabric production client GameTest in `fabric/src/gametest`. The client scenario starts and stops its own dedicated-server fixture. NeoForge server GameTests are disabled; `build` still compiles and packages both loaders.
 
 ## Headless recording
