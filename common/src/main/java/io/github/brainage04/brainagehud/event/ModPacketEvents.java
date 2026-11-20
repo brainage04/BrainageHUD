@@ -25,11 +25,11 @@ public class ModPacketEvents {
     }
 
     /**
-     * Called when the server changes its tick rate or freezes: the intervals measured before that
-     * describe a different server, so they are dropped.
+     * Called with the server's ticking state. The intervals measured before a change describe a
+     * different server, so they are dropped; a respawn re-sends the same state and keeps them.
      */
-    public static void onTickRateStateChanged() {
-        TICK_RATE.reset();
+    public static void onTickRateState(float tickRate, boolean frozen) {
+        TICK_RATE.onTickRateState(tickRate, frozen);
     }
 
     public static long getPing() {

@@ -30,6 +30,9 @@ public final class TickRateTracker {
     private boolean hasPrevious;
     private long previousGameTime;
     private long previousNanos;
+    private boolean hasTickRateState;
+    private float lastTickRate;
+    private boolean lastFrozen;
 
     public TickRateTracker(LongSupplier nanoClock) {
         this.nanoClock = nanoClock;
@@ -88,6 +91,20 @@ public final class TickRateTracker {
     public void reset() {
         clearIntervals();
         hasPrevious = false;
+        hasTickRateState = false;
+    }
+
+    /**
+     * Drops the measured intervals when the server's tick rate or frozen state differs from the
+     * last one seen, since they describe a different server. A respawn re-sends the same state
+     * (PlayerList.java:667), and that must not throw away a valid window.
+     */
+    public void onTickRateState(float tickRate, boolean frozen) {
+        boolean changed = hasTickRateState && (tickRate != lastTickRate || frozen != lastFrozen);
+        hasTickRateState = true;
+        lastTickRate = tickRate;
+        lastFrozen = frozen;
+        if (changed) clearIntervals();
     }
 
     /**

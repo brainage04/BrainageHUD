@@ -75,18 +75,45 @@ class TickRateTrackerTest {
     }
 
     @Test
-    void aDimensionChangeKeepsTheRate() {
+    void aRespawnKeepsTheRate() {
         tracker.record(100_000L, 3);
         clock.set(SECOND);
         tracker.record(100_020L, 3);
+        tracker.onTickRateState(VANILLA_TICK_RATE, false);
 
-        // the game time is one clock for every dimension (MinecraftServer.java:1145), so the
-        // interval across a respawn into another dimension still measures the server
+        // a respawn sends the level info: a set-time packet, then the same ticking state
+        // (PlayerList.java:658, :667)
         clock.set(2L * SECOND);
         tracker.record(100_040L, 3);
+        tracker.onTickRateState(VANILLA_TICK_RATE, false);
 
         assertTrue(tracker.hasRate(VANILLA_TICK_RATE));
         assertEquals(20.0D, tracker.ticksPerSecond(), 1e-9);
+    }
+
+    @Test
+    void aChangedTickRateDropsTheIntervals() {
+        tracker.record(0L, 3);
+        clock.set(SECOND);
+        tracker.record(20L, 3);
+        tracker.onTickRateState(VANILLA_TICK_RATE, false);
+
+        // /tick rate 10: the intervals measured at 20 TPS describe a different server
+        tracker.onTickRateState(10.0F, false);
+
+        assertFalse(tracker.hasRate(10.0F));
+    }
+
+    @Test
+    void freezingDropsTheIntervals() {
+        tracker.record(0L, 3);
+        clock.set(SECOND);
+        tracker.record(20L, 3);
+        tracker.onTickRateState(VANILLA_TICK_RATE, false);
+
+        tracker.onTickRateState(VANILLA_TICK_RATE, true);
+
+        assertFalse(tracker.hasRate(VANILLA_TICK_RATE));
     }
 
     @Test

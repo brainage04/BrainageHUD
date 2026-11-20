@@ -69,6 +69,6 @@ public class MixinClientPlayNetworkHandler {
                             target = ENSURE_RUNNING_ON_SAME_THREAD,
                             shift = At.Shift.AFTER))
     private void resetOnTickRateChange(ClientboundTickingStatePacket packet, CallbackInfo ci) {
-        ModPacketEvents.onTickRateStateChanged();
+        ModPacketEvents.onTickRateState(packet.tickRate(), packet.isFrozen());
     }
 }
