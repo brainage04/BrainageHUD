@@ -12,7 +12,10 @@ import java.util.function.LongSupplier;
  * per-interval rates, keeps irregularly spaced reports correctly weighted.
  */
 public final class TickRateTracker {
-    /** Vanilla broadcasts the game time every 20 ticks (MinecraftServer.java:1079). */
+    /**
+     * Vanilla broadcasts the game time every 20 ticks. No API exposes the interval: it is the
+     * literal in the server loop at MinecraftServer.java:1079.
+     */
     private static final int VANILLA_REPORT_INTERVAL_TICKS = 20;
 
     /** Three report intervals may pass with no report before the rate counts as unknown. */
