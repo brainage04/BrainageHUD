@@ -1,5 +1,6 @@
 package io.github.brainage04.brainagehud.util;
 
+import java.lang.ref.WeakReference;
 import java.util.ArrayDeque;
 import java.util.function.LongSupplier;
 
@@ -27,7 +28,8 @@ public final class TickRateTracker {
     private boolean hasPrevious;
     private long previousGameTime;
     private long previousNanos;
-    private Object previousWorld;
+    // weak, so a disconnected world is not kept alive by the last report it sent
+    private WeakReference<Object> previousWorld;
 
     public TickRateTracker(LongSupplier nanoClock) {
         this.nanoClock = nanoClock;
@@ -45,7 +47,7 @@ public final class TickRateTracker {
             long ticks = gameTime - previousGameTime;
             long nanos = nowNanos - previousNanos;
 
-            if (world != previousWorld || ticks < 0L || nanos <= 0L) {
+            if (world != previousWorld.get() || ticks < 0L || nanos <= 0L) {
                 clearIntervals();
             } else {
                 intervals.addLast(new Interval(ticks, nanos));
@@ -64,7 +66,7 @@ public final class TickRateTracker {
         hasPrevious = true;
         previousGameTime = gameTime;
         previousNanos = nowNanos;
-        previousWorld = world;
+        previousWorld = new WeakReference<>(world);
     }
 
     /**
