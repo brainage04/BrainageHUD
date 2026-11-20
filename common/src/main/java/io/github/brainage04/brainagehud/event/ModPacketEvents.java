@@ -7,7 +7,7 @@ import io.github.brainage04.brainagehud.util.TickRateTracker;
 
 public class ModPacketEvents {
     private static final RollingAverage PING = new RollingAverage();
-    private static final TickRateTracker TICK_RATE = new TickRateTracker();
+    private static final TickRateTracker TICK_RATE = new TickRateTracker(System::nanoTime);
 
     public static void onLogin() {
         PING.clear();
@@ -20,8 +20,7 @@ public class ModPacketEvents {
     }
 
     public static void onServerGameTime(long gameTime) {
-        TICK_RATE.record(
-                gameTime, System.nanoTime(), getConfig().networkHudConfig.tpsIntervalsTracked);
+        TICK_RATE.record(gameTime, getConfig().networkHudConfig.tpsIntervalsTracked);
     }
 
     public static long getPing() {

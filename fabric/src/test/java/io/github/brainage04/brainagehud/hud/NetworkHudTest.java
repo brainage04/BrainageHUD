@@ -1,11 +1,19 @@
 package io.github.brainage04.brainagehud.hud;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
+import io.github.brainage04.brainagehud.FakeNanoClock;
+import io.github.brainage04.brainagehud.util.TickRateTracker;
 import net.minecraft.ChatFormatting;
 import org.junit.jupiter.api.Test;
 
 class NetworkHudTest {
+    private static final long SECOND = 1_000_000_000L;
+
+    private final FakeNanoClock clock = new FakeNanoClock();
+    private final TickRateTracker tracker = new TickRateTracker(clock);
+
     @Test
     void pingColourChangesAtEachLatencyThreshold() {
         assertEquals(ChatFormatting.DARK_GREEN, NetworkHud.pingColour(49));
@@ -25,5 +33,25 @@ class NetworkHudTest {
         assertEquals(ChatFormatting.GOLD, NetworkHud.tpsColour(18));
         assertEquals(ChatFormatting.RED, NetworkHud.tpsColour(15));
         assertEquals(ChatFormatting.DARK_RED, NetworkHud.tpsColour(10));
+    }
+
+    @Test
+    void reportsNoRateWhenTheServerStopsSendingGameTime() {
+        // Minemen sends two game time reports with the same game time, then none at all. The
+        // second report leaves a zero-tick interval, which reads as 0.0 TPS for as long as the
+        // client stays connected.
+        tracker.record(1000L, 3);
+        clock.set(SECOND);
+        tracker.record(1000L, 3);
+
+        // vanilla reports the game time every 20 ticks, so once a second at 20 TPS; three of those
+        // intervals pass with no report at all
+        clock.set(SECOND + 3L * SECOND);
+
+        assertFalse(
+                tracker.hasRate(),
+                "the HUD would show TPS: "
+                        + tracker.ticksPerSecond()
+                        + " from a report that arrived three seconds ago");
     }
 }

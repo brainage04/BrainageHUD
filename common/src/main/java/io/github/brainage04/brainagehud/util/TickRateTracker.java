@@ -1,6 +1,7 @@
 package io.github.brainage04.brainagehud.util;
 
 import java.util.ArrayDeque;
+import java.util.function.LongSupplier;
 
 /**
  * Estimates the server's ticks per second from the game time it reports.
@@ -13,6 +14,7 @@ import java.util.ArrayDeque;
 public final class TickRateTracker {
     private record Interval(long ticks, long nanos) {}
 
+    private final LongSupplier nanoClock;
     private final ArrayDeque<Interval> intervals = new ArrayDeque<>();
     private long totalTicks;
     private long totalNanos;
@@ -20,11 +22,17 @@ public final class TickRateTracker {
     private long previousGameTime;
     private long previousNanos;
 
+    public TickRateTracker(LongSupplier nanoClock) {
+        this.nanoClock = nanoClock;
+    }
+
     /**
-     * Records a game time report received at {@code nowNanos}, keeping at most {@code maxIntervals}
-     * intervals. A game time that goes backwards means a different world, so the history restarts.
+     * Records a game time report, keeping at most {@code maxIntervals} intervals. A game time that
+     * goes backwards means a different world, so the history restarts.
      */
-    public void record(long gameTime, long nowNanos, int maxIntervals) {
+    public void record(long gameTime, int maxIntervals) {
+        long nowNanos = nanoClock.getAsLong();
+
         if (hasPrevious) {
             long ticks = gameTime - previousGameTime;
             long nanos = nowNanos - previousNanos;
