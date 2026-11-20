@@ -30,6 +30,7 @@ public final class TickRateTracker {
     private boolean hasPrevious;
     private long previousGameTime;
     private long previousNanos;
+    private long lastAdvancingNanos;
     private boolean hasTickRateState;
     private float lastTickRate;
     private boolean lastFrozen;
@@ -57,6 +58,7 @@ public final class TickRateTracker {
                 intervals.addLast(new Interval(ticks, nanos));
                 totalTicks += ticks;
                 totalNanos += nanos;
+                lastAdvancingNanos = nowNanos;
             }
         }
 
@@ -73,15 +75,15 @@ public final class TickRateTracker {
     }
 
     /**
-     * Whether the reports measure a rate: at least one tick has elapsed, and the newest report is
-     * recent enough. A server that stops sending the game time would otherwise keep showing the
-     * last interval it sent, and two reports with the same game time would read as 0.0 TPS.
+     * Whether the reports measure a rate: at least one tick has elapsed, and a report that advanced
+     * the game time arrived recently. A server that stops sending the game time, or keeps sending
+     * the same one, would otherwise keep showing the last interval it sent.
      *
      * @param tickRate the server's target tick rate, at least 1
      */
     public boolean hasRate(float tickRate) {
         if (totalTicks <= 0L || totalNanos <= 0L) return false;
-        return nanoClock.getAsLong() - previousNanos <= staleAfterNanos(tickRate);
+        return nanoClock.getAsLong() - lastAdvancingNanos <= staleAfterNanos(tickRate);
     }
 
     public double ticksPerSecond() {

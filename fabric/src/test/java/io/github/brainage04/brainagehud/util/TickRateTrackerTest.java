@@ -170,6 +170,23 @@ class TickRateTrackerTest {
     }
 
     @Test
+    void aConstantGameTimeGoesStale() {
+        tracker.record(0L, 3);
+        clock.set(SECOND);
+        tracker.record(20L, 3);
+        assertTrue(tracker.hasRate(VANILLA_TICK_RATE));
+
+        // a server that keeps sending the same game time without being frozen: the reports arrive,
+        // but none of them measures a tick, so the rate must go unknown on the same timeout
+        for (int report = 2; report <= 5; report++) {
+            clock.set(report * SECOND);
+            tracker.record(20L, 3);
+        }
+
+        assertFalse(tracker.hasRate(VANILLA_TICK_RATE));
+    }
+
+    @Test
     void aLaggingServerKeepsItsRateBetweenSlowReports() {
         tracker.record(0L, 3);
         // 20 ticks in 4 seconds: 5 TPS, so the reports themselves are 4 seconds apart
