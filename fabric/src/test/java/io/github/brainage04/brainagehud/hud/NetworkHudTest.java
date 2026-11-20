@@ -47,12 +47,12 @@ class NetworkHudTest {
 
     @Test
     void reportsNoRateWhenTheServerStopsSendingGameTime() {
-        // Minemen sends two game time reports with the same game time, then none at all. The
-        // second report leaves a zero-tick interval, which reads as 0.0 TPS for as long as the
-        // client stays connected.
+        // Minemen sends its last game time report around login and then none at all, so the
+        // tracker keeps the last interval it measured
         tracker.record(1000L, 3);
         clock.set(SECOND);
-        tracker.record(1000L, 3);
+        tracker.record(1020L, 3);
+        assertEquals("TPS: 20.0", tpsLine());
 
         // vanilla reports the game time every 20 ticks, so once a second at 20 TPS; three of those
         // intervals pass with no report at all
