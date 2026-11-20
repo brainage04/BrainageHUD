@@ -33,6 +33,7 @@ import org.junit.jupiter.api.Test;
 class HudRendererLibRequirementTest {
     private static final String MOD_ID = "brainagehud";
     private static final String LIBRARY_ID = "hudrendererlib";
+    private static final String LIBRARY_REPOSITORY = "HudRendererLib";
     private static final Version FIRST_WRAPPING_LIBRARY = version("1.1.1");
     private static final Version LIBRARY_WITHOUT_WRAPPING_API = version("1.1.0");
     private static final Version LATER_LIBRARY = version("1.2.0");
@@ -42,6 +43,8 @@ class HudRendererLibRequirementTest {
                             + LIBRARY_ID
                             + "\".*?versionRange=\"([^\"]+)\"",
                     Pattern.DOTALL);
+    private static final Pattern SIBLING_REF =
+            Pattern.compile("prepare_siblings:\\s*" + LIBRARY_REPOSITORY + "@([0-9a-f]{40})");
 
     @Test
     void fabricLoaderRefusesTheLibraryWithoutTheWrappingApi() throws IOException {
@@ -85,6 +88,32 @@ class HudRendererLibRequirementTest {
         assertEquals(
                 "[1.1.1,)",
                 dependency.group(1).replace("${hudrendererlib_version}", libraryVersion));
+    }
+
+    /**
+     * The release workflow builds the tagged jar against the same HudRendererLib commit the build
+     * workflow uses. HudRendererLib 1.1.1 is not on Maven Central, so the release job publishes the
+     * sibling itself; naming the repository without a ref clones its default branch, whose
+     * mod_version is 1.1.0, and the build then cannot resolve hudrendererlib_version=1.1.1.
+     */
+    @Test
+    void releaseWorkflowPublishesTheSameLibraryCommitAsTheBuild() throws IOException {
+        Path root = projectRoot();
+        String build =
+                Files.readString(
+                        root.resolve(".github/workflows/build.yml"), StandardCharsets.UTF_8);
+        String release =
+                Files.readString(
+                        root.resolve(".github/workflows/release.yml"), StandardCharsets.UTF_8);
+        Matcher buildRef = SIBLING_REF.matcher(build);
+        Matcher releaseRef = SIBLING_REF.matcher(release);
+
+        assertTrue(buildRef.find(), "build.yml names no HudRendererLib ref");
+        assertTrue(
+                releaseRef.find(),
+                "release.yml must name the HudRendererLib commit to publish, as"
+                        + " HudRendererLib@<sha>");
+        assertEquals(buildRef.group(1), releaseRef.group(1));
     }
 
     private static JsonObject fabricMetadata() throws IOException {
