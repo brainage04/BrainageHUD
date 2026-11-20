@@ -70,13 +70,14 @@ public final class TickRateTracker {
     }
 
     /**
-     * Whether the reports are recent enough to measure a rate. A server that stops sending the
-     * game time would otherwise keep showing the last interval it sent.
+     * Whether the reports measure a rate: at least one tick has elapsed, and the newest report is
+     * recent enough. A server that stops sending the game time would otherwise keep showing the
+     * last interval it sent, and two reports with the same game time would read as 0.0 TPS.
      *
      * @param tickRate the server's target tick rate, at least 1
      */
     public boolean hasRate(float tickRate) {
-        if (totalNanos <= 0L) return false;
+        if (totalTicks <= 0L || totalNanos <= 0L) return false;
         return nanoClock.getAsLong() - previousNanos <= staleAfterNanos(tickRate);
     }
 

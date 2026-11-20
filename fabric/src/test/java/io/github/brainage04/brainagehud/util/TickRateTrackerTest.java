@@ -108,6 +108,15 @@ class TickRateTrackerTest {
     }
 
     @Test
+    void twoReportsWithTheSameGameTimeAreNotARate() {
+        tracker.record(1000L, 3, OVERWORLD);
+        clock.set(SECOND);
+        tracker.record(1000L, 3, OVERWORLD);
+
+        assertFalse(tracker.hasRate(VANILLA_TICK_RATE));
+    }
+
+    @Test
     void rateGoesUnknownOnceReportsStopArriving() {
         tracker.record(0L, 3, OVERWORLD);
         clock.set(SECOND);
