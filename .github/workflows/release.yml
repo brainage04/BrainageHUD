@@ -12,7 +12,7 @@ jobs:
   distribution:
     permissions:
       contents: write
-    uses: brainage04/MinecraftModConventions/.github/workflows/reusable-multiloader-release.yml@v3.1.2
+    uses: brainage04/MinecraftModConventions/.github/workflows/reusable-multiloader-release.yml@v3.5.0
     with:
       prepare_siblings: HudRendererLib
       additional_artifact_pattern: brainagehud-neoforge-*.jar
