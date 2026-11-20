@@ -5,6 +5,7 @@ import static io.github.brainage04.brainagehud.util.MathUtils.roundDecimalPlaces
 
 import io.github.brainage04.brainagehud.config.hud.basic.NetworkHudConfig;
 import io.github.brainage04.brainagehud.event.ModPacketEvents;
+import io.github.brainage04.brainagehud.util.TickRateTracker;
 import io.github.brainage04.hudrendererlib.hud.core.BasicCoreHudElement;
 import io.github.brainage04.hudrendererlib.util.TextList;
 import net.minecraft.ChatFormatting;
@@ -12,8 +13,11 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.world.TickRateManager;
 
 public class NetworkHud implements BasicCoreHudElement<NetworkHudConfig> {
+    private static final TickRateManager DEFAULT_TICK_RATE = new TickRateManager();
+
     @Override
     public TextList getLines() {
         TextList lines = new TextList();
@@ -25,19 +29,31 @@ public class NetworkHud implements BasicCoreHudElement<NetworkHudConfig> {
         }
 
         if (getElementConfig().showTps) {
-            if (!ModPacketEvents.hasTps()) {
-                lines.add("TPS: -");
-            } else {
-                double tps = currentTps();
-                lines.add(
-                        line(
-                                "TPS: ",
-                                roundDecimalPlaces(tps, getElementConfig().tpsDecimalPlaces),
-                                colour ? tpsColour(tps) : null));
-            }
+            lines.add(
+                    tpsLine(
+                            ModPacketEvents.tickRateTracker(),
+                            serverTickRate(),
+                            isFrozen(),
+                            getElementConfig().tpsDecimalPlaces,
+                            colour));
         }
 
         return lines;
+    }
+
+    static Component tpsLine(
+            TickRateTracker tracker,
+            float tickRate,
+            boolean frozen,
+            int decimalPlaces,
+            boolean colour) {
+        // a frozen server keeps reporting its game time without advancing it, so its measured rate
+        // is zero and says nothing about its health
+        if (frozen || !tracker.hasRate(tickRate)) return Component.literal("TPS: -");
+
+        // network jitter can make a healthy server appear to tick slightly faster than its target
+        double tps = Math.min(tracker.ticksPerSecond(), tickRate);
+        return line("TPS: ", roundDecimalPlaces(tps, decimalPlaces), colour ? tpsColour(tps) : null);
     }
 
     private static Component line(String label, String value, ChatFormatting colour) {
@@ -62,12 +78,15 @@ public class NetworkHud implements BasicCoreHudElement<NetworkHudConfig> {
         return ChatFormatting.DARK_RED;
     }
 
-    private static double currentTps() {
-        // network jitter can make a healthy server appear to tick slightly faster than its target
-        double tps = ModPacketEvents.getTps();
+    /** The server's target tick rate, which it sends the client in its ticking state packet. */
+    private static float serverTickRate() {
         ClientLevel level = Minecraft.getInstance().level;
-        if (level != null) tps = Math.min(tps, level.tickRateManager().tickrate());
-        return tps;
+        return level == null ? DEFAULT_TICK_RATE.tickrate() : level.tickRateManager().tickrate();
+    }
+
+    private static boolean isFrozen() {
+        ClientLevel level = Minecraft.getInstance().level;
+        return level != null && level.tickRateManager().isFrozen();
     }
 
     @Override

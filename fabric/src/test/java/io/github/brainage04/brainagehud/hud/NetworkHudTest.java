@@ -1,7 +1,6 @@
 package io.github.brainage04.brainagehud.hud;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 
 import io.github.brainage04.brainagehud.FakeNanoClock;
 import io.github.brainage04.brainagehud.util.TickRateTracker;
@@ -10,6 +9,8 @@ import org.junit.jupiter.api.Test;
 
 class NetworkHudTest {
     private static final long SECOND = 1_000_000_000L;
+    private static final float VANILLA_TICK_RATE = 20.0F;
+    private static final Object OVERWORLD = new Object();
 
     private final FakeNanoClock clock = new FakeNanoClock();
     private final TickRateTracker tracker = new TickRateTracker(clock);
@@ -36,22 +37,40 @@ class NetworkHudTest {
     }
 
     @Test
+    void showsTheMeasuredRateWhileReportsKeepArriving() {
+        tracker.record(0L, 3, OVERWORLD);
+        clock.set(SECOND);
+        tracker.record(20L, 3, OVERWORLD);
+
+        assertEquals("TPS: 20.0", tpsLine(false));
+    }
+
+    @Test
     void reportsNoRateWhenTheServerStopsSendingGameTime() {
         // Minemen sends two game time reports with the same game time, then none at all. The
         // second report leaves a zero-tick interval, which reads as 0.0 TPS for as long as the
         // client stays connected.
-        tracker.record(1000L, 3);
+        tracker.record(1000L, 3, OVERWORLD);
         clock.set(SECOND);
-        tracker.record(1000L, 3);
+        tracker.record(1000L, 3, OVERWORLD);
 
         // vanilla reports the game time every 20 ticks, so once a second at 20 TPS; three of those
         // intervals pass with no report at all
-        clock.set(SECOND + 3L * SECOND);
+        clock.set(SECOND + 3L * SECOND + 1L);
 
-        assertFalse(
-                tracker.hasRate(),
-                "the HUD would show TPS: "
-                        + tracker.ticksPerSecond()
-                        + " from a report that arrived three seconds ago");
+        assertEquals("TPS: -", tpsLine(false));
+    }
+
+    @Test
+    void reportsNoRateWhileTheServerIsFrozen() {
+        tracker.record(0L, 3, OVERWORLD);
+        clock.set(SECOND);
+        tracker.record(0L, 3, OVERWORLD);
+
+        assertEquals("TPS: -", tpsLine(true));
+    }
+
+    private String tpsLine(boolean frozen) {
+        return NetworkHud.tpsLine(tracker, VANILLA_TICK_RATE, frozen, 1, true).getString();
     }
 }

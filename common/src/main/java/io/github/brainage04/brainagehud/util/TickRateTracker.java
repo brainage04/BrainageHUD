@@ -12,6 +12,12 @@ import java.util.function.LongSupplier;
  * per-interval rates, keeps irregularly spaced reports correctly weighted.
  */
 public final class TickRateTracker {
+    /** Vanilla broadcasts the game time every 20 ticks (MinecraftServer.java:1079). */
+    private static final int VANILLA_REPORT_INTERVAL_TICKS = 20;
+
+    /** Three report intervals may pass with no report before the rate counts as unknown. */
+    private static final int STALE_AFTER_INTERVALS = 3;
+
     private record Interval(long ticks, long nanos) {}
 
     private final LongSupplier nanoClock;
@@ -21,23 +27,25 @@ public final class TickRateTracker {
     private boolean hasPrevious;
     private long previousGameTime;
     private long previousNanos;
+    private Object previousWorld;
 
     public TickRateTracker(LongSupplier nanoClock) {
         this.nanoClock = nanoClock;
     }
 
     /**
-     * Records a game time report, keeping at most {@code maxIntervals} intervals. A game time that
-     * goes backwards means a different world, so the history restarts.
+     * Records a game time report from {@code world}, keeping at most {@code maxIntervals}
+     * intervals. A game time that goes backwards, or a report from another world, cannot be
+     * compared with the previous one, so the history restarts.
      */
-    public void record(long gameTime, int maxIntervals) {
+    public void record(long gameTime, int maxIntervals, Object world) {
         long nowNanos = nanoClock.getAsLong();
 
         if (hasPrevious) {
             long ticks = gameTime - previousGameTime;
             long nanos = nowNanos - previousNanos;
 
-            if (ticks < 0L || nanos <= 0L) {
+            if (world != previousWorld || ticks < 0L || nanos <= 0L) {
                 clearIntervals();
             } else {
                 intervals.addLast(new Interval(ticks, nanos));
@@ -56,19 +64,41 @@ public final class TickRateTracker {
         hasPrevious = true;
         previousGameTime = gameTime;
         previousNanos = nowNanos;
+        previousWorld = world;
     }
 
-    public boolean hasRate() {
-        return totalNanos > 0L;
+    /**
+     * Whether the reports are recent enough to measure a rate. A server that stops sending the
+     * game time would otherwise keep showing the last interval it sent.
+     *
+     * @param tickRate the server's target tick rate, at least 1
+     */
+    public boolean hasRate(float tickRate) {
+        if (totalNanos <= 0L) return false;
+        return nanoClock.getAsLong() - previousNanos <= staleAfterNanos(tickRate);
     }
 
     public double ticksPerSecond() {
-        return hasRate() ? totalTicks * 1_000_000_000.0D / totalNanos : 0.0D;
+        return totalNanos > 0L ? totalTicks * 1_000_000_000.0D / totalNanos : 0.0D;
     }
 
     public void reset() {
         clearIntervals();
         hasPrevious = false;
+        previousWorld = null;
+    }
+
+    /**
+     * Three report intervals, or three of the mean interval measured so far when that is longer: a
+     * server that is lagging sends its reports further apart, and its rate is still measurable
+     * between them.
+     */
+    private long staleAfterNanos(float tickRate) {
+        // TickRateManager.MIN_TICKRATE is 1.0F, so a real tick rate is never below 1
+        long vanillaInterval =
+                (long) (VANILLA_REPORT_INTERVAL_TICKS * 1_000_000_000.0D / Math.max(1.0F, tickRate));
+        long meanInterval = totalNanos / intervals.size();
+        return STALE_AFTER_INTERVALS * Math.max(vanillaInterval, meanInterval);
     }
 
     private void clearIntervals() {

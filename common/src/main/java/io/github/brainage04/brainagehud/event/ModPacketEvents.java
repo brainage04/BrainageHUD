@@ -19,19 +19,24 @@ public class ModPacketEvents {
         PING.add(roundTripMillis, getConfig().networkHudConfig.pingIntervalsTracked);
     }
 
-    public static void onServerGameTime(long gameTime) {
-        TICK_RATE.record(gameTime, getConfig().networkHudConfig.tpsIntervalsTracked);
+    /** Called on the render thread with the game time of a report from {@code world}. */
+    public static void onServerGameTime(long gameTime, Object world) {
+        TICK_RATE.record(gameTime, getConfig().networkHudConfig.tpsIntervalsTracked, world);
+    }
+
+    /**
+     * Called when the server changes its tick rate or freezes: the intervals measured before that
+     * describe a different server, so they are dropped.
+     */
+    public static void onTickRateStateChanged() {
+        TICK_RATE.reset();
     }
 
     public static long getPing() {
         return PING.mean();
     }
 
-    public static boolean hasTps() {
-        return TICK_RATE.hasRate();
-    }
-
-    public static double getTps() {
-        return TICK_RATE.ticksPerSecond();
+    public static TickRateTracker tickRateTracker() {
+        return TICK_RATE;
     }
 }
