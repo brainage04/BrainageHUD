@@ -49,7 +49,9 @@ public final class TickRateTracker {
 
             if (world != previousWorld.get() || ticks < 0L || nanos <= 0L) {
                 clearIntervals();
-            } else {
+            } else if (ticks > 0L) {
+                // a duplicate report measures no ticks, so it would dilute the window: one after a
+                // healthy second would read 10 TPS
                 intervals.addLast(new Interval(ticks, nanos));
                 totalTicks += ticks;
                 totalNanos += nanos;

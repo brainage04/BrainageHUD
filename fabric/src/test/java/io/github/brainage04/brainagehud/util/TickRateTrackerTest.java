@@ -117,6 +117,21 @@ class TickRateTrackerTest {
     }
 
     @Test
+    void aDuplicateReportDoesNotDiluteTheRate() {
+        tracker.record(0L, 3, OVERWORLD);
+        clock.set(SECOND);
+        tracker.record(20L, 3, OVERWORLD);
+
+        // one report with no ticks in it, then the server carries on at 20 TPS
+        clock.set(2L * SECOND);
+        tracker.record(20L, 3, OVERWORLD);
+        clock.set(3L * SECOND);
+        tracker.record(40L, 3, OVERWORLD);
+
+        assertEquals(20.0D, tracker.ticksPerSecond(), 1e-9);
+    }
+
+    @Test
     void rateGoesUnknownOnceReportsStopArriving() {
         tracker.record(0L, 3, OVERWORLD);
         clock.set(SECOND);
