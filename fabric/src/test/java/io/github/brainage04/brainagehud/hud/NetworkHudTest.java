@@ -64,9 +64,14 @@ class NetworkHudTest {
 
     @Test
     void reportsNoRateWhileTheServerIsFrozen() {
+        // a healthy second first, so the tracker holds a real interval: a frozen server keeps
+        // sending its game time without advancing it, and the pre-freeze window would otherwise
+        // decay from 20 to 10 to 6.7 instead of showing nothing
         tracker.record(0L, 3, OVERWORLD);
         clock.set(SECOND);
-        tracker.record(0L, 3, OVERWORLD);
+        tracker.record(20L, 3, OVERWORLD);
+        assertEquals("TPS: 20.0", tpsLine());
+
         tickRateManager.setFrozen(true);
 
         assertEquals("TPS: -", tpsLine());
