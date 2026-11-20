@@ -10,7 +10,6 @@ import org.junit.jupiter.api.Test;
 
 class NetworkHudTest {
     private static final long SECOND = 1_000_000_000L;
-    private static final Object OVERWORLD = new Object();
 
     private final FakeNanoClock clock = new FakeNanoClock();
     private final TickRateTracker tracker = new TickRateTracker(clock);
@@ -39,9 +38,9 @@ class NetworkHudTest {
 
     @Test
     void showsTheMeasuredRateWhileReportsKeepArriving() {
-        tracker.record(0L, 3, OVERWORLD);
+        tracker.record(0L, 3);
         clock.set(SECOND);
-        tracker.record(20L, 3, OVERWORLD);
+        tracker.record(20L, 3);
 
         assertEquals("TPS: 20.0", tpsLine());
     }
@@ -51,9 +50,9 @@ class NetworkHudTest {
         // Minemen sends two game time reports with the same game time, then none at all. The
         // second report leaves a zero-tick interval, which reads as 0.0 TPS for as long as the
         // client stays connected.
-        tracker.record(1000L, 3, OVERWORLD);
+        tracker.record(1000L, 3);
         clock.set(SECOND);
-        tracker.record(1000L, 3, OVERWORLD);
+        tracker.record(1000L, 3);
 
         // vanilla reports the game time every 20 ticks, so once a second at 20 TPS; three of those
         // intervals pass with no report at all
@@ -67,9 +66,9 @@ class NetworkHudTest {
         // a healthy second first, so the tracker holds a real interval: a frozen server keeps
         // sending its game time without advancing it, and the pre-freeze window would otherwise
         // decay from 20 to 10 to 6.7 instead of showing nothing
-        tracker.record(0L, 3, OVERWORLD);
+        tracker.record(0L, 3);
         clock.set(SECOND);
-        tracker.record(20L, 3, OVERWORLD);
+        tracker.record(20L, 3);
         assertEquals("TPS: 20.0", tpsLine());
 
         tickRateManager.setFrozen(true);
@@ -80,9 +79,9 @@ class NetworkHudTest {
     @Test
     void aSlowedServerIsMeasuredAgainstItsOwnTickRate() {
         tickRateManager.setTickRate(10.0F);
-        tracker.record(0L, 3, OVERWORLD);
+        tracker.record(0L, 3);
         clock.set(SECOND);
-        tracker.record(10L, 3, OVERWORLD);
+        tracker.record(10L, 3);
 
         assertEquals("TPS: 10.0", tpsLine());
     }

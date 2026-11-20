@@ -5,7 +5,6 @@ import static io.github.brainage04.brainagehud.util.ConfigUtils.getConfig;
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import io.github.brainage04.brainagehud.event.ModPacketEvents;
 import io.github.brainage04.brainagehud.event.ModTickEvents;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.network.protocol.game.ClientboundLoginPacket;
 import net.minecraft.network.protocol.game.ClientboundSetTimePacket;
@@ -59,8 +58,7 @@ public class MixinClientPlayNetworkHandler {
                             target = ENSURE_RUNNING_ON_SAME_THREAD,
                             shift = At.Shift.AFTER))
     private void recordServerGameTime(ClientboundSetTimePacket packet, CallbackInfo ci) {
-        // a dimension change builds a new ClientLevel, so the level object tells the worlds apart
-        ModPacketEvents.onServerGameTime(packet.gameTime(), Minecraft.getInstance().level);
+        ModPacketEvents.onServerGameTime(packet.gameTime());
     }
 
     @Inject(

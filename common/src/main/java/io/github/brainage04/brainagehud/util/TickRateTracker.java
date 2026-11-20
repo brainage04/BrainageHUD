@@ -1,6 +1,5 @@
 package io.github.brainage04.brainagehud.util;
 
-import java.lang.ref.WeakReference;
 import java.util.ArrayDeque;
 import java.util.function.LongSupplier;
 
@@ -28,26 +27,23 @@ public final class TickRateTracker {
     private boolean hasPrevious;
     private long previousGameTime;
     private long previousNanos;
-    // weak, so a disconnected world is not kept alive by the last report it sent
-    private WeakReference<Object> previousWorld;
 
     public TickRateTracker(LongSupplier nanoClock) {
         this.nanoClock = nanoClock;
     }
 
     /**
-     * Records a game time report from {@code world}, keeping at most {@code maxIntervals}
-     * intervals. A game time that goes backwards, or a report from another world, cannot be
-     * compared with the previous one, so the history restarts.
+     * Records a game time report, keeping at most {@code maxIntervals} intervals. A game time that
+     * goes backwards means the server's clock restarted, so the history restarts.
      */
-    public void record(long gameTime, int maxIntervals, Object world) {
+    public void record(long gameTime, int maxIntervals) {
         long nowNanos = nanoClock.getAsLong();
 
         if (hasPrevious) {
             long ticks = gameTime - previousGameTime;
             long nanos = nowNanos - previousNanos;
 
-            if (world != previousWorld.get() || ticks < 0L || nanos <= 0L) {
+            if (ticks < 0L || nanos <= 0L) {
                 clearIntervals();
             } else if (ticks > 0L) {
                 // a duplicate report measures no ticks, so it would dilute the window: one after a
@@ -68,7 +64,6 @@ public final class TickRateTracker {
         hasPrevious = true;
         previousGameTime = gameTime;
         previousNanos = nowNanos;
-        previousWorld = new WeakReference<>(world);
     }
 
     /**
@@ -90,7 +85,6 @@ public final class TickRateTracker {
     public void reset() {
         clearIntervals();
         hasPrevious = false;
-        previousWorld = null;
     }
 
     /**

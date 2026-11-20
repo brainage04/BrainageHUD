@@ -10,14 +10,13 @@ import org.junit.jupiter.api.Test;
 class TickRateTrackerTest {
     private static final long SECOND = 1_000_000_000L;
     private static final float VANILLA_TICK_RATE = 20.0F;
-    private static final Object OVERWORLD = new Object();
 
     private final FakeNanoClock clock = new FakeNanoClock();
     private final TickRateTracker tracker = new TickRateTracker(clock);
 
     @Test
     void needsTwoReportsBeforeItHasARate() {
-        tracker.record(1000L, 3, OVERWORLD);
+        tracker.record(1000L, 3);
 
         assertFalse(tracker.hasRate(VANILLA_TICK_RATE));
     }
@@ -26,7 +25,7 @@ class TickRateTrackerTest {
     void measuresHowFastTheServerActuallyTicks() {
         for (int report = 0; report <= 3; report++) {
             clock.set(report * 2L * SECOND);
-            tracker.record(1000L + report * 20L, 3, OVERWORLD);
+            tracker.record(1000L + report * 20L, 3);
         }
 
         assertEquals(10.0D, tracker.ticksPerSecond(), 1e-9);
@@ -34,13 +33,13 @@ class TickRateTrackerTest {
 
     @Test
     void weightsIrregularReportsByElapsedTime() {
-        tracker.record(0L, 5, OVERWORLD);
+        tracker.record(0L, 5);
         clock.set(SECOND);
-        tracker.record(20L, 5, OVERWORLD);
+        tracker.record(20L, 5);
         // a lagging half second after a full-speed second: averaging the two rates (20 and 10)
         // would give 15, but 25 ticks ran in 1.5 seconds
         clock.set(SECOND + SECOND / 2);
-        tracker.record(25L, 5, OVERWORLD);
+        tracker.record(25L, 5);
 
         assertEquals(25.0D / 1.5D, tracker.ticksPerSecond(), 1e-9);
     }
@@ -49,93 +48,89 @@ class TickRateTrackerTest {
     void forgetsOlderIntervalsWhenTheWindowShrinks() {
         for (int report = 0; report <= 10; report++) {
             clock.set(report * 2L * SECOND);
-            tracker.record(report * 20L, 30, OVERWORLD);
+            tracker.record(report * 20L, 30);
         }
         clock.set(21L * SECOND);
-        tracker.record(220L, 2, OVERWORLD);
+        tracker.record(220L, 2);
         clock.set(22L * SECOND);
-        tracker.record(240L, 2, OVERWORLD);
+        tracker.record(240L, 2);
 
         assertEquals(20.0D, tracker.ticksPerSecond(), 1e-9);
     }
 
     @Test
     void restartsWhenGameTimeGoesBackwards() {
-        tracker.record(100_000L, 3, OVERWORLD);
+        tracker.record(100_000L, 3);
         clock.set(SECOND);
-        tracker.record(100_010L, 3, OVERWORLD);
+        tracker.record(100_010L, 3);
 
         clock.set(2L * SECOND);
-        tracker.record(500L, 3, OVERWORLD);
+        tracker.record(500L, 3);
         assertFalse(tracker.hasRate(VANILLA_TICK_RATE));
 
         clock.set(3L * SECOND);
-        tracker.record(520L, 3, OVERWORLD);
+        tracker.record(520L, 3);
         assertTrue(tracker.hasRate(VANILLA_TICK_RATE));
         assertEquals(20.0D, tracker.ticksPerSecond(), 1e-9);
     }
 
     @Test
-    void restartsWhenTheWorldChanges() {
-        Object nether = new Object();
-        tracker.record(100_000L, 3, OVERWORLD);
+    void aDimensionChangeKeepsTheRate() {
+        tracker.record(100_000L, 3);
         clock.set(SECOND);
-        tracker.record(100_020L, 3, OVERWORLD);
-        assertTrue(tracker.hasRate(VANILLA_TICK_RATE));
+        tracker.record(100_020L, 3);
 
-        // a respawn into another dimension: the game time is the same clock, but the interval
-        // between the two reports spans two worlds
+        // the game time is one clock for every dimension (MinecraftServer.java:1145), so the
+        // interval across a respawn into another dimension still measures the server
         clock.set(2L * SECOND);
-        tracker.record(100_040L, 3, nether);
-        assertFalse(tracker.hasRate(VANILLA_TICK_RATE));
+        tracker.record(100_040L, 3);
 
-        clock.set(3L * SECOND);
-        tracker.record(100_060L, 3, nether);
+        assertTrue(tracker.hasRate(VANILLA_TICK_RATE));
         assertEquals(20.0D, tracker.ticksPerSecond(), 1e-9);
     }
 
     @Test
     void resetDiscardsThePreviousReport() {
-        tracker.record(0L, 3, OVERWORLD);
+        tracker.record(0L, 3);
         clock.set(SECOND);
-        tracker.record(20L, 3, OVERWORLD);
+        tracker.record(20L, 3);
 
         tracker.reset();
         clock.set(2L * SECOND);
-        tracker.record(1_000_000L, 3, OVERWORLD);
+        tracker.record(1_000_000L, 3);
 
         assertFalse(tracker.hasRate(VANILLA_TICK_RATE));
     }
 
     @Test
     void twoReportsWithTheSameGameTimeAreNotARate() {
-        tracker.record(1000L, 3, OVERWORLD);
+        tracker.record(1000L, 3);
         clock.set(SECOND);
-        tracker.record(1000L, 3, OVERWORLD);
+        tracker.record(1000L, 3);
 
         assertFalse(tracker.hasRate(VANILLA_TICK_RATE));
     }
 
     @Test
     void aDuplicateReportDoesNotDiluteTheRate() {
-        tracker.record(0L, 3, OVERWORLD);
+        tracker.record(0L, 3);
         clock.set(SECOND);
-        tracker.record(20L, 3, OVERWORLD);
+        tracker.record(20L, 3);
 
         // one report with no ticks in it, then the server carries on at 20 TPS
         clock.set(2L * SECOND);
-        tracker.record(20L, 3, OVERWORLD);
+        tracker.record(20L, 3);
         clock.set(3L * SECOND);
-        tracker.record(40L, 3, OVERWORLD);
+        tracker.record(40L, 3);
 
         assertEquals(20.0D, tracker.ticksPerSecond(), 1e-9);
     }
 
     @Test
     void rateGoesUnknownOnceReportsStopArriving() {
-        tracker.record(0L, 3, OVERWORLD);
+        tracker.record(0L, 3);
         clock.set(SECOND);
-        tracker.record(20L, 3, OVERWORLD);
+        tracker.record(20L, 3);
         assertTrue(tracker.hasRate(VANILLA_TICK_RATE));
 
         // vanilla reports every 20 ticks, so one second at 20 TPS; three of those may pass with no
@@ -149,10 +144,10 @@ class TickRateTrackerTest {
 
     @Test
     void aLaggingServerKeepsItsRateBetweenSlowReports() {
-        tracker.record(0L, 3, OVERWORLD);
+        tracker.record(0L, 3);
         // 20 ticks in 4 seconds: 5 TPS, so the reports themselves are 4 seconds apart
         clock.set(4L * SECOND);
-        tracker.record(20L, 3, OVERWORLD);
+        tracker.record(20L, 3);
 
         clock.set(4L * SECOND + 3L * SECOND);
         assertTrue(tracker.hasRate(VANILLA_TICK_RATE));

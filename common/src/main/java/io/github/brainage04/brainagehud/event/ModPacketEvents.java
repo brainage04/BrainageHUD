@@ -19,9 +19,9 @@ public class ModPacketEvents {
         PING.add(roundTripMillis, getConfig().networkHudConfig.pingIntervalsTracked);
     }
 
-    /** Called on the render thread with the game time of a report from {@code world}. */
-    public static void onServerGameTime(long gameTime, Object world) {
-        TICK_RATE.record(gameTime, getConfig().networkHudConfig.tpsIntervalsTracked, world);
+    /** Called on the render thread with the game time of a server report. */
+    public static void onServerGameTime(long gameTime) {
+        TICK_RATE.record(gameTime, getConfig().networkHudConfig.tpsIntervalsTracked);
     }
 
     /**
