@@ -5,23 +5,20 @@ import static io.github.brainage04.brainagehud.util.ConfigUtils.getConfig;
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import io.github.brainage04.brainagehud.event.ModPacketEvents;
 import io.github.brainage04.brainagehud.event.ModTickEvents;
-import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.network.protocol.game.ClientboundLoginPacket;
 import net.minecraft.network.protocol.game.ClientboundSetTimePacket;
 import net.minecraft.network.protocol.game.ClientboundTickingStatePacket;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(ClientPacketListener.class)
-public abstract class MixinClientPlayNetworkHandler {
+public class MixinClientPlayNetworkHandler {
     private static final String ENSURE_RUNNING_ON_SAME_THREAD =
-            "Lnet/minecraft/network/PacketUtils;ensureRunningOnSameThread(Lnet/minecraft/network/Packet;Lnet/minecraft/network/PacketListener;Lnet/minecraft/network/PacketProcessor;)V";
-
-    @Shadow private ClientLevel level;
+            "Lnet/minecraft/network/PacketUtils;ensureRunningOnSameThread(Lnet/minecraft/network/protocol/Packet;Lnet/minecraft/network/PacketListener;Lnet/minecraft/network/PacketProcessor;)V";
 
     /**
      * Sends pings while the Network HUD shows ping, not only while the debug network chart is open.
@@ -62,8 +59,8 @@ public abstract class MixinClientPlayNetworkHandler {
                             target = ENSURE_RUNNING_ON_SAME_THREAD,
                             shift = At.Shift.AFTER))
     private void recordServerGameTime(ClientboundSetTimePacket packet, CallbackInfo ci) {
-        // a dimension change replaces the level object, so the tracker can tell the worlds apart
-        ModPacketEvents.onServerGameTime(packet.gameTime(), this.level);
+        // a dimension change builds a new ClientLevel, so the level object tells the worlds apart
+        ModPacketEvents.onServerGameTime(packet.gameTime(), Minecraft.getInstance().level);
     }
 
     @Inject(

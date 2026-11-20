@@ -5,15 +5,16 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import io.github.brainage04.brainagehud.FakeNanoClock;
 import io.github.brainage04.brainagehud.util.TickRateTracker;
 import net.minecraft.ChatFormatting;
+import net.minecraft.world.TickRateManager;
 import org.junit.jupiter.api.Test;
 
 class NetworkHudTest {
     private static final long SECOND = 1_000_000_000L;
-    private static final float VANILLA_TICK_RATE = 20.0F;
     private static final Object OVERWORLD = new Object();
 
     private final FakeNanoClock clock = new FakeNanoClock();
     private final TickRateTracker tracker = new TickRateTracker(clock);
+    private final TickRateManager tickRateManager = new TickRateManager();
 
     @Test
     void pingColourChangesAtEachLatencyThreshold() {
@@ -42,7 +43,7 @@ class NetworkHudTest {
         clock.set(SECOND);
         tracker.record(20L, 3, OVERWORLD);
 
-        assertEquals("TPS: 20.0", tpsLine(false));
+        assertEquals("TPS: 20.0", tpsLine());
     }
 
     @Test
@@ -58,7 +59,7 @@ class NetworkHudTest {
         // intervals pass with no report at all
         clock.set(SECOND + 3L * SECOND + 1L);
 
-        assertEquals("TPS: -", tpsLine(false));
+        assertEquals("TPS: -", tpsLine());
     }
 
     @Test
@@ -66,11 +67,22 @@ class NetworkHudTest {
         tracker.record(0L, 3, OVERWORLD);
         clock.set(SECOND);
         tracker.record(0L, 3, OVERWORLD);
+        tickRateManager.setFrozen(true);
 
-        assertEquals("TPS: -", tpsLine(true));
+        assertEquals("TPS: -", tpsLine());
     }
 
-    private String tpsLine(boolean frozen) {
-        return NetworkHud.tpsLine(tracker, VANILLA_TICK_RATE, frozen, 1, true).getString();
+    @Test
+    void aSlowedServerIsMeasuredAgainstItsOwnTickRate() {
+        tickRateManager.setTickRate(10.0F);
+        tracker.record(0L, 3, OVERWORLD);
+        clock.set(SECOND);
+        tracker.record(10L, 3, OVERWORLD);
+
+        assertEquals("TPS: 10.0", tpsLine());
+    }
+
+    private String tpsLine() {
+        return NetworkHud.tpsLine(tracker, tickRateManager, 1, true).getString();
     }
 }

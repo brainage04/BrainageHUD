@@ -16,8 +16,6 @@ import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.world.TickRateManager;
 
 public class NetworkHud implements BasicCoreHudElement<NetworkHudConfig> {
-    private static final TickRateManager DEFAULT_TICK_RATE = new TickRateManager();
-
     @Override
     public TextList getLines() {
         TextList lines = new TextList();
@@ -29,13 +27,15 @@ public class NetworkHud implements BasicCoreHudElement<NetworkHudConfig> {
         }
 
         if (getElementConfig().showTps) {
+            ClientLevel level = Minecraft.getInstance().level;
             lines.add(
-                    tpsLine(
-                            ModPacketEvents.tickRateTracker(),
-                            serverTickRate(),
-                            isFrozen(),
-                            getElementConfig().tpsDecimalPlaces,
-                            colour));
+                    level == null
+                            ? Component.literal("TPS: -")
+                            : tpsLine(
+                                    ModPacketEvents.tickRateTracker(),
+                                    level.tickRateManager(),
+                                    getElementConfig().tpsDecimalPlaces,
+                                    colour));
         }
 
         return lines;
@@ -43,16 +43,17 @@ public class NetworkHud implements BasicCoreHudElement<NetworkHudConfig> {
 
     static Component tpsLine(
             TickRateTracker tracker,
-            float tickRate,
-            boolean frozen,
+            TickRateManager tickRateManager,
             int decimalPlaces,
             boolean colour) {
         // a frozen server keeps reporting its game time without advancing it, so its measured rate
         // is zero and says nothing about its health
-        if (frozen || !tracker.hasRate(tickRate)) return Component.literal("TPS: -");
+        if (tickRateManager.isFrozen() || !tracker.hasRate(tickRateManager.tickrate())) {
+            return Component.literal("TPS: -");
+        }
 
         // network jitter can make a healthy server appear to tick slightly faster than its target
-        double tps = Math.min(tracker.ticksPerSecond(), tickRate);
+        double tps = Math.min(tracker.ticksPerSecond(), tickRateManager.tickrate());
         return line("TPS: ", roundDecimalPlaces(tps, decimalPlaces), colour ? tpsColour(tps) : null);
     }
 
@@ -76,17 +77,6 @@ public class NetworkHud implements BasicCoreHudElement<NetworkHudConfig> {
         if (tps > 15.0D) return ChatFormatting.GOLD;
         if (tps > 10.0D) return ChatFormatting.RED;
         return ChatFormatting.DARK_RED;
-    }
-
-    /** The server's target tick rate, which it sends the client in its ticking state packet. */
-    private static float serverTickRate() {
-        ClientLevel level = Minecraft.getInstance().level;
-        return level == null ? DEFAULT_TICK_RATE.tickrate() : level.tickRateManager().tickrate();
-    }
-
-    private static boolean isFrozen() {
-        ClientLevel level = Minecraft.getInstance().level;
-        return level != null && level.tickRateManager().isFrozen();
     }
 
     @Override
