@@ -219,10 +219,10 @@ public class KeystrokesHud implements CoreHudElement<KeystrokesHudConfig> {
             drawContext.text(
                     renderer,
                     keyStrokesItem.name,
-                    posX
-                            + keyStrokesItem.x
-                            + (keyStrokesItem.width / 2)
-                            - (renderer.width(keyStrokesItem.name) / 2),
+                    centredTextX(
+                            posX + keyStrokesItem.x,
+                            keyStrokesItem.width,
+                            renderer.width(keyStrokesItem.name)),
                     posY
                             + keyStrokesItem.y
                             + (keyStrokesItem.height / 2)
@@ -231,6 +231,14 @@ public class KeystrokesHud implements CoreHudElement<KeystrokesHudConfig> {
                     textShadows);
         }
         keyTransitions.entrySet().removeIf(entry -> entry.getValue().lastSeenFrame != frame);
+    }
+
+    /**
+     * The x that centres {@code textWidth} in a box {@code boxWidth} wide: an odd leftover pixel
+     * goes to the right, so the text never sits a pixel left of centre.
+     */
+    static int centredTextX(int boxX, int boxWidth, int textWidth) {
+        return boxX + (boxWidth - textWidth + 1) / 2;
     }
 
     @Override

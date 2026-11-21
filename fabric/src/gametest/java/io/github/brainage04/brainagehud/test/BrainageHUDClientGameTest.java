@@ -252,7 +252,61 @@ public final class BrainageHUDClientGameTest implements FabricClientGameTest {
                                                 .getPlayers()
                                                 .getFirst()
                                                 .removeAllEffects());
+                        // A server that hides the effect's particles also clears its show-icon
+                        // flag (MobEffectInstance's five-argument constructor passes `visible` for
+                        // both), and the HUD must still draw the icon: the blank column the owner
+                        // reported came from the icon being skipped while its space was kept.
+                        server.runOnServer(
+                                minecraftServer -> {
+                                    ServerPlayer player =
+                                            minecraftServer.getPlayerList().getPlayers().getFirst();
+                                    player.addEffect(
+                                            new MobEffectInstance(
+                                                    MobEffects.RESISTANCE,
+                                                    MobEffectInstance.INFINITE_DURATION,
+                                                    3,
+                                                    false,
+                                                    false));
+                                });
                         context.waitTicks(5);
+                        context.runOnClient(
+                                client -> {
+                                    MobEffectInstance resistance =
+                                            client.player.getEffect(MobEffects.RESISTANCE);
+                                    if (resistance == null || resistance.showIcon()) {
+                                        throw new AssertionError(
+                                                "Expected a Resistance effect with its show-icon flag off, got "
+                                                        + resistance);
+                                    }
+                                });
+                        Path hiddenIconShot =
+                                takeLargeScreenshot(
+                                        context, "status-effect-hud-hidden-icon-large");
+                        System.out.println(
+                                "[STDOUT]: Status Effect HUD with a hidden icon screenshot: "
+                                        + hiddenIconShot);
+                        int[] iconOrigin =
+                                context.computeOnClient(
+                                        client -> {
+                                            CoreSettings settings =
+                                                    ConfigUtils.getConfig()
+                                                            .statusEffectHudConfig
+                                                            .coreSettings;
+                                            return new int[] {
+                                                HudRenderer.getPosX(settings, 0),
+                                                HudRenderer.getPosY(settings, 0)
+                                            };
+                                        });
+                        assertEffectIconDrawn(hiddenIconShot, iconOrigin[0], iconOrigin[1]);
+                        server.runOnServer(
+                                minecraftServer ->
+                                        minecraftServer
+                                                .getPlayerList()
+                                                .getPlayers()
+                                                .getFirst()
+                                                .removeAllEffects());
+                        context.waitTicks(5);
+                        exerciseEffectBackgroundsWithPack(context, server);
 
                         ClientGameTestRecorder.showStep(
                                 context,
@@ -626,6 +680,95 @@ public final class BrainageHUDClientGameTest implements FabricClientGameTest {
         }
     }
 
+    /**
+     * Loads the Looshy 26.3 packs from the run directory's {@code resourcepacks} folder, gives the
+     * player two effects and screenshots the inventory, whose effect boxes are the sprites the
+     * packs replace. The packs are copied in by the caller's build; a run without them skips this.
+     */
+    private static void exerciseEffectBackgroundsWithPack(
+            ClientGameTestContext context,
+            net.fabricmc.fabric.api.client.gametest.v1.context.TestDedicatedServerContext server) {
+        List<String> packs =
+                context.computeOnClient(
+                        client -> {
+                            Path dir = client.gameDirectory.toPath().resolve("resourcepacks");
+                            if (!Files.isDirectory(dir)) return List.of();
+                            try (var entries = Files.list(dir)) {
+                                return entries.map(p -> "file/" + p.getFileName())
+                                        .filter(id -> id.contains("looshy"))
+                                        .sorted()
+                                        .toList();
+                            } catch (IOException exception) {
+                                throw new AssertionError(
+                                        "Could not list " + dir, exception);
+                            }
+                        });
+        if (packs.isEmpty()) {
+            System.out.println(
+                    "[STDOUT]: No Looshy packs in resourcepacks, skipping the effect background screenshot");
+            return;
+        }
+        ClientGameTestRecorder.showStep(
+                context,
+                "effect-backgrounds",
+                "Inventory effect backgrounds with the Looshy packs",
+                "The inventory's effect boxes keep their 1 px frame and 2 px ring at any width, because the packs' effect_background sprite is nine-sliced.");
+        List<String> original =
+                context.computeOnClient(
+                        client -> List.copyOf(client.options.resourcePacks));
+        context.runOnClient(
+                client -> {
+                    client.getResourcePackRepository().reload();
+                    for (String id : packs) {
+                        if (!client.getResourcePackRepository().addPack(id)) {
+                            throw new AssertionError("Could not select resource pack " + id);
+                        }
+                    }
+                    // updateResourcePacks reloads the packs itself when the list changes
+                    client.options.updateResourcePacks(client.getResourcePackRepository());
+                });
+        context.waitTicks(60);
+        server.runOnServer(
+                minecraftServer -> {
+                    ServerPlayer player =
+                            minecraftServer.getPlayerList().getPlayers().getFirst();
+                    player.addEffect(
+                            new MobEffectInstance(
+                                    MobEffects.RESISTANCE,
+                                    MobEffectInstance.INFINITE_DURATION,
+                                    3));
+                    player.addEffect(
+                            new MobEffectInstance(
+                                    MobEffects.STRENGTH, MobEffectInstance.INFINITE_DURATION, 1));
+                });
+        context.waitTicks(5);
+        context.runOnClient(
+                client -> {
+                    if (!(client.gui.screen()
+                            instanceof
+                            net.minecraft.client.gui.screens.inventory.InventoryScreen)) {
+                        client.gui.setScreen(
+                                new net.minecraft.client.gui.screens.inventory.InventoryScreen(
+                                        client.player));
+                    }
+                });
+        context.waitTicks(20);
+        System.out.println(
+                "[STDOUT]: Inventory effect backgrounds with the Looshy packs screenshot: "
+                        + takeLargeScreenshot(context, "inventory-effect-backgrounds-large"));
+        context.runOnClient(client -> client.gui.setScreen(null));
+        server.runOnServer(
+                minecraftServer ->
+                        minecraftServer.getPlayerList().getPlayers().getFirst().removeAllEffects());
+        // The later steps measure brightness and draw their own HUDs, so the packs go back off.
+        context.runOnClient(
+                client -> {
+                    client.getResourcePackRepository().setSelected(original);
+                    client.options.updateResourcePacks(client.getResourcePackRepository());
+                });
+        context.waitTicks(60);
+    }
+
     private static void exerciseInventoryStats(ClientGameTestContext context) {
         ClientGameTestRecorder.showStep(
                 context,
@@ -756,6 +899,39 @@ public final class BrainageHUDClientGameTest implements FabricClientGameTest {
                         ConfigUtils.getConfig().waypointConfig.showInWorld = overlays[1];
                         ConfigUtils.saveConfig();
                     });
+        }
+    }
+
+    /**
+     * The Status Effect HUD's icon column must hold the effect's art. The screenshot is at GUI
+     * scale 4, so the first entry's 18x18 icon covers 72x72 pixels at the element's own position;
+     * the check counts pixels there that differ from the backdrop beside the column.
+     */
+    private static void assertEffectIconDrawn(Path screenshot, int elementX, int elementY) {
+        int scale = 4;
+        int left = elementX * scale;
+        int top = elementY * scale;
+        int size = 18 * scale;
+        try {
+            var image = ImageIO.read(screenshot.toFile());
+            int backdrop = image.getRGB(left + size + 8, top + size / 2);
+            int differing = 0;
+            for (int y = top; y < top + size; y++) {
+                for (int x = left; x < left + size; x++) {
+                    if (image.getRGB(x, y) != backdrop) differing++;
+                }
+            }
+            if (differing < size * size / 4) {
+                throw new AssertionError(
+                        "Expected the Status Effect HUD's icon column to hold the effect's art, but only "
+                                + differing
+                                + " of "
+                                + (size * size)
+                                + " pixels differ from the backdrop in "
+                                + screenshot);
+            }
+        } catch (IOException exception) {
+            throw new AssertionError("Could not read " + screenshot, exception);
         }
     }
 

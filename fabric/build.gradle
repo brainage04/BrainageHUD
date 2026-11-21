@@ -35,3 +35,15 @@ dependencies {
 	implementation("com.terraformersmc:modmenu:${rootProject.modmenu_version}") { exclude group: "net.fabricmc.fabric-api" }
 	productionRuntimeMods("com.terraformersmc:modmenu:${rootProject.modmenu_version}") { exclude group: "net.fabricmc.fabric-api" }
 }
+
+// The Looshy 26.3 packs, so the client GameTest can screenshot the inventory's effect boxes with
+// the pack's own effect_background sprite. A checkout without test-packs/ runs the step as a skip.
+def testPacks = rootProject.layout.projectDirectory.dir('test-packs')
+tasks.register('copyTestResourcePacks', Copy) {
+	from(testPacks)
+	into(layout.buildDirectory.dir('run/clientGameTest/resourcepacks'))
+	onlyIf { testPacks.asFile.dir.listFiles()?.length }
+}
+tasks.matching { it.name == 'runProductionClientGameTest' }.configureEach {
+	dependsOn('copyTestResourcePacks')
+}
