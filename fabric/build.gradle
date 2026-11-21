@@ -42,9 +42,7 @@ dependencies {
 def testPacksDir = providers.gradleProperty('testPacksDir').map { file(it) }
 tasks.register('copyTestResourcePacks', Copy) {
 	// each pack is a folder of its own inside resourcepacks/, as the game expects
-	from(rootProject.layout.projectDirectory.dir('test-packs')) {
-		include 'effect-frame/**'
-	}
+	from(rootProject.layout.projectDirectory.dir('test-packs'))
 	from(testPacksDir.orElse(rootProject.layout.projectDirectory.dir('test-packs/looshy'))) {
 		into 'looshy'
 	}
