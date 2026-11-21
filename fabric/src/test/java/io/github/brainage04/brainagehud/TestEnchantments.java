@@ -30,7 +30,7 @@ import net.minecraft.world.item.enchantment.Enchantment;
  * a full resource reload; this registry therefore defines its own enchantments. The mechanisms
  * under test (supported items, exclusivity, maximum levels) are the same ones vanilla data uses.
  */
-// deprecated-api: emptyNamed is @VisibleForTesting and has no replacement.
+// deprecated-api: the test builds the exclusive-set tag before bindTags, and emptyNamed is the shortest route to an unbound Named set.
 @SuppressWarnings("deprecation")
 public final class TestEnchantments {
     public static final String NAMESPACE = "brainagehud_test";
