@@ -31,8 +31,7 @@ import net.minecraft.world.item.enchantment.Enchantment;
  * mechanisms under test (supported items, exclusivity, maximum levels) are the same ones vanilla
  * data uses.
  */
-// deprecated-api: HolderSet.emptyNamed is @VisibleForTesting (HolderSet.java:37-39 in the 26.3 sources) and is the
-// only way to build an empty named tag set without a resource reload, which a headless test cannot do.
+// deprecated-api: HolderSet.emptyNamed is @VisibleForTesting (HolderSet.java:37-39 in the 26.3 sources) and is the only way to build an empty named tag set without a resource reload, which a headless test cannot do.
 @SuppressWarnings("deprecation")
 public final class TestEnchantments {
     public static final String NAMESPACE = "brainagehud_test";
