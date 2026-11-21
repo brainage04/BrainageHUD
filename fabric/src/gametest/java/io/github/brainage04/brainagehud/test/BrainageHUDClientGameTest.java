@@ -761,7 +761,7 @@ public final class BrainageHUDClientGameTest implements FabricClientGameTest {
             Path packShot =
                     takeLargeScreenshot(context, "inventory-effect-backgrounds-large");
             System.out.println(
-                    "[STDOUT]: Inventory effect backgrounds with the Looshy packs screenshot: "
+                    "[STDOUT]: Inventory effect backgrounds screenshot: "
                             + packShot);
             assertEffectBoxFrameDrawn(context, packShot);
         }
