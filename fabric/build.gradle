@@ -37,12 +37,11 @@ dependencies {
 }
 
 // The Looshy 26.3 packs, so the client GameTest can screenshot the inventory's effect boxes with
-// the pack's own effect_background sprite. They are not in the repository: pass their directory
-// with -PtestPacksDir=..., and a run without it skips the step.
-def testPacksDir = providers.gradleProperty('testPacksDir').map { file(it) }
+// the pack's own effect_background sprite.
+def testPacks = rootProject.layout.projectDirectory.dir('test-packs')
 tasks.register('copyTestResourcePacks', Copy) {
-	onlyIf { testPacksDir.present && testPacksDir.get().isDirectory() }
-	from(testPacksDir)
+	onlyIf { testPacks.asFile.isDirectory() }
+	from(testPacks)
 	into(layout.buildDirectory.dir('run/clientGameTest/resourcepacks'))
 }
 tasks.matching { it.name == 'runProductionClientGameTest' }.configureEach {
