@@ -93,15 +93,25 @@ class TickRateTrackerTest {
 
     @Test
     void aChangedTickRateDropsTheIntervals() {
+        // a server at 10 TPS, then /tick rate 20 halfway through a second
         tracker.record(0L, 3);
         clock.set(SECOND);
-        tracker.record(20L, 3);
+        tracker.record(10L, 3);
+        tracker.onTickRateState(10.0F, false);
+        clock.set(SECOND + SECOND / 2);
         tracker.onTickRateState(VANILLA_TICK_RATE, false);
 
-        // /tick rate 10: the intervals measured at 20 TPS describe a different server
-        tracker.onTickRateState(10.0F, false);
+        assertFalse(tracker.hasRate(VANILLA_TICK_RATE));
 
-        assertFalse(tracker.hasRate(10.0F));
+        // the first report after the change is a fresh baseline, so the interval that follows
+        // measures the new rate alone rather than mixing 10 TPS with 20
+        clock.set(2L * SECOND);
+        tracker.record(30L, 3);
+        assertFalse(tracker.hasRate(VANILLA_TICK_RATE));
+
+        clock.set(3L * SECOND);
+        tracker.record(50L, 3);
+        assertEquals(20.0D, tracker.ticksPerSecond(), 1e-9);
     }
 
     @Test

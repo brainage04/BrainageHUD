@@ -98,15 +98,19 @@ public final class TickRateTracker {
 
     /**
      * Drops the measured intervals when the server's tick rate or frozen state differs from the
-     * last one seen, since they describe a different server. A respawn re-sends the same state
-     * (PlayerList.java:667), and that must not throw away a valid window.
+     * last one seen, since they describe a different server. The previous report goes too, so the
+     * first interval after the change does not mix the old rate with the new one. A respawn
+     * re-sends the same state (PlayerList.java:667), and that must not throw away a valid window.
      */
     public void onTickRateState(float tickRate, boolean frozen) {
         boolean changed = hasTickRateState && (tickRate != lastTickRate || frozen != lastFrozen);
         hasTickRateState = true;
         lastTickRate = tickRate;
         lastFrozen = frozen;
-        if (changed) clearIntervals();
+        if (changed) {
+            clearIntervals();
+            hasPrevious = false;
+        }
     }
 
     /**
