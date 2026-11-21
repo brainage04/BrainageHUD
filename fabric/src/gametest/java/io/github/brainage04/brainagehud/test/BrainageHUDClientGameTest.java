@@ -19,6 +19,7 @@ import io.github.brainage04.brainagehud.util.ConfigUtils;
 import io.github.brainage04.brainagehud.waypoint.Waypoint;
 import io.github.brainage04.brainagehud.waypoint.WaypointActions;
 import io.github.brainage04.brainagehud.waypoint.WaypointStore;
+import io.github.brainage04.hudrendererlib.HudRendererLib;
 import io.github.brainage04.hudrendererlib.config.core.CoreSettings;
 import io.github.brainage04.hudrendererlib.config.core.ElementAnchor;
 import io.github.brainage04.hudrendererlib.config.core.HudRendererLibConfig;
@@ -862,10 +863,13 @@ public final class BrainageHUDClientGameTest implements FabricClientGameTest {
                                                 + settings.elementAnchor);
                             }
                             int scale = client.getWindow().getGuiScale();
-                            // the LMB box is the first mouse row, 20 px tall, at the element's left
+                            // The rows are W, A/S/D, space and then the mouse buttons, each 20 px
+                            // tall with the element's padding between them, so the LMB box starts
+                            // three rows down.
+                            int rowStep = 20 + HudRendererLib.getPadding(settings);
                             return new int[] {
                                 HudRenderer.getPosX(settings, 0) * scale,
-                                (HudRenderer.getPosY(settings, 0) + 2 * 22) * scale,
+                                (HudRenderer.getPosY(settings, 0) + 3 * rowStep) * scale,
                                 31 * scale,
                                 20 * scale,
                                 scale
