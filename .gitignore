@@ -49,3 +49,6 @@ replay_*.log
 # other
 
 **/src/main/generated/.cache
+
+# Looshy packs the client GameTest screenshots the inventory with (A-1744); not part of the mod.
+test-packs/
