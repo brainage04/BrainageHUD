@@ -797,11 +797,13 @@ public final class BrainageHUDClientGameTest implements FabricClientGameTest {
                                         "Expected the inventory screen, got " + screen);
                             }
                             int scale = client.getWindow().getGuiScale();
-                            // EffectsInInventory draws the box at the screen's right edge plus 2
+                            // EffectsInInventory draws the box at the screen's right edge plus 2.
+                            // The screen is centred and its image is 176x166
+                            // (AbstractContainerScreen.java:58), so its left is (width - 176) / 2.
+                            int left = (inventory.width - 176) / 2;
+                            int top = (inventory.height - 166) / 2;
                             return new int[] {
-                                (inventory.leftPos + inventory.imageWidth + 2) * scale,
-                                inventory.topPos * scale,
-                                scale
+                                (left + 176 + 2) * scale, top * scale, scale
                             };
                         });
         int left = box[0];
