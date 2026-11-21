@@ -694,27 +694,27 @@ public final class BrainageHUDClientGameTest implements FabricClientGameTest {
                 context.computeOnClient(
                         client -> {
                             Path dir = client.gameDirectory.toPath().resolve("resourcepacks");
-                            if (!Files.isDirectory(dir)) return List.of();
+                            if (!Files.isDirectory(dir)) {
+                                throw new AssertionError(
+                                        "Expected the effect-frame fixture in " + dir);
+                            }
                             try (var entries = Files.list(dir)) {
                                 return entries.map(p -> "file/" + p.getFileName())
-                                        .filter(id -> id.contains("looshy"))
                                         .sorted()
                                         .toList();
                             } catch (IOException exception) {
-                                throw new AssertionError(
-                                        "Could not list " + dir, exception);
+                                throw new AssertionError("Could not list " + dir, exception);
                             }
                         });
         if (packs.isEmpty()) {
-            System.out.println(
-                    "[STDOUT]: No Looshy packs in resourcepacks, skipping the effect background screenshot");
-            return;
+            throw new AssertionError(
+                    "Expected the effect-frame fixture in the run's resourcepacks folder");
         }
         ClientGameTestRecorder.showStep(
                 context,
                 "effect-backgrounds",
-                "Inventory effect backgrounds with the Looshy packs",
-                "The inventory's effect boxes keep their 1 px frame and 2 px ring at any width, because the packs' effect_background sprite is nine-sliced.");
+                "Inventory effect backgrounds",
+                "The inventory's effect boxes keep their 1 px frame and 2 px ring at any width, because the effect_background sprite is nine-sliced.");
         List<String> original =
                 context.computeOnClient(
                         client -> List.copyOf(client.options.resourcePacks));
@@ -800,6 +800,8 @@ public final class BrainageHUDClientGameTest implements FabricClientGameTest {
                             // EffectsInInventory draws the box at the screen's right edge plus 2.
                             // The screen is centred and its image is 176x166
                             // (AbstractContainerScreen.java:58), so its left is (width - 176) / 2.
+                            // leftPos and topPos are protected with no accessor
+                            // (AbstractContainerScreen.java:46-47), so the test recomputes them.
                             int left = (inventory.width - 176) / 2;
                             int top = (inventory.height - 166) / 2;
                             return new int[] {
@@ -811,12 +813,13 @@ public final class BrainageHUDClientGameTest implements FabricClientGameTest {
             // the large screenshot's scale, from the image against the GUI it was taken at
             int scale = image.getWidth() / box[2];
             int left = box[0] * scale;
+            // the box is 32 px tall (EffectsInInventory.java:96), so its middle is 16 down
             int row = box[1] * scale + 16 * scale;
             int border = 0;
             while (border < 8 * scale && isDark(image.getRGB(left + border, row))) border++;
             int ring = 0;
             while (ring < 8 * scale && isGrey(image.getRGB(left + border + ring, row))) ring++;
-            if (border > 2 * scale || ring > 4 * scale) {
+            if (border < scale || ring < 2 * scale || border > 2 * scale || ring > 4 * scale) {
                 throw new AssertionError(
                         "Expected the effect box's 1 px border and 2 px ring, but the border is "
                                 + border
@@ -881,7 +884,12 @@ public final class BrainageHUDClientGameTest implements FabricClientGameTest {
             int scale = image.getWidth() / box[2];
             int left = box[0] * scale;
             int top = box[1] * scale;
-            int width = 31 * scale;
+            // the LMB box is (int) (keySize * 1.5 + (double) elementPadding / 2) wide and 20 tall
+            // (KeystrokesHud.getKeyStrokesItems)
+            int width = (int) (20 * 1.5 + (double) HudRendererLib.getPadding(
+                            ConfigUtils.getConfig().keystrokesHudConfig.coreSettings)
+                    / 2)
+                    * scale;
             int height = 20 * scale;
             int inkLeft = -1;
             int inkRight = -1;
@@ -1068,6 +1076,7 @@ public final class BrainageHUDClientGameTest implements FabricClientGameTest {
                                         "The icon check samples from the element's top-left corner, but the anchor is "
                                                 + settings.elementAnchor);
                             }
+                            // the icon is drawn ICON_RAISE above the entry (StatusEffectHud.java:41)
                             return new int[] {
                                 HudRenderer.getPosX(settings, 0),
                                 HudRenderer.getPosY(settings, 0) - 1,
@@ -1081,10 +1090,14 @@ public final class BrainageHUDClientGameTest implements FabricClientGameTest {
             int left = origin[0] * scale;
             int top = origin[1] * scale;
             int size = 18 * scale;
+            // The HUD paints no backdrop by default, so the world beside the element is what the
+            // icon column shows when the icon is missing. The element is 22 px wider than the
+            // icon, so the sample sits clear of the text.
+            int emptyLeft = (origin[0] + 22 + 8) * scale;
             int differing = 0;
             for (int y = top; y < top + size; y++) {
                 for (int x = left; x < left + size; x++) {
-                    if (image.getRGB(x, y) != image.getRGB(x + size + 4 * scale, y)) {
+                    if (image.getRGB(x, y) != image.getRGB(emptyLeft + (x - left), y)) {
                         differing++;
                     }
                 }
@@ -1095,7 +1108,7 @@ public final class BrainageHUDClientGameTest implements FabricClientGameTest {
                                 + differing
                                 + " of "
                                 + (size * size)
-                                + " pixels differ from the text beside it in "
+                                + " pixels differ from the empty space beside the element in "
                                 + screenshot);
             }
         } catch (IOException exception) {
