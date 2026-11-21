@@ -797,22 +797,21 @@ public final class BrainageHUDClientGameTest implements FabricClientGameTest {
                                 throw new AssertionError(
                                         "Expected the inventory screen, got " + screen);
                             }
-                            int scale = client.getWindow().getGuiScale();
                             // EffectsInInventory draws the box at the screen's right edge plus 2.
                             // The screen is centred and its image is 176x166
                             // (AbstractContainerScreen.java:58), so its left is (width - 176) / 2.
                             int left = (inventory.width - 176) / 2;
                             int top = (inventory.height - 166) / 2;
                             return new int[] {
-                                (left + 176 + 2) * scale, top * scale, scale
+                                left + 176 + 2, top, client.getWindow().getGuiScaledWidth()
                             };
                         });
-        int left = box[0];
-        int top = box[1];
-        int scale = box[2];
         try {
             var image = ImageIO.read(screenshot.toFile());
-            int row = top + 16 * scale;
+            // the large screenshot's scale, from the image against the GUI it was taken at
+            int scale = image.getWidth() / box[2];
+            int left = box[0] * scale;
+            int row = box[1] * scale + 16 * scale;
             int border = 0;
             while (border < 8 * scale && isDark(image.getRGB(left + border, row))) border++;
             int ring = 0;
@@ -862,7 +861,6 @@ public final class BrainageHUDClientGameTest implements FabricClientGameTest {
                                         "The keystroke check samples from the element's top-right corner, but the anchor is "
                                                 + settings.elementAnchor);
                             }
-                            int scale = client.getWindow().getGuiScale();
                             // The widest row is the space bar: three 20 px keys with the
                             // element's padding between them (KeystrokesHud.getKeyStrokesItems).
                             int padding = HudRendererLib.getPadding(settings);
@@ -872,20 +870,19 @@ public final class BrainageHUDClientGameTest implements FabricClientGameTest {
                             // rows down.
                             int rowStep = 20 + padding;
                             return new int[] {
-                                HudRenderer.getPosX(settings, elementWidth) * scale,
-                                (HudRenderer.getPosY(settings, 0) + 3 * rowStep) * scale,
-                                31 * scale,
-                                20 * scale,
-                                scale
+                                HudRenderer.getPosX(settings, elementWidth),
+                                HudRenderer.getPosY(settings, 0) + 3 * rowStep,
+                                client.getWindow().getGuiScaledWidth()
                             };
                         });
-        int left = box[0];
-        int top = box[1];
-        int width = box[2];
-        int height = box[3];
-        int scale = box[4];
         try {
             var image = ImageIO.read(screenshot.toFile());
+            // the large screenshot's scale, from the image against the GUI it was taken at
+            int scale = image.getWidth() / box[2];
+            int left = box[0] * scale;
+            int top = box[1] * scale;
+            int width = 31 * scale;
+            int height = 20 * scale;
             int inkLeft = -1;
             int inkRight = -1;
             for (int x = left; x < left + width; x++) {
@@ -1071,22 +1068,23 @@ public final class BrainageHUDClientGameTest implements FabricClientGameTest {
                                         "The icon check samples from the element's top-left corner, but the anchor is "
                                                 + settings.elementAnchor);
                             }
-                            int scale = client.getWindow().getGuiScale();
                             return new int[] {
-                                HudRenderer.getPosX(settings, 0) * scale,
-                                (HudRenderer.getPosY(settings, 0) - 1) * scale,
-                                scale
+                                HudRenderer.getPosX(settings, 0),
+                                HudRenderer.getPosY(settings, 0) - 1,
+                                client.getWindow().getGuiScaledWidth()
                             };
                         });
-        int left = origin[0];
-        int top = origin[1];
-        int size = 18 * origin[2];
         try {
             var image = ImageIO.read(screenshot.toFile());
+            // the large screenshot's scale, from the image against the GUI it was taken at
+            int scale = image.getWidth() / origin[2];
+            int left = origin[0] * scale;
+            int top = origin[1] * scale;
+            int size = 18 * scale;
             int differing = 0;
             for (int y = top; y < top + size; y++) {
                 for (int x = left; x < left + size; x++) {
-                    if (image.getRGB(x, y) != image.getRGB(x + size + 4 * origin[2], y)) {
+                    if (image.getRGB(x, y) != image.getRGB(x + size + 4 * scale, y)) {
                         differing++;
                     }
                 }
