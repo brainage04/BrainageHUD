@@ -142,6 +142,15 @@ public final class BrainageHUDClientGameTest implements FabricClientGameTest {
                         }
                         context.runOnClient(client -> assertAttackClicksCounted(3));
                         context.waitTicks(60);
+                        // A large screenshot resizes the window, which the recorder's video
+                        // cannot take (docs/DEVELOPMENT.md), so the check runs outside recordings.
+                        if (!ClientGameTestRecordingSession.isEnabled()) {
+                            Path keysShot =
+                                    takeLargeScreenshot(context, "keystrokes-labels-large");
+                            System.out.println(
+                                    "[STDOUT]: Keystrokes labels screenshot: " + keysShot);
+                            assertKeystrokeLabelsCentred(context, keysShot);
+                        }
 
                         ClientGameTestRecorder.showStep(
                                 context,
@@ -253,9 +262,9 @@ public final class BrainageHUDClientGameTest implements FabricClientGameTest {
                                                 .getFirst()
                                                 .removeAllEffects());
                         // A server that hides the effect's particles also clears its show-icon
-                        // flag (MobEffectInstance's five-argument constructor passes `visible` for
-                        // both), and the HUD must still draw the icon: the blank column the owner
-                        // reported came from the icon being skipped while its space was kept.
+                        // flag (MobEffectInstance.java:60-62 passes `visible` for both), and the HUD
+                        // must still draw the icon: the blank column the owner reported came from
+                        // the icon being skipped while its space was kept.
                         server.runOnServer(
                                 minecraftServer -> {
                                     ServerPlayer player =
@@ -279,25 +288,17 @@ public final class BrainageHUDClientGameTest implements FabricClientGameTest {
                                                         + resistance);
                                     }
                                 });
-                        Path hiddenIconShot =
-                                takeLargeScreenshot(
-                                        context, "status-effect-hud-hidden-icon-large");
-                        System.out.println(
-                                "[STDOUT]: Status Effect HUD with a hidden icon screenshot: "
-                                        + hiddenIconShot);
-                        int[] iconOrigin =
-                                context.computeOnClient(
-                                        client -> {
-                                            CoreSettings settings =
-                                                    ConfigUtils.getConfig()
-                                                            .statusEffectHudConfig
-                                                            .coreSettings;
-                                            return new int[] {
-                                                HudRenderer.getPosX(settings, 0),
-                                                HudRenderer.getPosY(settings, 0)
-                                            };
-                                        });
-                        assertEffectIconDrawn(hiddenIconShot, iconOrigin[0], iconOrigin[1]);
+                        // A large screenshot resizes the window, which the recorder's video
+                        // cannot take (docs/DEVELOPMENT.md), so the check runs outside recordings.
+                        if (!ClientGameTestRecordingSession.isEnabled()) {
+                            Path hiddenIconShot =
+                                    takeLargeScreenshot(
+                                            context, "status-effect-hud-hidden-icon-large");
+                            System.out.println(
+                                    "[STDOUT]: Status Effect HUD with a hidden icon screenshot: "
+                                            + hiddenIconShot);
+                            assertEffectIconDrawn(context, hiddenIconShot);
+                        }
                         server.runOnServer(
                                 minecraftServer ->
                                         minecraftServer
@@ -753,9 +754,16 @@ public final class BrainageHUDClientGameTest implements FabricClientGameTest {
                     }
                 });
         context.waitTicks(20);
-        System.out.println(
-                "[STDOUT]: Inventory effect backgrounds with the Looshy packs screenshot: "
-                        + takeLargeScreenshot(context, "inventory-effect-backgrounds-large"));
+        // A large screenshot resizes the window, which the recorder's video cannot take
+        // (docs/DEVELOPMENT.md), so the check runs outside recordings.
+        if (!ClientGameTestRecordingSession.isEnabled()) {
+            Path packShot =
+                    takeLargeScreenshot(context, "inventory-effect-backgrounds-large");
+            System.out.println(
+                    "[STDOUT]: Inventory effect backgrounds with the Looshy packs screenshot: "
+                            + packShot);
+            assertEffectBoxFrameDrawn(context, packShot);
+        }
         context.runOnClient(client -> client.gui.setScreen(null));
         server.runOnServer(
                 minecraftServer ->
@@ -767,6 +775,141 @@ public final class BrainageHUDClientGameTest implements FabricClientGameTest {
                     client.options.updateResourcePacks(client.getResourcePackRepository());
                 });
         context.waitTicks(60);
+    }
+
+    /**
+     * The pack's effect box must keep its frame at the box's full width. The pack's sprite is a
+     * 32x32 frame with a 1 px black border and a 2 px grey ring; nine-sliced, the border stays 1 px
+     * and the ring 2 px however wide the box is, while a stretched sprite smears the ring into a
+     * band as wide as the box. The check walks in from the box's left edge and requires the black
+     * border to end within 2 px and the grey ring within 4.
+     */
+    private static void assertEffectBoxFrameDrawn(ClientGameTestContext context, Path screenshot) {
+        int[] box =
+                context.computeOnClient(
+                        client -> {
+                            var screen = client.gui.screen();
+                            if (!(screen
+                                    instanceof
+                                    net.minecraft.client.gui.screens.inventory.InventoryScreen
+                                            inventory)) {
+                                throw new AssertionError(
+                                        "Expected the inventory screen, got " + screen);
+                            }
+                            int scale = client.getWindow().getGuiScale();
+                            // EffectsInInventory draws the box at the screen's right edge plus 2
+                            return new int[] {
+                                (inventory.leftPos + inventory.imageWidth + 2) * scale,
+                                inventory.topPos * scale,
+                                scale
+                            };
+                        });
+        int left = box[0];
+        int top = box[1];
+        int scale = box[2];
+        try {
+            var image = ImageIO.read(screenshot.toFile());
+            int row = top + 16 * scale;
+            int border = 0;
+            while (border < 8 * scale && isDark(image.getRGB(left + border, row))) border++;
+            int ring = 0;
+            while (ring < 8 * scale && isGrey(image.getRGB(left + border + ring, row))) ring++;
+            if (border > 2 * scale || ring > 4 * scale) {
+                throw new AssertionError(
+                        "Expected the effect box's 1 px border and 2 px ring, but the border is "
+                                + border
+                                + " and the ring "
+                                + ring
+                                + " pixels wide at scale "
+                                + scale
+                                + " in "
+                                + screenshot);
+            }
+        } catch (IOException exception) {
+            throw new AssertionError("Could not read " + screenshot, exception);
+        }
+    }
+
+    private static boolean isDark(int argb) {
+        return ((argb >> 16) & 255) < 24 && ((argb >> 8) & 255) < 24 && (argb & 255) < 24;
+    }
+
+    private static boolean isGrey(int argb) {
+        int r = (argb >> 16) & 255;
+        int g = (argb >> 8) & 255;
+        int b = argb & 255;
+        return Math.abs(r - g) < 8 && Math.abs(g - b) < 8 && r > 60 && r < 130;
+    }
+
+    /**
+     * The LMB and RMB labels must sit centred in their boxes. The boxes are 31 GUI px wide and the
+     * labels' ink 17, so a centred label leaves 7 px on each side; the old
+     * {@code width / 2 - textWidth / 2} left 6 on the left and 8 on the right, which is the pixel
+     * the owner saw. The check measures the ink's own left and right gaps in the LMB box.
+     */
+    private static void assertKeystrokeLabelsCentred(
+            ClientGameTestContext context, Path screenshot) {
+        int[] box =
+                context.computeOnClient(
+                        client -> {
+                            CoreSettings settings =
+                                    ConfigUtils.getConfig().keystrokesHudConfig.coreSettings;
+                            if (settings.elementAnchor != ElementAnchor.TOP_RIGHT) {
+                                throw new AssertionError(
+                                        "The keystroke check samples from the element's top-right corner, but the anchor is "
+                                                + settings.elementAnchor);
+                            }
+                            int scale = client.getWindow().getGuiScale();
+                            // the LMB box is the first mouse row, 20 px tall, at the element's left
+                            return new int[] {
+                                HudRenderer.getPosX(settings, 0) * scale,
+                                (HudRenderer.getPosY(settings, 0) + 2 * 22) * scale,
+                                31 * scale,
+                                20 * scale,
+                                scale
+                            };
+                        });
+        int left = box[0];
+        int top = box[1];
+        int width = box[2];
+        int height = box[3];
+        int scale = box[4];
+        try {
+            var image = ImageIO.read(screenshot.toFile());
+            int inkLeft = -1;
+            int inkRight = -1;
+            for (int x = left; x < left + width; x++) {
+                for (int y = top; y < top + height; y++) {
+                    int argb = image.getRGB(x, y);
+                    int r = (argb >> 16) & 255;
+                    int g = (argb >> 8) & 255;
+                    int b = argb & 255;
+                    if (r > 200 && g > 200 && b > 200) {
+                        if (inkLeft < 0) inkLeft = x;
+                        inkRight = x;
+                        break;
+                    }
+                }
+            }
+            if (inkLeft < 0) {
+                throw new AssertionError("Found no LMB label ink in " + screenshot);
+            }
+            int leftGap = inkLeft - left;
+            int rightGap = left + width - 1 - inkRight;
+            if (Math.abs(leftGap - rightGap) > scale) {
+                throw new AssertionError(
+                        "Expected the LMB label centred in its box, but it leaves "
+                                + leftGap
+                                + " px on the left and "
+                                + rightGap
+                                + " on the right at scale "
+                                + scale
+                                + " in "
+                                + screenshot);
+            }
+        } catch (IOException exception) {
+            throw new AssertionError("Could not read " + screenshot, exception);
+        }
     }
 
     private static void exerciseInventoryStats(ClientGameTestContext context) {
@@ -903,22 +1046,39 @@ public final class BrainageHUDClientGameTest implements FabricClientGameTest {
     }
 
     /**
-     * The Status Effect HUD's icon column must hold the effect's art. The screenshot is at GUI
-     * scale 4, so the first entry's 18x18 icon covers 72x72 pixels at the element's own position;
-     * the check counts pixels there that differ from the backdrop beside the column.
+     * The Status Effect HUD's icon column must hold the effect's art. The HUD paints no backdrop by
+     * default, so the check compares the icon's own block against the same block one icon to its
+     * right, which is the entry's text: a blank column leaves both blocks showing the same world.
      */
-    private static void assertEffectIconDrawn(Path screenshot, int elementX, int elementY) {
-        int scale = 4;
-        int left = elementX * scale;
-        int top = elementY * scale;
-        int size = 18 * scale;
+    private static void assertEffectIconDrawn(ClientGameTestContext context, Path screenshot) {
+        int[] origin =
+                context.computeOnClient(
+                        client -> {
+                            CoreSettings settings =
+                                    ConfigUtils.getConfig().statusEffectHudConfig.coreSettings;
+                            if (settings.elementAnchor != ElementAnchor.TOP_LEFT) {
+                                throw new AssertionError(
+                                        "The icon check samples from the element's top-left corner, but the anchor is "
+                                                + settings.elementAnchor);
+                            }
+                            int scale = client.getWindow().getGuiScale();
+                            return new int[] {
+                                HudRenderer.getPosX(settings, 0) * scale,
+                                (HudRenderer.getPosY(settings, 0) - 1) * scale,
+                                scale
+                            };
+                        });
+        int left = origin[0];
+        int top = origin[1];
+        int size = 18 * origin[2];
         try {
             var image = ImageIO.read(screenshot.toFile());
-            int backdrop = image.getRGB(left + size + 8, top + size / 2);
             int differing = 0;
             for (int y = top; y < top + size; y++) {
                 for (int x = left; x < left + size; x++) {
-                    if (image.getRGB(x, y) != backdrop) differing++;
+                    if (image.getRGB(x, y) != image.getRGB(x + size + 4 * origin[2], y)) {
+                        differing++;
+                    }
                 }
             }
             if (differing < size * size / 4) {
@@ -927,7 +1087,7 @@ public final class BrainageHUDClientGameTest implements FabricClientGameTest {
                                 + differing
                                 + " of "
                                 + (size * size)
-                                + " pixels differ from the backdrop in "
+                                + " pixels differ from the text beside it in "
                                 + screenshot);
             }
         } catch (IOException exception) {

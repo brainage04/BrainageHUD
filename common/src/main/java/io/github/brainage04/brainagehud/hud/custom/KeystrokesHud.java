@@ -234,8 +234,9 @@ public class KeystrokesHud implements CoreHudElement<KeystrokesHudConfig> {
     }
 
     /**
-     * The x that centres {@code textWidth} in a box {@code boxWidth} wide. A label's advance ends a
-     * pixel past its last glyph, so an odd leftover pixel goes on the left, which centres the ink.
+     * The x that centres {@code textWidth} in a box {@code boxWidth} wide. A glyph's advance is its
+     * ink plus one pixel of spacing, so the advance ends a pixel past the last glyph and an odd
+     * leftover pixel goes on the left, which centres the ink.
      */
     static int centredTextX(int boxX, int boxWidth, int textWidth) {
         return boxX + (boxWidth - textWidth + 1) / 2;

@@ -7,8 +7,8 @@ import org.junit.jupiter.api.Test;
 
 class KeystrokesHudTest {
     /**
-     * The LMB and RMB boxes are 31 wide ({@code (int) (20 * 1.5 + 2 / 2)} in
-     * {@code getKeyStrokesItems}) and their labels 18, so the leftover is odd and the old
+     * The LMB and RMB boxes are 31 wide ({@code (int) (keySize * 1.5 + (double) elementPadding / 2)}
+     * in {@code getKeyStrokesItems}) and their labels 18, so the leftover is odd and the old
      * {@code width / 2 - textWidth / 2} put the label a pixel left of centre.
      */
     @Test

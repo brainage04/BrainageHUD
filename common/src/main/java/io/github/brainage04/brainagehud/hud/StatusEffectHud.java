@@ -111,8 +111,8 @@ public class StatusEffectHud implements CoreHudElement<StatusEffectHudConfig> {
             int entryPosX =
                     HudRenderer.alignContentX(
                             coreSettings, posX, elementWidth, ICON_TEXT_OFFSET + entry.textWidth());
-            // The server's show-icon flag hides the icon in the game's own HUD; this HUD's Show
-            // Icons setting decides here, and the effect's name is already on screen either way.
+            // The server's show-icon flag hides the icon in the game's own HUD (Hud.java:497); this
+            // HUD's Show Icons setting decides here, and the effect's name is on screen either way.
             drawContext.blitSprite(
                     RenderPipelines.GUI_TEXTURED,
                     Hud.getMobEffectSprite(entry.effect().getEffect()),
