@@ -41,8 +41,13 @@ dependencies {
 // copy of the Looshy packs beside it for a manual look at the real art.
 def testPacksDir = providers.gradleProperty('testPacksDir').map { file(it) }
 tasks.register('copyTestResourcePacks', Copy) {
-	from(rootProject.layout.projectDirectory.dir('test-packs/effect-frame'))
-	from(testPacksDir.orElse(rootProject.layout.projectDirectory.dir('test-packs/looshy')))
+	// each pack is a folder of its own inside resourcepacks/, as the game expects
+	from(rootProject.layout.projectDirectory.dir('test-packs')) {
+		include 'effect-frame/**'
+	}
+	from(testPacksDir.orElse(rootProject.layout.projectDirectory.dir('test-packs/looshy'))) {
+		into 'looshy'
+	}
 	into(productionGameTests.clientRunDir.map { it.dir('resourcepacks') })
 }
 tasks.matching { it.name == 'runProductionClientGameTest' }.configureEach {
