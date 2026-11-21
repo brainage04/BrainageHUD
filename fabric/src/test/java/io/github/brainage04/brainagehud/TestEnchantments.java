@@ -30,7 +30,8 @@ import net.minecraft.world.item.enchantment.Enchantment;
  * a full resource reload; this registry therefore defines its own enchantments. The mechanisms
  * under test (supported items, exclusivity, maximum levels) are the same ones vanilla data uses.
  */
-@SuppressWarnings("deprecation") // deprecated-api: HolderSet.emptyNamed is @VisibleForTesting and is the only empty named tag set without a resource reload.
+// deprecated-api: emptyNamed is @VisibleForTesting and has no replacement.
+@SuppressWarnings("deprecation")
 public final class TestEnchantments {
     public static final String NAMESPACE = "brainagehud_test";
 
