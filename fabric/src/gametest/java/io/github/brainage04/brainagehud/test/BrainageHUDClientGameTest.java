@@ -863,12 +863,16 @@ public final class BrainageHUDClientGameTest implements FabricClientGameTest {
                                                 + settings.elementAnchor);
                             }
                             int scale = client.getWindow().getGuiScale();
+                            // The widest row is the space bar: three 20 px keys with the
+                            // element's padding between them (KeystrokesHud.getKeyStrokesItems).
+                            int padding = HudRendererLib.getPadding(settings);
+                            int elementWidth = 3 * 20 + 2 * padding;
                             // The rows are W, A/S/D, space and then the mouse buttons, each 20 px
-                            // tall with the element's padding between them, so the LMB box starts
-                            // three rows down.
-                            int rowStep = 20 + HudRendererLib.getPadding(settings);
+                            // tall with the padding between them, so the LMB box starts three
+                            // rows down.
+                            int rowStep = 20 + padding;
                             return new int[] {
-                                HudRenderer.getPosX(settings, 0) * scale,
+                                HudRenderer.getPosX(settings, elementWidth) * scale,
                                 (HudRenderer.getPosY(settings, 0) + 3 * rowStep) * scale,
                                 31 * scale,
                                 20 * scale,
