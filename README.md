@@ -9,7 +9,7 @@ Motion and Entity are off by default; turn them on in the config editor. Every e
 ### HUD elements
 
 - **Position HUD**: block position, position within the chunk, the C and E counters, the direction you face (including +/- X/Z), rotation, light levels and biome. Rotation can include the unwrapped "true" yaw, or show only while you hold an axe, a hoe or a Hypixel SkyBlock farming tool.
-- **Network HUD**: ping and TPS, each of which can be turned off, optionally coloured from green (good) to red (bad). TPS is measured from the game time the server reports each second.
+- **Network HUD**: ping and TPS, each of which can be turned off, optionally coloured from green (good) to red (bad). TPS is measured from the game time the server reports every 20 ticks, and shows as `-` while the server is frozen or has stopped reporting it.
 - **Performance HUD**: FPS, RAM usage, CPU usage, GPU usage and GPU frame time.
 - **Date/Time HUD**: date, time (12 or 24 hour) and timezone.
 - **Motion HUD**: your speed on each axis and your horizontal speed in blocks per second, optionally also in blocks per tick. It measures how far you actually moved, so it stays accurate when you are blocked or riding something.

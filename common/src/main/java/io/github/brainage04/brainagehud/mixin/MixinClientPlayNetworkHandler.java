@@ -8,6 +8,7 @@ import io.github.brainage04.brainagehud.event.ModTickEvents;
 import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.network.protocol.game.ClientboundLoginPacket;
 import net.minecraft.network.protocol.game.ClientboundSetTimePacket;
+import net.minecraft.network.protocol.game.ClientboundTickingStatePacket;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -58,5 +59,16 @@ public class MixinClientPlayNetworkHandler {
                             shift = At.Shift.AFTER))
     private void recordServerGameTime(ClientboundSetTimePacket packet, CallbackInfo ci) {
         ModPacketEvents.onServerGameTime(packet.gameTime());
+    }
+
+    @Inject(
+            method = "handleTickingState",
+            at =
+                    @At(
+                            value = "INVOKE",
+                            target = ENSURE_RUNNING_ON_SAME_THREAD,
+                            shift = At.Shift.AFTER))
+    private void resetOnTickRateChange(ClientboundTickingStatePacket packet, CallbackInfo ci) {
+        ModPacketEvents.onTickRateState(packet.tickRate(), packet.isFrozen());
     }
 }
