@@ -49,6 +49,8 @@ tasks.register('copyTestResourcePacks', Copy) {
 		into 'looshy'
 	}
 	into(productionGameTests.clientRunDir.map { it.dir('resourcepacks') })
+	// the run directory outlives a run, so a pack copied flat by an earlier build would stay
+	doFirst { destinationDir.deleteDir() }
 }
 tasks.matching { it.name == 'runProductionClientGameTest' }.configureEach {
 	dependsOn('copyTestResourcePacks')
