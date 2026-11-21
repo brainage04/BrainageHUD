@@ -42,7 +42,7 @@ dependencies {
 def testPacksDir = providers.gradleProperty('testPacksDir').map { file(it) }
 tasks.register('copyTestResourcePacks', Copy) {
 	onlyIf { testPacksDir.present && testPacksDir.get().isDirectory() }
-	from(testPacksDir)
+	from(testPacksDir.orElse(rootProject.layout.projectDirectory.dir('test-packs')))
 	into(productionGameTests.clientRunDir.map { it.dir('resourcepacks') })
 }
 tasks.matching { it.name == 'runProductionClientGameTest' }.configureEach {
