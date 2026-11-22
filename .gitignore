@@ -49,3 +49,15 @@ replay_*.log
 # other
 
 **/src/main/generated/.cache
+
+# A copy of the Looshy packs for the client GameTest's effect-background step (A-1744). They are
+# another author's work with no licence file, so they are not redistributed here: point
+# -PtestPacksDir= at a copy. test-packs/effect-frame/ is this repository's own fixture and is
+# tracked.
+test-packs/*.zip
+test-packs/*.7z
+test-packs/*.rar
+test-packs/looshy/
+
+# The worktree lock nomad-heavy takes for a GameTest run.
+.gametest.lock

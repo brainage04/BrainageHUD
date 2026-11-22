@@ -1,0 +1,7 @@
+{
+    "pack": {
+        "description": "BrainageHUD GameTest fixture: a plain effect box frame (97 is 26.3's resource_major, version.json pack_version)",
+        "min_format": 97,
+        "max_format": 97
+    }
+}

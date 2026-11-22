@@ -19,6 +19,7 @@ import io.github.brainage04.brainagehud.util.ConfigUtils;
 import io.github.brainage04.brainagehud.waypoint.Waypoint;
 import io.github.brainage04.brainagehud.waypoint.WaypointActions;
 import io.github.brainage04.brainagehud.waypoint.WaypointStore;
+import io.github.brainage04.hudrendererlib.HudRendererLib;
 import io.github.brainage04.hudrendererlib.config.core.CoreSettings;
 import io.github.brainage04.hudrendererlib.config.core.ElementAnchor;
 import io.github.brainage04.hudrendererlib.config.core.HudRendererLibConfig;
@@ -142,6 +143,15 @@ public final class BrainageHUDClientGameTest implements FabricClientGameTest {
                         }
                         context.runOnClient(client -> assertAttackClicksCounted(3));
                         context.waitTicks(60);
+                        // A large screenshot resizes the window, which the recorder's video
+                        // cannot take (docs/DEVELOPMENT.md), so the check runs outside recordings.
+                        if (!ClientGameTestRecordingSession.isEnabled()) {
+                            Path keysShot =
+                                    takeLargeScreenshot(context, "keystrokes-labels-large");
+                            System.out.println(
+                                    "[STDOUT]: Keystrokes labels screenshot: " + keysShot);
+                            assertKeystrokeLabelsCentred(context, keysShot);
+                        }
 
                         ClientGameTestRecorder.showStep(
                                 context,
@@ -252,7 +262,138 @@ public final class BrainageHUDClientGameTest implements FabricClientGameTest {
                                                 .getPlayers()
                                                 .getFirst()
                                                 .removeAllEffects());
+                        // A server that hides the effect's particles also clears its show-icon
+                        // flag (MobEffectInstance.java:60-62 passes `visible` for both), and the HUD
+                        // must still draw the icon: the blank column the owner reported came from
+                        // the icon being skipped while its space was kept.
+                        server.runOnServer(
+                                minecraftServer -> {
+                                    ServerPlayer player =
+                                            minecraftServer.getPlayerList().getPlayers().getFirst();
+                                    player.addEffect(
+                                            new MobEffectInstance(
+                                                    MobEffects.RESISTANCE,
+                                                    MobEffectInstance.INFINITE_DURATION,
+                                                    3,
+                                                    false,
+                                                    false));
+                                });
                         context.waitTicks(5);
+                        context.runOnClient(
+                                client -> {
+                                    MobEffectInstance resistance =
+                                            client.player.getEffect(MobEffects.RESISTANCE);
+                                    if (resistance == null || resistance.showIcon()) {
+                                        throw new AssertionError(
+                                                "Expected a Resistance effect with its show-icon flag off, got "
+                                                        + resistance);
+                                    }
+                                });
+                        // A large screenshot resizes the window, which the recorder's video
+                        // cannot take (docs/DEVELOPMENT.md), so the check runs outside recordings.
+                        if (!ClientGameTestRecordingSession.isEnabled()) {
+                            // The check compares the icon block against the same block of the world
+                            // with the element off, so it needs a backdrop-free element over a
+                            // still part of the world: a backdrop or a moving block would differ
+                            // with no icon drawn. The element and its backdrop override go back
+                            // afterwards, so the later screenshots show it in its own place.
+                            int[] original =
+                                    context.computeOnClient(
+                                            client -> {
+                                                CoreSettings settings =
+                                                        ConfigUtils.getConfig()
+                                                                .statusEffectHudConfig
+                                                                .coreSettings;
+                                                int[] captured = {
+                                                    settings.enabled ? 1 : 0,
+                                                    settings.elementOverrides
+                                                            .backdropOpacity
+                                                            .enabled
+                                                            ? 1
+                                                            : 0,
+                                                    settings.elementOverrides
+                                                            .backdropOpacity
+                                                            .value,
+                                                    settings.x,
+                                                    settings.y,
+                                                    settings.elementAnchor.ordinal()
+                                                };
+                                                settings.elementAnchor = ElementAnchor.TOP_LEFT;
+                                                settings.x = 5;
+                                                settings.y = 150;
+                                                settings.elementOverrides.backdropOpacity.enabled =
+                                                        true;
+                                                settings.elementOverrides.backdropOpacity.value = 0;
+                                                return captured;
+                                            });
+                            context.waitTicks(5);
+                            Path hiddenIconShot =
+                                    takeLargeScreenshot(
+                                            context, "status-effect-hud-hidden-icon-large");
+                            System.out.println(
+                                    "[STDOUT]: Status Effect HUD with a hidden icon screenshot: "
+                                            + hiddenIconShot);
+                            context.runOnClient(
+                                    client ->
+                                            ConfigUtils.getConfig()
+                                                            .statusEffectHudConfig
+                                                            .coreSettings
+                                                            .enabled =
+                                                    false);
+                            context.waitTicks(5);
+                            Path worldShot =
+                                    takeLargeScreenshot(
+                                            context, "status-effect-hud-icon-world-large");
+                            // the check reads the element's position, so it runs before the
+                            // placement goes back
+                            assertEffectIconDrawn(context, hiddenIconShot, worldShot);
+                            context.runOnClient(
+                                    client -> {
+                                        CoreSettings settings =
+                                                ConfigUtils.getConfig()
+                                                        .statusEffectHudConfig
+                                                        .coreSettings;
+                                        settings.enabled = original[0] != 0;
+                                        settings.elementOverrides.backdropOpacity.enabled =
+                                                original[1] != 0;
+                                        settings.elementOverrides.backdropOpacity.value =
+                                                original[2];
+                                        settings.x = original[3];
+                                        settings.y = original[4];
+                                        settings.elementAnchor =
+                                                ElementAnchor.values()[original[5]];
+                                        // nothing later reads the place back, so the restore
+                                        // proves itself here
+                                        if (settings.x != original[3]
+                                                || settings.y != original[4]
+                                                || settings.elementAnchor.ordinal()
+                                                        != original[5]) {
+                                            throw new AssertionError(
+                                                    "Expected the Status Effect HUD back at "
+                                                            + original[3]
+                                                            + ","
+                                                            + original[4]
+                                                            + " "
+                                                            + ElementAnchor.values()[original[5]]
+                                                            + ", but it is at "
+                                                            + settings.x
+                                                            + ","
+                                                            + settings.y
+                                                            + " "
+                                                            + settings.elementAnchor);
+                                        }
+                                    });
+                            context.waitTicks(5);
+                        }
+                        server.runOnServer(
+                                minecraftServer ->
+                                        minecraftServer
+                                                .getPlayerList()
+                                                .getPlayers()
+                                                .getFirst()
+                                                .removeAllEffects());
+                        context.waitTicks(5);
+                        exerciseEffectBackgroundsWithPack(context, server);
 
                         ClientGameTestRecorder.showStep(
                                 context,
@@ -626,6 +767,270 @@ public final class BrainageHUDClientGameTest implements FabricClientGameTest {
         }
     }
 
+    /**
+     * Loads the effect-frame fixture, and any Looshy 26.3 zips a {@code -PtestPacksDir=} run copied
+     * beside it, from the run directory's {@code resourcepacks} folder, gives the player two effects
+     * and screenshots the inventory, whose effect boxes are the sprite the fixture replaces. The
+     * build copies the packs in, and the step fails when the fixture is absent.
+     */
+    private static void exerciseEffectBackgroundsWithPack(
+            ClientGameTestContext context,
+            net.fabricmc.fabric.api.client.gametest.v1.context.TestDedicatedServerContext server) {
+        List<String> packs =
+                context.computeOnClient(
+                        client -> {
+                            Path dir = client.gameDirectory.toPath().resolve("resourcepacks");
+                            if (!Files.isDirectory(dir)) {
+                                throw new AssertionError(
+                                        "Expected the effect-frame fixture in " + dir);
+                            }
+                            // only what the game reads as a pack: a zip, or a folder holding
+                            // pack.mcmeta (PackDetector.java:41-50). Anything else in the folder
+                            // would make addPack fail the run.
+                            try (var entries = Files.list(dir)) {
+                                return entries.filter(
+                                                p ->
+                                                        p.getFileName()
+                                                                        .toString()
+                                                                        .endsWith(".zip")
+                                                                || Files.isRegularFile(
+                                                                        p.resolve("pack.mcmeta")))
+                                        .map(p -> "file/" + p.getFileName())
+                                        .sorted()
+                                        .toList();
+                            } catch (IOException exception) {
+                                throw new AssertionError("Could not list " + dir, exception);
+                            }
+                        });
+        if (!packs.contains("file/effect-frame")) {
+            throw new AssertionError(
+                    "Expected the effect-frame fixture in the run's resourcepacks folder, got "
+                            + packs);
+        }
+        ClientGameTestRecorder.showStep(
+                context,
+                "effect-backgrounds",
+                "Inventory effect backgrounds",
+                "The inventory's effect boxes keep their 1 px frame and 2 px ring at any width, because the effect_background sprite is nine-sliced.");
+        List<String> original =
+                context.computeOnClient(
+                        client -> List.copyOf(client.options.resourcePacks));
+        context.runOnClient(
+                client -> {
+                    client.getResourcePackRepository().reload();
+                    for (String id : packs) {
+                        if (!client.getResourcePackRepository().addPack(id)) {
+                            throw new AssertionError("Could not select resource pack " + id);
+                        }
+                    }
+                    // updateResourcePacks reloads the packs itself when the list changes
+                    client.options.updateResourcePacks(client.getResourcePackRepository());
+                });
+        context.waitTicks(60);
+        server.runOnServer(
+                minecraftServer -> {
+                    ServerPlayer player =
+                            minecraftServer.getPlayerList().getPlayers().getFirst();
+                    player.addEffect(
+                            new MobEffectInstance(
+                                    MobEffects.RESISTANCE,
+                                    MobEffectInstance.INFINITE_DURATION,
+                                    3));
+                    player.addEffect(
+                            new MobEffectInstance(
+                                    MobEffects.STRENGTH, MobEffectInstance.INFINITE_DURATION, 1));
+                });
+        context.waitTicks(5);
+        context.runOnClient(
+                client -> {
+                    if (!(client.gui.screen()
+                            instanceof
+                            net.minecraft.client.gui.screens.inventory.InventoryScreen)) {
+                        client.gui.setScreen(
+                                new net.minecraft.client.gui.screens.inventory.InventoryScreen(
+                                        client.player));
+                    }
+                });
+        context.waitTicks(20);
+        // A large screenshot resizes the window, which the recorder's video cannot take
+        // (docs/DEVELOPMENT.md), so the check runs outside recordings.
+        if (!ClientGameTestRecordingSession.isEnabled()) {
+            Path packShot =
+                    takeLargeScreenshot(context, "inventory-effect-backgrounds-large");
+            System.out.println(
+                    "[STDOUT]: Inventory effect backgrounds screenshot: "
+                            + packShot);
+            assertEffectBoxFrameDrawn(context, packShot);
+        }
+        context.runOnClient(client -> client.gui.setScreen(null));
+        server.runOnServer(
+                minecraftServer ->
+                        minecraftServer.getPlayerList().getPlayers().getFirst().removeAllEffects());
+        // The later steps measure brightness and draw their own HUDs, so the packs go back off.
+        context.runOnClient(
+                client -> {
+                    client.getResourcePackRepository().setSelected(original);
+                    client.options.updateResourcePacks(client.getResourcePackRepository());
+                });
+        context.waitTicks(60);
+    }
+
+    /**
+     * The fixture's effect box must keep its frame at the box's full width. The fixture's sprite is
+     * a 32x32 frame with a 1 px black border and a 2 px ring of 100 grey; nine-sliced, the border
+     * stays 1 px and the ring 2 px however wide the box is, while a stretched sprite smears the ring
+     * into a band as wide as the box. The check walks in from the box's left edge and requires the
+     * border to end within 2 px and the ring within 4, in the fixture's own colours, so vanilla's
+     * sprite (a ring of 85 grey) cannot stand in for a fixture that failed to load.
+     */
+    private static void assertEffectBoxFrameDrawn(ClientGameTestContext context, Path screenshot) {
+        int[] box =
+                context.computeOnClient(
+                        client -> {
+                            var screen = client.gui.screen();
+                            if (!(screen
+                                    instanceof
+                                    net.minecraft.client.gui.screens.inventory.InventoryScreen
+                                            inventory)) {
+                                throw new AssertionError(
+                                        "Expected the inventory screen, got " + screen);
+                            }
+                            // EffectsInInventory draws the box at the screen's right edge plus 2.
+                            // The screen is centred and its image is 176x166
+                            // (AbstractContainerScreen.java:58), so its left is (width - 176) / 2.
+                            // leftPos and topPos are protected with no accessor
+                            // (AbstractContainerScreen.java:46-47), so the test recomputes them.
+                            int left = (inventory.width - 176) / 2;
+                            int top = (inventory.height - 166) / 2;
+                            return new int[] {
+                                left + 176 + 2, top, client.getWindow().getGuiScaledWidth()
+                            };
+                        });
+        try {
+            var image = ImageIO.read(screenshot.toFile());
+            // the large screenshot's scale, from the image against the GUI it was taken at
+            int scale = image.getWidth() / box[2];
+            int left = box[0] * scale;
+            // the box is SPRITE_SQUARE_SIZE tall (EffectsInInventory.java:27, drawn at :94), so its
+            // middle is half that down
+            int row =
+                    box[1] * scale
+                            + net.minecraft.client.gui.screens.inventory.EffectsInInventory
+                                            .SPRITE_SQUARE_SIZE
+                                    / 2
+                                    * scale;
+            int border = 0;
+            while (border < 8 * scale && isFixtureBorder(image.getRGB(left + border, row))) border++;
+            int ring = 0;
+            while (ring < 8 * scale && isFixtureRing(image.getRGB(left + border + ring, row))) ring++;
+            if (border < scale || ring < 2 * scale || border > 2 * scale || ring > 4 * scale) {
+                throw new AssertionError(
+                        "Expected the effect box's 1 px border and 2 px ring, but the border is "
+                                + border
+                                + " and the ring "
+                                + ring
+                                + " pixels wide at scale "
+                                + scale
+                                + " in "
+                                + screenshot);
+            }
+        } catch (IOException exception) {
+            throw new AssertionError("Could not read " + screenshot, exception);
+        }
+    }
+
+    private static boolean isFixtureBorder(int argb) {
+        return ((argb >> 16) & 255) < 24 && ((argb >> 8) & 255) < 24 && (argb & 255) < 24;
+    }
+
+    private static boolean isFixtureRing(int argb) {
+        int r = (argb >> 16) & 255;
+        int g = (argb >> 8) & 255;
+        int b = argb & 255;
+        return Math.abs(r - 100) < 8 && Math.abs(g - 100) < 8 && Math.abs(b - 100) < 8;
+    }
+
+    /**
+     * The LMB and RMB labels must sit centred in their boxes. The boxes are 31 GUI px wide and the
+     * labels' ink 17, so a centred label leaves 7 px on each side; the old
+     * {@code width / 2 - textWidth / 2} left 6 on the left and 8 on the right, which is the pixel
+     * the owner saw. The check measures the ink's own left and right gaps in the LMB box.
+     */
+    private static void assertKeystrokeLabelsCentred(
+            ClientGameTestContext context, Path screenshot) {
+        int[] box =
+                context.computeOnClient(
+                        client -> {
+                            CoreSettings settings =
+                                    ConfigUtils.getConfig().keystrokesHudConfig.coreSettings;
+                            if (settings.elementAnchor != ElementAnchor.TOP_RIGHT) {
+                                throw new AssertionError(
+                                        "The keystroke check samples from the element's top-right corner, but the anchor is "
+                                                + settings.elementAnchor);
+                            }
+                            // The widest row is the space bar: three 20 px keys with the
+                            // element's padding between them (KeystrokesHud.getKeyStrokesItems).
+                            int padding = HudRendererLib.getPadding(settings);
+                            int elementWidth = 3 * 20 + 2 * padding;
+                            // The rows are W, A/S/D, space and then the mouse buttons, each 20 px
+                            // tall with the padding between them, so the LMB box starts three
+                            // rows down.
+                            int rowStep = 20 + padding;
+                            return new int[] {
+                                HudRenderer.getPosX(settings, elementWidth),
+                                HudRenderer.getPosY(settings, 0) + 3 * rowStep,
+                                client.getWindow().getGuiScaledWidth()
+                            };
+                        });
+        try {
+            var image = ImageIO.read(screenshot.toFile());
+            // the large screenshot's scale, from the image against the GUI it was taken at
+            int scale = image.getWidth() / box[2];
+            int left = box[0] * scale;
+            int top = box[1] * scale;
+            // the LMB box is (int) (keySize * 1.5 + (double) elementPadding / 2) wide and 20 tall
+            // (KeystrokesHud.getKeyStrokesItems)
+            int width = (int) (20 * 1.5 + (double) HudRendererLib.getPadding(
+                            ConfigUtils.getConfig().keystrokesHudConfig.coreSettings)
+                    / 2)
+                    * scale;
+            int height = 20 * scale;
+            int inkLeft = -1;
+            int inkRight = -1;
+            for (int x = left; x < left + width; x++) {
+                for (int y = top; y < top + height; y++) {
+                    int argb = image.getRGB(x, y);
+                    int r = (argb >> 16) & 255;
+                    int g = (argb >> 8) & 255;
+                    int b = argb & 255;
+                    if (r > 200 && g > 200 && b > 200) {
+                        if (inkLeft < 0) inkLeft = x;
+                        inkRight = x;
+                        break;
+                    }
+                }
+            }
+            if (inkLeft < 0) {
+                throw new AssertionError("Found no LMB label ink in " + screenshot);
+            }
+            int leftGap = inkLeft - left;
+            int rightGap = left + width - 1 - inkRight;
+            if (Math.abs(leftGap - rightGap) > scale) {
+                throw new AssertionError(
+                        "Expected the LMB label centred in its box, but it leaves "
+                                + leftGap
+                                + " px on the left and "
+                                + rightGap
+                                + " on the right at scale "
+                                + scale
+                                + " in "
+                                + screenshot);
+            }
+        } catch (IOException exception) {
+            throw new AssertionError("Could not read " + screenshot, exception);
+        }
+    }
+
     private static void exerciseInventoryStats(ClientGameTestContext context) {
         ClientGameTestRecorder.showStep(
                 context,
@@ -757,6 +1162,105 @@ public final class BrainageHUDClientGameTest implements FabricClientGameTest {
                         ConfigUtils.saveConfig();
                     });
         }
+    }
+
+    /**
+     * The Status Effect HUD's icon column must hold the effect's art. The caller pins the element to
+     * a backdrop-free top-left corner, so the same block with the element switched off is the world
+     * alone: what the column shows when the icon is missing. The world moves between the two shots,
+     * so a block of the same size clear of every element in this fixture must stay at or under a
+     * sixteenth of its pixels before the icon block's own count is trusted, and that count must then
+     * reach a quarter.
+     */
+    private static void assertEffectIconDrawn(
+            ClientGameTestContext context, Path screenshot, Path worldScreenshot) {
+        int[] origin =
+                context.computeOnClient(
+                        client -> {
+                            CoreSettings settings =
+                                    ConfigUtils.getConfig().statusEffectHudConfig.coreSettings;
+                            if (settings.elementAnchor != ElementAnchor.TOP_LEFT) {
+                                throw new AssertionError(
+                                        "The icon check samples from the element's top-left corner, but the anchor is "
+                                                + settings.elementAnchor);
+                            }
+                            // the icon is drawn ICON_RAISE above the entry (StatusEffectHud.java:41)
+                            return new int[] {
+                                HudRenderer.getPosX(settings, 0),
+                                HudRenderer.getPosY(settings, 0) - 1,
+                                client.getWindow().getGuiScaledWidth()
+                            };
+                        });
+        try {
+            var image = ImageIO.read(screenshot.toFile());
+            var world = ImageIO.read(worldScreenshot.toFile());
+            if (image.getWidth() != world.getWidth() || image.getHeight() != world.getHeight()) {
+                throw new AssertionError(
+                        "Expected both screenshots at the same size, got "
+                                + image.getWidth()
+                                + "x"
+                                + image.getHeight()
+                                + " and "
+                                + world.getWidth()
+                                + "x"
+                                + world.getHeight());
+            }
+            // the large screenshot's scale, from the image against the GUI it was taken at
+            int scale = image.getWidth() / origin[2];
+            int left = origin[0] * scale;
+            int top = origin[1] * scale;
+            // the sprite is ICON_SIZE square (StatusEffectHud.java:33)
+            int size = 18 * scale;
+            int differing = differingPixels(image, world, left, top, size);
+            // The same block size in the centre column of the icon's row, clear of every element in
+            // this fixture, measures how much the world itself moved between the two shots. A world
+            // that moved would make the icon block's count meaningless, so that fails first.
+            int control =
+                    differingPixels(
+                            image, world, (image.getWidth() - size) / 2, top, size);
+            if (control > size * size / 16) {
+                throw new AssertionError(
+                        "Expected the world to stay still between the two screenshots, but a block of "
+                                + (size * size)
+                                + " pixels clear of every element differs by "
+                                + control
+                                + " in "
+                                + screenshot
+                                + " against "
+                                + worldScreenshot
+                                + ", so the icon column's own count cannot be trusted");
+            }
+            if (differing < size * size / 4) {
+                throw new AssertionError(
+                        "Expected the Status Effect HUD's icon column to hold the effect's art, but only "
+                                + differing
+                                + " of "
+                                + (size * size)
+                                + " pixels differ from the same block with the element off in "
+                                + screenshot
+                                + " against "
+                                + worldScreenshot);
+            }
+        } catch (IOException exception) {
+            throw new AssertionError("Could not read " + screenshot, exception);
+        }
+    }
+
+    private static int differingPixels(
+            java.awt.image.BufferedImage image,
+            java.awt.image.BufferedImage world,
+            int left,
+            int top,
+            int size) {
+        int differing = 0;
+        for (int y = top; y < top + size; y++) {
+            for (int x = left; x < left + size; x++) {
+                if (image.getRGB(x, y) != world.getRGB(x, y)) {
+                    differing++;
+                }
+            }
+        }
+        return differing;
     }
 
     private static double centreBrightness(Path screenshot) {
@@ -1020,6 +1524,11 @@ public final class BrainageHUDClientGameTest implements FabricClientGameTest {
             config.foodHudConfig.coreSettings.enabled = true;
             config.waypointConfig.showInWorld = true;
             config.statusEffectHudConfig.coreSettings.enabled = true;
+            // The run directory outlives a run, so the showcase pins the element's own place. The
+            // values are StatusEffectHudConfig's defaults (StatusEffectHudConfig.java:12).
+            config.statusEffectHudConfig.coreSettings.elementAnchor = ElementAnchor.TOP_LEFT;
+            config.statusEffectHudConfig.coreSettings.x = 5;
+            config.statusEffectHudConfig.coreSettings.y = 144;
             config.statusEffectHudConfig.showDurations = true;
             config.statusEffectHudConfig.hideVanillaStatusEffects = true;
             libraryConfig().showVanillaStatusEffects = true;

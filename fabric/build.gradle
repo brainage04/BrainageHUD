@@ -35,3 +35,24 @@ dependencies {
 	implementation("com.terraformersmc:modmenu:${rootProject.modmenu_version}") { exclude group: "net.fabricmc.fabric-api" }
 	productionRuntimeMods("com.terraformersmc:modmenu:${rootProject.modmenu_version}") { exclude group: "net.fabricmc.fabric-api" }
 }
+
+// The effect-frame fixture, so the client GameTest can screenshot the inventory's effect boxes.
+// test-packs/effect-frame is this repository's own 32x32 nine-sliced frame; -PtestPacksDir= adds the
+// Looshy zips beside it for a manual look at the real art.
+def testPacksDir = providers.gradleProperty('testPacksDir').map { file(it) }
+tasks.register('copyTestResourcePacks', Copy) {
+	// the fixture is a directory pack, so it needs a folder of its own; a zip is a pack wherever it
+	// sits, so the -PtestPacksDir= zips go flat beside it (PackDetector.java:41-50)
+	from(rootProject.layout.projectDirectory.dir('test-packs/effect-frame')) {
+		into 'effect-frame'
+	}
+	from(testPacksDir.orElse(rootProject.layout.projectDirectory.dir('test-packs/looshy'))) {
+		include '*.zip'
+	}
+	into(productionGameTests.clientRunDir.map { it.dir('resourcepacks') })
+	// the run directory outlives a run, so a pack copied flat by an earlier build would stay
+	doFirst { destinationDir.deleteDir() }
+}
+tasks.matching { it.name == 'runProductionClientGameTest' }.configureEach {
+	dependsOn('copyTestResourcePacks')
+}

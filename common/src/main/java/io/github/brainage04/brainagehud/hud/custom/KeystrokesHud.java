@@ -219,10 +219,10 @@ public class KeystrokesHud implements CoreHudElement<KeystrokesHudConfig> {
             drawContext.text(
                     renderer,
                     keyStrokesItem.name,
-                    posX
-                            + keyStrokesItem.x
-                            + (keyStrokesItem.width / 2)
-                            - (renderer.width(keyStrokesItem.name) / 2),
+                    centredTextX(
+                            posX + keyStrokesItem.x,
+                            keyStrokesItem.width,
+                            renderer.width(keyStrokesItem.name)),
                     posY
                             + keyStrokesItem.y
                             + (keyStrokesItem.height / 2)
@@ -231,6 +231,15 @@ public class KeystrokesHud implements CoreHudElement<KeystrokesHudConfig> {
                     textShadows);
         }
         keyTransitions.entrySet().removeIf(entry -> entry.getValue().lastSeenFrame != frame);
+    }
+
+    /**
+     * The x that centres {@code textWidth} in a box {@code boxWidth} wide. A glyph's advance is its
+     * ink plus one pixel of spacing, so the advance ends a pixel past the last glyph and an odd
+     * leftover pixel goes on the left, which centres the ink.
+     */
+    static int centredTextX(int boxX, int boxWidth, int textWidth) {
+        return boxX + (boxWidth - textWidth + 1) / 2;
     }
 
     @Override

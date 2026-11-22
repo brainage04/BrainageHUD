@@ -111,16 +111,15 @@ public class StatusEffectHud implements CoreHudElement<StatusEffectHudConfig> {
             int entryPosX =
                     HudRenderer.alignContentX(
                             coreSettings, posX, elementWidth, ICON_TEXT_OFFSET + entry.textWidth());
-            // effects that hide their icon keep its column, so their text lines up with the rest
-            if (entry.effect().showIcon()) {
-                drawContext.blitSprite(
-                        RenderPipelines.GUI_TEXTURED,
-                        Hud.getMobEffectSprite(entry.effect().getEffect()),
-                        entryPosX,
-                        entryPosY - ICON_RAISE,
-                        ICON_SIZE,
-                        ICON_SIZE);
-            }
+            // The server's show-icon flag hides the icon in the game's own HUD (Hud.java:497); this
+            // HUD's Show Icons setting decides here, and the effect's name is on screen either way.
+            drawContext.blitSprite(
+                    RenderPipelines.GUI_TEXTURED,
+                    Hud.getMobEffectSprite(entry.effect().getEffect()),
+                    entryPosX,
+                    entryPosY - ICON_RAISE,
+                    ICON_SIZE,
+                    ICON_SIZE);
             // text shorter than the icon (the name alone) is centred on it; the +1 rounds towards
             // the glyphs'
             // shadow row, which puts as many empty rows above the text as below it
