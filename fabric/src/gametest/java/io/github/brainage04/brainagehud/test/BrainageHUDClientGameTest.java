@@ -1117,10 +1117,10 @@ public final class BrainageHUDClientGameTest implements FabricClientGameTest {
 
     /**
      * The Status Effect HUD's icon column must hold the effect's art. The caller pins the element to
-     * a backdrop-free top-left corner over plain sky, so the same block with the element switched
-     * off is the world alone: what the column shows when the icon is missing. The check requires
-     * that block to be one colour in the world shot, so a moving or textured part of the world
-     * cannot stand in for the icon.
+     * a backdrop-free top-left corner, so the same block with the element switched off is the world
+     * alone: what the column shows when the icon is missing. The world moves between the two shots,
+     * so the check also measures a block of the same size far from the element and requires the icon
+     * block to differ by far more than that, which a moving or textured part of the world cannot do.
      */
     private static void assertEffectIconDrawn(
             ClientGameTestContext context, Path screenshot, Path worldScreenshot) {
@@ -1161,22 +1161,10 @@ public final class BrainageHUDClientGameTest implements FabricClientGameTest {
             int top = origin[1] * scale;
             // the sprite is ICON_SIZE square (StatusEffectHud.java:33)
             int size = 18 * scale;
-            int worldColour = world.getRGB(left, top);
-            int differing = 0;
-            for (int y = top; y < top + size; y++) {
-                for (int x = left; x < left + size; x++) {
-                    if (world.getRGB(x, y) != worldColour) {
-                        throw new AssertionError(
-                                "Expected plain sky behind the Status Effect HUD's icon column, but "
-                                        + worldScreenshot
-                                        + " has more than one colour in that block, so the check cannot tell the icon from the world");
-                    }
-                    if (image.getRGB(x, y) != worldColour) {
-                        differing++;
-                    }
-                }
-            }
-            if (differing < size * size / 4) {
+            int differing = differingPixels(image, world, left, top, size);
+            // the same block size at the far right of the same row, clear of every element
+            int control = differingPixels(image, world, image.getWidth() - size, top, size);
+            if (differing < size * size / 4 || differing < control * 4) {
                 throw new AssertionError(
                         "Expected the Status Effect HUD's icon column to hold the effect's art, but only "
                                 + differing
@@ -1185,11 +1173,31 @@ public final class BrainageHUDClientGameTest implements FabricClientGameTest {
                                 + " pixels differ from the same block with the element off in "
                                 + screenshot
                                 + " against "
-                                + worldScreenshot);
+                                + worldScreenshot
+                                + ", while a block of the same size clear of the element differs by "
+                                + control
+                                + " from the world moving between the two shots");
             }
         } catch (IOException exception) {
             throw new AssertionError("Could not read " + screenshot, exception);
         }
+    }
+
+    private static int differingPixels(
+            java.awt.image.BufferedImage image,
+            java.awt.image.BufferedImage world,
+            int left,
+            int top,
+            int size) {
+        int differing = 0;
+        for (int y = top; y < top + size; y++) {
+            for (int x = left; x < left + size; x++) {
+                if (image.getRGB(x, y) != world.getRGB(x, y)) {
+                    differing++;
+                }
+            }
+        }
+        return differing;
     }
 
     private static double centreBrightness(Path screenshot) {
