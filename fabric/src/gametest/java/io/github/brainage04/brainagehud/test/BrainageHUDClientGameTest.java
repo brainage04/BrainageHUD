@@ -297,8 +297,6 @@ public final class BrainageHUDClientGameTest implements FabricClientGameTest {
                             // still part of the world: a backdrop or a moving block would differ
                             // with no icon drawn. The element and its backdrop override go back
                             // afterwards, so the later screenshots show it in its own place.
-                            // every config read and write goes through the client thread, as the
-                            // rest of this file does
                             int[] original =
                                     context.computeOnClient(
                                             client -> {
@@ -315,7 +313,10 @@ public final class BrainageHUDClientGameTest implements FabricClientGameTest {
                                                             : 0,
                                                     settings.elementOverrides
                                                             .backdropOpacity
-                                                            .value
+                                                            .value,
+                                                    settings.x,
+                                                    settings.y,
+                                                    settings.elementAnchor.ordinal()
                                                 };
                                                 settings.elementAnchor = ElementAnchor.TOP_LEFT;
                                                 settings.x = 5;
@@ -353,13 +354,14 @@ public final class BrainageHUDClientGameTest implements FabricClientGameTest {
                                                         .statusEffectHudConfig
                                                         .coreSettings;
                                         settings.enabled = original[0] != 0;
-                                        settings.elementAnchor = ElementAnchor.TOP_LEFT;
-                                        settings.x = 5;
-                                        settings.y = 144;
                                         settings.elementOverrides.backdropOpacity.enabled =
                                                 original[1] != 0;
                                         settings.elementOverrides.backdropOpacity.value =
                                                 original[2];
+                                        settings.x = original[3];
+                                        settings.y = original[4];
+                                        settings.elementAnchor =
+                                                ElementAnchor.values()[original[5]];
                                     });
                             context.waitTicks(5);
                         }
@@ -1146,8 +1148,8 @@ public final class BrainageHUDClientGameTest implements FabricClientGameTest {
      * The Status Effect HUD's icon column must hold the effect's art. The caller pins the element to
      * a backdrop-free top-left corner, so the same block with the element switched off is the world
      * alone: what the column shows when the icon is missing. The world moves between the two shots,
-     * so the check also measures a block of the same size far from the element and requires the icon
-     * block to differ by far more than that, which a moving or textured part of the world cannot do.
+     * so a block of the same size clear of every element must stay under a sixteenth of its pixels
+     * before the icon block's own count is trusted, and that count must then clear a quarter.
      */
     private static void assertEffectIconDrawn(
             ClientGameTestContext context, Path screenshot, Path worldScreenshot) {
