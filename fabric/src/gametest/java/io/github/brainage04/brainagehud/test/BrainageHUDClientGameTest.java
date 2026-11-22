@@ -362,6 +362,26 @@ public final class BrainageHUDClientGameTest implements FabricClientGameTest {
                                         settings.y = original[4];
                                         settings.elementAnchor =
                                                 ElementAnchor.values()[original[5]];
+                                        // nothing later reads the place back, so the restore
+                                        // proves itself here
+                                        if (settings.x != original[3]
+                                                || settings.y != original[4]
+                                                || settings.elementAnchor.ordinal()
+                                                        != original[5]) {
+                                            throw new AssertionError(
+                                                    "Expected the Status Effect HUD back at "
+                                                            + original[3]
+                                                            + ","
+                                                            + original[4]
+                                                            + " "
+                                                            + ElementAnchor.values()[original[5]]
+                                                            + ", but it is at "
+                                                            + settings.x
+                                                            + ","
+                                                            + settings.y
+                                                            + " "
+                                                            + settings.elementAnchor);
+                                        }
                                     });
                             context.waitTicks(5);
                         }
@@ -1148,8 +1168,9 @@ public final class BrainageHUDClientGameTest implements FabricClientGameTest {
      * The Status Effect HUD's icon column must hold the effect's art. The caller pins the element to
      * a backdrop-free top-left corner, so the same block with the element switched off is the world
      * alone: what the column shows when the icon is missing. The world moves between the two shots,
-     * so a block of the same size clear of every element must stay under a sixteenth of its pixels
-     * before the icon block's own count is trusted, and that count must then clear a quarter.
+     * so a block of the same size clear of every element in this fixture must stay at or under a
+     * sixteenth of its pixels before the icon block's own count is trusted, and that count must then
+     * reach a quarter.
      */
     private static void assertEffectIconDrawn(
             ClientGameTestContext context, Path screenshot, Path worldScreenshot) {
