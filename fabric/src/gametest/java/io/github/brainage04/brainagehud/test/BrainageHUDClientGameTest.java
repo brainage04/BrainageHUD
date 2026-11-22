@@ -292,15 +292,29 @@ public final class BrainageHUDClientGameTest implements FabricClientGameTest {
                         // A large screenshot resizes the window, which the recorder's video
                         // cannot take (docs/DEVELOPMENT.md), so the check runs outside recordings.
                         if (!ClientGameTestRecordingSession.isEnabled()) {
+                            // The check compares the icon block against the same block of the world
+                            // with the element off, so it needs a backdrop-free element over a
+                            // still, plain part of the world: a backdrop or a moving block would
+                            // differ with no icon drawn.
+                            context.runOnClient(
+                                    client -> {
+                                        CoreSettings settings =
+                                                ConfigUtils.getConfig()
+                                                        .statusEffectHudConfig
+                                                        .coreSettings;
+                                        settings.elementAnchor = ElementAnchor.TOP_LEFT;
+                                        settings.x = 5;
+                                        settings.y = 5;
+                                        settings.elementOverrides.backdropOpacity.enabled = true;
+                                        settings.elementOverrides.backdropOpacity.value = 0;
+                                    });
+                            context.waitTicks(5);
                             Path hiddenIconShot =
                                     takeLargeScreenshot(
                                             context, "status-effect-hud-hidden-icon-large");
                             System.out.println(
                                     "[STDOUT]: Status Effect HUD with a hidden icon screenshot: "
                                             + hiddenIconShot);
-                            // The HUD paints no backdrop by default, so the same block with the
-                            // element off is the world alone: what the column shows when the icon
-                            // is missing.
                             context.runOnClient(
                                     client ->
                                             ConfigUtils.getConfig()
@@ -1102,9 +1116,11 @@ public final class BrainageHUDClientGameTest implements FabricClientGameTest {
     }
 
     /**
-     * The Status Effect HUD's icon column must hold the effect's art. The HUD paints no backdrop by
-     * default, so the same block of the world with the element switched off is what the column
-     * shows when the icon is missing: the check compares the two screenshots there.
+     * The Status Effect HUD's icon column must hold the effect's art. The caller pins the element to
+     * a backdrop-free top-left corner over plain sky, so the same block with the element switched
+     * off is the world alone: what the column shows when the icon is missing. The check requires
+     * that block to be one colour in the world shot, so a moving or textured part of the world
+     * cannot stand in for the icon.
      */
     private static void assertEffectIconDrawn(
             ClientGameTestContext context, Path screenshot, Path worldScreenshot) {
@@ -1143,11 +1159,19 @@ public final class BrainageHUDClientGameTest implements FabricClientGameTest {
             int scale = image.getWidth() / origin[2];
             int left = origin[0] * scale;
             int top = origin[1] * scale;
+            // the sprite is ICON_SIZE square (StatusEffectHud.java:33)
             int size = 18 * scale;
+            int worldColour = world.getRGB(left, top);
             int differing = 0;
             for (int y = top; y < top + size; y++) {
                 for (int x = left; x < left + size; x++) {
-                    if (image.getRGB(x, y) != world.getRGB(x, y)) {
+                    if (world.getRGB(x, y) != worldColour) {
+                        throw new AssertionError(
+                                "Expected plain sky behind the Status Effect HUD's icon column, but "
+                                        + worldScreenshot
+                                        + " has more than one colour in that block, so the check cannot tell the icon from the world");
+                    }
+                    if (image.getRGB(x, y) != worldColour) {
                         differing++;
                     }
                 }
