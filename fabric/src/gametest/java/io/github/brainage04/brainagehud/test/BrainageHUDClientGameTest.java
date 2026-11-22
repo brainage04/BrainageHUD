@@ -298,7 +298,29 @@ public final class BrainageHUDClientGameTest implements FabricClientGameTest {
                             System.out.println(
                                     "[STDOUT]: Status Effect HUD with a hidden icon screenshot: "
                                             + hiddenIconShot);
-                            assertEffectIconDrawn(context, hiddenIconShot);
+                            // The HUD paints no backdrop by default, so the same block with the
+                            // element off is the world alone: what the column shows when the icon
+                            // is missing.
+                            context.runOnClient(
+                                    client ->
+                                            ConfigUtils.getConfig()
+                                                            .statusEffectHudConfig
+                                                            .coreSettings
+                                                            .enabled =
+                                                    false);
+                            context.waitTicks(5);
+                            Path worldShot =
+                                    takeLargeScreenshot(
+                                            context, "status-effect-hud-icon-world-large");
+                            context.runOnClient(
+                                    client ->
+                                            ConfigUtils.getConfig()
+                                                            .statusEffectHudConfig
+                                                            .coreSettings
+                                                            .enabled =
+                                                    true);
+                            context.waitTicks(5);
+                            assertEffectIconDrawn(context, hiddenIconShot, worldShot);
                         }
                         server.runOnServer(
                                 minecraftServer ->
@@ -683,9 +705,10 @@ public final class BrainageHUDClientGameTest implements FabricClientGameTest {
     }
 
     /**
-     * Loads the Looshy 26.3 packs from the run directory's {@code resourcepacks} folder, gives the
-     * player two effects and screenshots the inventory, whose effect boxes are the sprites the
-     * packs replace. The packs are copied in by the caller's build; a run without them skips this.
+     * Loads the effect-frame fixture, and any Looshy 26.3 zips a {@code -PtestPacksDir=} run copied
+     * beside it, from the run directory's {@code resourcepacks} folder, gives the player two effects
+     * and screenshots the inventory, whose effect boxes are the sprite the fixture replaces. The
+     * build copies the packs in, and the step fails when the fixture is absent.
      */
     private static void exerciseEffectBackgroundsWithPack(
             ClientGameTestContext context,
@@ -698,17 +721,28 @@ public final class BrainageHUDClientGameTest implements FabricClientGameTest {
                                 throw new AssertionError(
                                         "Expected the effect-frame fixture in " + dir);
                             }
+                            // only what the game reads as a pack: a zip, or a folder holding
+                            // pack.mcmeta (PackDetector.java:41-50). Anything else in the folder
+                            // would make addPack fail the run.
                             try (var entries = Files.list(dir)) {
-                                return entries.map(p -> "file/" + p.getFileName())
+                                return entries.filter(
+                                                p ->
+                                                        p.getFileName()
+                                                                        .toString()
+                                                                        .endsWith(".zip")
+                                                                || Files.isRegularFile(
+                                                                        p.resolve("pack.mcmeta")))
+                                        .map(p -> "file/" + p.getFileName())
                                         .sorted()
                                         .toList();
                             } catch (IOException exception) {
                                 throw new AssertionError("Could not list " + dir, exception);
                             }
                         });
-        if (packs.isEmpty()) {
+        if (!packs.contains("file/effect-frame")) {
             throw new AssertionError(
-                    "Expected the effect-frame fixture in the run's resourcepacks folder");
+                    "Expected the effect-frame fixture in the run's resourcepacks folder, got "
+                            + packs);
         }
         ClientGameTestRecorder.showStep(
                 context,
@@ -779,11 +813,12 @@ public final class BrainageHUDClientGameTest implements FabricClientGameTest {
     }
 
     /**
-     * The pack's effect box must keep its frame at the box's full width. The pack's sprite is a
-     * 32x32 frame with a 1 px black border and a 2 px grey ring; nine-sliced, the border stays 1 px
-     * and the ring 2 px however wide the box is, while a stretched sprite smears the ring into a
-     * band as wide as the box. The check walks in from the box's left edge and requires the black
-     * border to end within 2 px and the grey ring within 4.
+     * The fixture's effect box must keep its frame at the box's full width. The fixture's sprite is
+     * a 32x32 frame with a 1 px black border and a 2 px ring of 100 grey; nine-sliced, the border
+     * stays 1 px and the ring 2 px however wide the box is, while a stretched sprite smears the ring
+     * into a band as wide as the box. The check walks in from the box's left edge and requires the
+     * border to end within 2 px and the ring within 4, in the fixture's own colours, so vanilla's
+     * sprite (a ring of 85 grey) cannot stand in for a fixture that failed to load.
      */
     private static void assertEffectBoxFrameDrawn(ClientGameTestContext context, Path screenshot) {
         int[] box =
@@ -813,12 +848,18 @@ public final class BrainageHUDClientGameTest implements FabricClientGameTest {
             // the large screenshot's scale, from the image against the GUI it was taken at
             int scale = image.getWidth() / box[2];
             int left = box[0] * scale;
-            // the box is 32 px tall (EffectsInInventory.java:96), so its middle is 16 down
-            int row = box[1] * scale + 16 * scale;
+            // the box is SPRITE_SQUARE_SIZE tall (EffectsInInventory.java:27, drawn at :94), so its
+            // middle is half that down
+            int row =
+                    box[1] * scale
+                            + net.minecraft.client.gui.screens.inventory.EffectsInInventory
+                                            .SPRITE_SQUARE_SIZE
+                                    / 2
+                                    * scale;
             int border = 0;
-            while (border < 8 * scale && isDark(image.getRGB(left + border, row))) border++;
+            while (border < 8 * scale && isFixtureBorder(image.getRGB(left + border, row))) border++;
             int ring = 0;
-            while (ring < 8 * scale && isGrey(image.getRGB(left + border + ring, row))) ring++;
+            while (ring < 8 * scale && isFixtureRing(image.getRGB(left + border + ring, row))) ring++;
             if (border < scale || ring < 2 * scale || border > 2 * scale || ring > 4 * scale) {
                 throw new AssertionError(
                         "Expected the effect box's 1 px border and 2 px ring, but the border is "
@@ -835,15 +876,15 @@ public final class BrainageHUDClientGameTest implements FabricClientGameTest {
         }
     }
 
-    private static boolean isDark(int argb) {
+    private static boolean isFixtureBorder(int argb) {
         return ((argb >> 16) & 255) < 24 && ((argb >> 8) & 255) < 24 && (argb & 255) < 24;
     }
 
-    private static boolean isGrey(int argb) {
+    private static boolean isFixtureRing(int argb) {
         int r = (argb >> 16) & 255;
         int g = (argb >> 8) & 255;
         int b = argb & 255;
-        return Math.abs(r - g) < 8 && Math.abs(g - b) < 8 && r > 60 && r < 130;
+        return Math.abs(r - 100) < 8 && Math.abs(g - 100) < 8 && Math.abs(b - 100) < 8;
     }
 
     /**
@@ -1062,10 +1103,11 @@ public final class BrainageHUDClientGameTest implements FabricClientGameTest {
 
     /**
      * The Status Effect HUD's icon column must hold the effect's art. The HUD paints no backdrop by
-     * default, so the check compares the icon's own block against the same block one icon to its
-     * right, which is the entry's text: a blank column leaves both blocks showing the same world.
+     * default, so the same block of the world with the element switched off is what the column
+     * shows when the icon is missing: the check compares the two screenshots there.
      */
-    private static void assertEffectIconDrawn(ClientGameTestContext context, Path screenshot) {
+    private static void assertEffectIconDrawn(
+            ClientGameTestContext context, Path screenshot, Path worldScreenshot) {
         int[] origin =
                 context.computeOnClient(
                         client -> {
@@ -1085,19 +1127,27 @@ public final class BrainageHUDClientGameTest implements FabricClientGameTest {
                         });
         try {
             var image = ImageIO.read(screenshot.toFile());
+            var world = ImageIO.read(worldScreenshot.toFile());
+            if (image.getWidth() != world.getWidth() || image.getHeight() != world.getHeight()) {
+                throw new AssertionError(
+                        "Expected both screenshots at the same size, got "
+                                + image.getWidth()
+                                + "x"
+                                + image.getHeight()
+                                + " and "
+                                + world.getWidth()
+                                + "x"
+                                + world.getHeight());
+            }
             // the large screenshot's scale, from the image against the GUI it was taken at
             int scale = image.getWidth() / origin[2];
             int left = origin[0] * scale;
             int top = origin[1] * scale;
             int size = 18 * scale;
-            // The HUD paints no backdrop by default, so the world beside the element is what the
-            // icon column shows when the icon is missing. The element is 22 px wider than the
-            // icon, so the sample sits clear of the text.
-            int emptyLeft = (origin[0] + 22 + 8) * scale;
             int differing = 0;
             for (int y = top; y < top + size; y++) {
                 for (int x = left; x < left + size; x++) {
-                    if (image.getRGB(x, y) != image.getRGB(emptyLeft + (x - left), y)) {
+                    if (image.getRGB(x, y) != world.getRGB(x, y)) {
                         differing++;
                     }
                 }
@@ -1108,8 +1158,10 @@ public final class BrainageHUDClientGameTest implements FabricClientGameTest {
                                 + differing
                                 + " of "
                                 + (size * size)
-                                + " pixels differ from the empty space beside the element in "
-                                + screenshot);
+                                + " pixels differ from the same block with the element off in "
+                                + screenshot
+                                + " against "
+                                + worldScreenshot);
             }
         } catch (IOException exception) {
             throw new AssertionError("Could not read " + screenshot, exception);

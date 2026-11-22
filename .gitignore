@@ -54,8 +54,8 @@ replay_*.log
 # another author's work with no licence file, so they are not redistributed here: point
 # -PtestPacksDir= at a copy. test-packs/effect-frame/ is this repository's own fixture and is
 # tracked.
-test-packs/*
-!test-packs/effect-frame/
+test-packs/*.zip
+test-packs/looshy/
 
 # The worktree lock nomad-heavy takes for a GameTest run.
 .gametest.lock
