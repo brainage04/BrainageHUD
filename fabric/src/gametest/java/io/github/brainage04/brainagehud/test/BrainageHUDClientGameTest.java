@@ -297,20 +297,34 @@ public final class BrainageHUDClientGameTest implements FabricClientGameTest {
                             // still part of the world: a backdrop or a moving block would differ
                             // with no icon drawn. The element and its backdrop override go back
                             // afterwards, so the later screenshots show it in its own place.
-                            CoreSettings settings =
-                                    ConfigUtils.getConfig().statusEffectHudConfig.coreSettings;
-                            HudPlacement placement = new HudPlacement(settings);
-                            boolean backdropEnabled =
-                                    settings.elementOverrides.backdropOpacity.enabled;
-                            int backdropValue = settings.elementOverrides.backdropOpacity.value;
-                            context.runOnClient(
-                                    client -> {
-                                        settings.elementAnchor = ElementAnchor.TOP_LEFT;
-                                        settings.x = 5;
-                                        settings.y = 150;
-                                        settings.elementOverrides.backdropOpacity.enabled = true;
-                                        settings.elementOverrides.backdropOpacity.value = 0;
-                                    });
+                            // every config read and write goes through the client thread, as the
+                            // rest of this file does
+                            int[] original =
+                                    context.computeOnClient(
+                                            client -> {
+                                                CoreSettings settings =
+                                                        ConfigUtils.getConfig()
+                                                                .statusEffectHudConfig
+                                                                .coreSettings;
+                                                int[] captured = {
+                                                    settings.enabled ? 1 : 0,
+                                                    settings.elementOverrides
+                                                            .backdropOpacity
+                                                            .enabled
+                                                            ? 1
+                                                            : 0,
+                                                    settings.elementOverrides
+                                                            .backdropOpacity
+                                                            .value
+                                                };
+                                                settings.elementAnchor = ElementAnchor.TOP_LEFT;
+                                                settings.x = 5;
+                                                settings.y = 150;
+                                                settings.elementOverrides.backdropOpacity.enabled =
+                                                        true;
+                                                settings.elementOverrides.backdropOpacity.value = 0;
+                                                return captured;
+                                            });
                             context.waitTicks(5);
                             Path hiddenIconShot =
                                     takeLargeScreenshot(
@@ -318,7 +332,13 @@ public final class BrainageHUDClientGameTest implements FabricClientGameTest {
                             System.out.println(
                                     "[STDOUT]: Status Effect HUD with a hidden icon screenshot: "
                                             + hiddenIconShot);
-                            context.runOnClient(client -> settings.enabled = false);
+                            context.runOnClient(
+                                    client ->
+                                            ConfigUtils.getConfig()
+                                                            .statusEffectHudConfig
+                                                            .coreSettings
+                                                            .enabled =
+                                                    false);
                             context.waitTicks(5);
                             Path worldShot =
                                     takeLargeScreenshot(
@@ -328,12 +348,18 @@ public final class BrainageHUDClientGameTest implements FabricClientGameTest {
                             assertEffectIconDrawn(context, hiddenIconShot, worldShot);
                             context.runOnClient(
                                     client -> {
-                                        settings.enabled = true;
-                                        placement.restore();
+                                        CoreSettings settings =
+                                                ConfigUtils.getConfig()
+                                                        .statusEffectHudConfig
+                                                        .coreSettings;
+                                        settings.enabled = original[0] != 0;
+                                        settings.elementAnchor = ElementAnchor.TOP_LEFT;
+                                        settings.x = 5;
+                                        settings.y = 144;
                                         settings.elementOverrides.backdropOpacity.enabled =
-                                                backdropEnabled;
+                                                original[1] != 0;
                                         settings.elementOverrides.backdropOpacity.value =
-                                                backdropValue;
+                                                original[2];
                                     });
                             context.waitTicks(5);
                         }
@@ -1163,12 +1189,25 @@ public final class BrainageHUDClientGameTest implements FabricClientGameTest {
             // the sprite is ICON_SIZE square (StatusEffectHud.java:33)
             int size = 18 * scale;
             int differing = differingPixels(image, world, left, top, size);
-            // The same block size at the centre of the screen, where no element is drawn, measures
-            // how much the world itself moved between the two shots.
+            // The same block size in the centre column of the icon's row, clear of every element in
+            // this fixture, measures how much the world itself moved between the two shots. A world
+            // that moved would make the icon block's count meaningless, so that fails first.
             int control =
                     differingPixels(
                             image, world, (image.getWidth() - size) / 2, top, size);
-            if (differing < size * size / 4 || differing < control * 4) {
+            if (control > size * size / 16) {
+                throw new AssertionError(
+                        "Expected the world to stay still between the two screenshots, but a block of "
+                                + (size * size)
+                                + " pixels clear of every element differs by "
+                                + control
+                                + " in "
+                                + screenshot
+                                + " against "
+                                + worldScreenshot
+                                + ", so the icon column's own count cannot be trusted");
+            }
+            if (differing < size * size / 4) {
                 throw new AssertionError(
                         "Expected the Status Effect HUD's icon column to hold the effect's art, but only "
                                 + differing
@@ -1177,10 +1216,7 @@ public final class BrainageHUDClientGameTest implements FabricClientGameTest {
                                 + " pixels differ from the same block with the element off in "
                                 + screenshot
                                 + " against "
-                                + worldScreenshot
-                                + ", while a block of the same size at the centre of the screen differs by "
-                                + control
-                                + " from the world moving between the two shots");
+                                + worldScreenshot);
             }
         } catch (IOException exception) {
             throw new AssertionError("Could not read " + screenshot, exception);
