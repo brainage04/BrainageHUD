@@ -1474,6 +1474,10 @@ public final class BrainageHUDClientGameTest implements FabricClientGameTest {
             config.foodHudConfig.coreSettings.enabled = true;
             config.waypointConfig.showInWorld = true;
             config.statusEffectHudConfig.coreSettings.enabled = true;
+            // the run directory outlives a run, so the showcase pins the element's own place
+            config.statusEffectHudConfig.coreSettings.elementAnchor = ElementAnchor.TOP_LEFT;
+            config.statusEffectHudConfig.coreSettings.x = 5;
+            config.statusEffectHudConfig.coreSettings.y = 144;
             config.statusEffectHudConfig.showDurations = true;
             config.statusEffectHudConfig.hideVanillaStatusEffects = true;
             libraryConfig().showVanillaStatusEffects = true;
