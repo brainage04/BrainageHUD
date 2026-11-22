@@ -294,20 +294,26 @@ public final class BrainageHUDClientGameTest implements FabricClientGameTest {
                         if (!ClientGameTestRecordingSession.isEnabled()) {
                             // The check compares the icon block against the same block of the world
                             // with the element off, so it needs a backdrop-free element over a
-                            // still, plain part of the world: a backdrop or a moving block would
-                            // differ with no icon drawn.
-                            context.runOnClient(
-                                    client -> {
-                                        CoreSettings settings =
-                                                ConfigUtils.getConfig()
-                                                        .statusEffectHudConfig
-                                                        .coreSettings;
-                                        settings.elementAnchor = ElementAnchor.TOP_LEFT;
-                                        settings.x = 5;
-                                        settings.y = 5;
-                                        settings.elementOverrides.backdropOpacity.enabled = true;
-                                        settings.elementOverrides.backdropOpacity.value = 0;
-                                    });
+                            // still part of the world: a backdrop or a moving block would differ
+                            // with no icon drawn. The element goes back where the showcase put it
+                            // afterwards, so the later screenshots show it in its own place.
+                            int[] placement =
+                                    context.computeOnClient(
+                                            client -> {
+                                                CoreSettings settings =
+                                                        ConfigUtils.getConfig()
+                                                                .statusEffectHudConfig
+                                                                .coreSettings;
+                                                int[] original = {
+                                                    settings.x, settings.y, settings.elementAnchor.ordinal()
+                                                };
+                                                settings.elementAnchor = ElementAnchor.TOP_LEFT;
+                                                settings.x = 5;
+                                                settings.y = 150;
+                                                settings.elementOverrides.backdropOpacity.enabled = true;
+                                                settings.elementOverrides.backdropOpacity.value = 0;
+                                                return original;
+                                            });
                             context.waitTicks(5);
                             Path hiddenIconShot =
                                     takeLargeScreenshot(
@@ -327,12 +333,17 @@ public final class BrainageHUDClientGameTest implements FabricClientGameTest {
                                     takeLargeScreenshot(
                                             context, "status-effect-hud-icon-world-large");
                             context.runOnClient(
-                                    client ->
-                                            ConfigUtils.getConfig()
-                                                            .statusEffectHudConfig
-                                                            .coreSettings
-                                                            .enabled =
-                                                    true);
+                                    client -> {
+                                        CoreSettings settings =
+                                                ConfigUtils.getConfig()
+                                                        .statusEffectHudConfig
+                                                        .coreSettings;
+                                        settings.enabled = true;
+                                        settings.x = placement[0];
+                                        settings.y = placement[1];
+                                        settings.elementAnchor =
+                                                ElementAnchor.values()[placement[2]];
+                                    });
                             context.waitTicks(5);
                             assertEffectIconDrawn(context, hiddenIconShot, worldShot);
                         }
