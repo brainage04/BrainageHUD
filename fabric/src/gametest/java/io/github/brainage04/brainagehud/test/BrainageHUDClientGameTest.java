@@ -332,6 +332,9 @@ public final class BrainageHUDClientGameTest implements FabricClientGameTest {
                             Path worldShot =
                                     takeLargeScreenshot(
                                             context, "status-effect-hud-icon-world-large");
+                            // the check reads the element's position, so it runs before the
+                            // placement goes back
+                            assertEffectIconDrawn(context, hiddenIconShot, worldShot);
                             context.runOnClient(
                                     client -> {
                                         CoreSettings settings =
@@ -345,7 +348,6 @@ public final class BrainageHUDClientGameTest implements FabricClientGameTest {
                                                 ElementAnchor.values()[placement[2]];
                                     });
                             context.waitTicks(5);
-                            assertEffectIconDrawn(context, hiddenIconShot, worldShot);
                         }
                         server.runOnServer(
                                 minecraftServer ->
