@@ -85,7 +85,11 @@ public class WaypointEditScreen extends Screen {
                         .build());
         addRenderableWidget(
                 Button.builder(Component.literal("Cancel"), button -> onClose())
-                        .bounds(left + buttonWidth + BUTTON_GAP, height - 28, buttonWidth, Button.DEFAULT_HEIGHT)
+                        .bounds(
+                                left + buttonWidth + BUTTON_GAP,
+                                height - 28,
+                                buttonWidth,
+                                Button.DEFAULT_HEIGHT)
                         .build());
 
         setInitialFocus(nameBox);

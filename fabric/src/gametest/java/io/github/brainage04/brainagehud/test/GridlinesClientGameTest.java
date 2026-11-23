@@ -17,6 +17,8 @@ import net.fabricmc.fabric.api.client.gametest.v1.FabricClientGameTest;
 import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext;
 import net.fabricmc.fabric.api.client.gametest.v1.screenshot.TestScreenshotOptions;
 import net.minecraft.client.gui.components.AbstractWidget;
+import com.mojang.blaze3d.platform.Window;
+import io.github.brainage04.minecraftmodconventions.ClientGameTestRecordingSession;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.components.events.ContainerEventHandler;
@@ -32,6 +34,8 @@ import net.minecraft.client.gui.components.events.ContainerEventHandler;
 public final class GridlinesClientGameTest implements FabricClientGameTest {
     public static final String DIRECTORY_ENV = "BRAINAGEHUD_GRIDLINES_DIR";
 
+    // Pins the screens' design value; the screens' own constant is private, and reading it would make the
+    // check tautological.
     private static final int BUTTON_GAP = 4;
 
     @Override
@@ -53,42 +57,53 @@ public final class GridlinesClientGameTest implements FabricClientGameTest {
                             });
                     int originalScale = context.computeOnClient(
                             client -> client.options.guiScale().get());
-                    // The GUI width never falls below 320 (Window.MIN_WINDOW_WIDTH), so that is the floor to check.
-                    for (int[] size : new int[][] {{320, 240}, {original[0], original[1]}, {1280, 720}}) {
-                        context.getInput().resizeWindow(size[0], size[1]);
-                        context.waitTicks(5);
-                        // The narrow case only proves anything if the GUI really is 320 units wide.
-                        if (size[0] == 320) {
-                            int guiWidth = context.computeOnClient(client -> client.gui.screen() == null
-                                    ? client.getWindow().getGuiScaledWidth()
-                                    : client.gui.screen().width);
-                            if (guiWidth != 320) {
-                                throw new AssertionError("The 320x240 window gives a " + guiWidth
-                                        + "-unit GUI, so the narrow case is not narrow");
+                    // The default size is checked in every run, recording or not.
+                    openBothScreens(context, output, true);
+                    // Resizing crops a recording (docs/DEVELOPMENT.md:23), so the other sizes run outside one.
+                    if (!ClientGameTestRecordingSession.isEnabled()) {
+                        for (int[] size : new int[][] {
+                            {Window.MIN_WINDOW_WIDTH, Window.MIN_WINDOW_HEIGHT}, {1280, 720}
+                        }) {
+                            context.getInput().resizeWindow(size[0], size[1]);
+                            context.waitTicks(5);
+                            // The narrow case only proves anything if the GUI really is at the floor.
+                            if (size[0] == Window.MIN_WINDOW_WIDTH) {
+                                int guiWidth = context.computeOnClient(client -> client.gui.screen() == null
+                                        ? client.getWindow().getGuiScaledWidth()
+                                        : client.gui.screen().width);
+                                if (guiWidth != Window.MIN_WINDOW_WIDTH) {
+                                    throw new AssertionError("The " + size[0] + "x" + size[1]
+                                            + " window gives a " + guiWidth
+                                            + "-unit GUI, so the narrow case is not narrow");
+                                }
                             }
+                            openBothScreens(context, output, false);
                         }
-                        context.runOnClient(client -> client.gui.setScreen(new WaypointsScreen(null)));
-                        context.waitForScreen(WaypointsScreen.class);
-                        context.waitTicks(10);
-                        if (size[0] == original[0]) {
-                            capture(context, output, "waypoints-screen");
-                        }
-                        assertWaypointsColumn(context);
-                        context.runOnClient(client -> client.gui.setScreen(new WaypointEditScreen(null, null)));
-                        context.waitForScreen(WaypointEditScreen.class);
-                        context.waitTicks(10);
-                        if (size[0] == original[0]) {
-                            capture(context, output, "waypoint-edit-screen");
-                        }
-                        assertEditColumn(context);
+                        context.getInput().resizeWindow(original[0], original[1]);
+                        context.runOnClient(client -> {
+                            client.options.guiScale().set(originalScale);
+                            client.resizeGui();
+                        });
+                        context.waitTicks(5);
                     }
-                    context.getInput().resizeWindow(original[0], original[1]);
-                    context.runOnClient(client -> {
-                        client.options.guiScale().set(originalScale);
-                        client.resizeGui();
-                    });
-                    context.waitTicks(5);
                 });
+    }
+
+    private static void openBothScreens(ClientGameTestContext context, Path output, boolean capture) {
+        context.runOnClient(client -> client.gui.setScreen(new WaypointsScreen(null)));
+        context.waitForScreen(WaypointsScreen.class);
+        context.waitTicks(10);
+        if (capture) {
+            capture(context, output, "waypoints-screen");
+        }
+        assertWaypointsColumn(context);
+        context.runOnClient(client -> client.gui.setScreen(new WaypointEditScreen(null, null)));
+        context.waitForScreen(WaypointEditScreen.class);
+        context.waitTicks(10);
+        if (capture) {
+            capture(context, output, "waypoint-edit-screen");
+        }
+        assertEditColumn(context);
     }
 
     private static void capture(ClientGameTestContext context, Path output, String name) {
