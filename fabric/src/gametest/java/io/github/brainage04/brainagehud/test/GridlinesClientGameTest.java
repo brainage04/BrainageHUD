@@ -3,8 +3,10 @@ package io.github.brainage04.brainagehud.test;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+import com.mojang.blaze3d.platform.Window;
 import io.github.brainage04.brainagehud.screen.WaypointEditScreen;
 import io.github.brainage04.brainagehud.screen.WaypointsScreen;
+import io.github.brainage04.minecraftmodconventions.ClientGameTestRecordingSession;
 import io.github.brainage04.minecraftmodconventions.ClientGameTestServers;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -17,8 +19,6 @@ import net.fabricmc.fabric.api.client.gametest.v1.FabricClientGameTest;
 import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext;
 import net.fabricmc.fabric.api.client.gametest.v1.screenshot.TestScreenshotOptions;
 import net.minecraft.client.gui.components.AbstractWidget;
-import com.mojang.blaze3d.platform.Window;
-import io.github.brainage04.minecraftmodconventions.ClientGameTestRecordingSession;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.components.events.ContainerEventHandler;
@@ -26,16 +26,16 @@ import net.minecraft.client.gui.components.events.ContainerEventHandler;
 /**
  * Checks the waypoint screens' rows: the four action buttons share one width, one row and one gap, and the row is
  * centred on the Done button; the edit screen's fields share one left edge and one width, and its Save and Cancel
- * pair spans the same edges with one width and one gap. Both screens are checked at the default size, at the
- * 320-unit floor and at a large size. When {@value #DIRECTORY_ENV} names a directory, it also writes each screen's
+ * pair spans the same edges with one width and one gap. Both screens are checked at the default size in every
+ * run, and at the 320-unit floor and a large size outside recordings. When {@value #DIRECTORY_ENV} names a directory, it also writes each screen's
  * geometry and a screenshot there, so a guide-line overlay can be drawn from the layout the game computed.
  */
 @SuppressWarnings("UnstableApiUsage")
 public final class GridlinesClientGameTest implements FabricClientGameTest {
     public static final String DIRECTORY_ENV = "BRAINAGEHUD_GRIDLINES_DIR";
 
-    // Pins the screens' design value; the screens' own constant is private, and reading it would make the
-    // check tautological.
+    // Pins the screens' design value; the screens' own constant is private, and reading it would make
+    // the check tautological.
     private static final int BUTTON_GAP = 4;
 
     @Override
@@ -59,7 +59,8 @@ public final class GridlinesClientGameTest implements FabricClientGameTest {
                             client -> client.options.guiScale().get());
                     // The default size is checked in every run, recording or not.
                     openBothScreens(context, output, true);
-                    // Resizing crops a recording (docs/DEVELOPMENT.md:23), so the other sizes run outside one.
+                    // Resizing crops a recording (docs/DEVELOPMENT.md:23), so the other sizes run
+                    // outside one.
                     if (!ClientGameTestRecordingSession.isEnabled()) {
                         for (int[] size : new int[][] {
                             {Window.MIN_WINDOW_WIDTH, Window.MIN_WINDOW_HEIGHT}, {1280, 720}
@@ -90,6 +91,10 @@ public final class GridlinesClientGameTest implements FabricClientGameTest {
     }
 
     private static void openBothScreens(ClientGameTestContext context, Path output, boolean capture) {
+        int[] size = context.computeOnClient(
+                client -> new int[] {client.gui.screen() == null ? 0 : client.gui.screen().width,
+                        client.gui.screen() == null ? 0 : client.gui.screen().height});
+        System.out.println("[STDOUT]: Waypoint screens checked at GUI " + size[0] + "x" + size[1]);
         context.runOnClient(client -> client.gui.setScreen(new WaypointsScreen(null)));
         context.waitForScreen(WaypointsScreen.class);
         context.waitTicks(10);
