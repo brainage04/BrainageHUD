@@ -54,9 +54,19 @@ public final class GridlinesClientGameTest implements FabricClientGameTest {
                     int originalScale = context.computeOnClient(
                             client -> client.options.guiScale().get());
                     // The GUI width never falls below 320 (Window.MIN_WINDOW_WIDTH), so that is the floor to check.
-                    for (int[] size : new int[][] {{original[0], original[1]}, {320, 240}, {1280, 720}}) {
+                    for (int[] size : new int[][] {{320, 240}, {original[0], original[1]}, {1280, 720}}) {
                         context.getInput().resizeWindow(size[0], size[1]);
                         context.waitTicks(5);
+                        // The narrow case only proves anything if the GUI really is 320 units wide.
+                        if (size[0] == 320) {
+                            int guiWidth = context.computeOnClient(client -> client.gui.screen() == null
+                                    ? client.getWindow().getGuiScaledWidth()
+                                    : client.gui.screen().width);
+                            if (guiWidth != 320) {
+                                throw new AssertionError("The 320x240 window gives a " + guiWidth
+                                        + "-unit GUI, so the narrow case is not narrow");
+                            }
+                        }
                         context.runOnClient(client -> client.gui.setScreen(new WaypointsScreen(null)));
                         context.waitForScreen(WaypointsScreen.class);
                         context.waitTicks(10);
