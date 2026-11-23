@@ -22,10 +22,11 @@ import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.components.events.ContainerEventHandler;
 
 /**
- * Checks that the waypoint screens sit on one column: the four action buttons share one width, one row and one
- * gap, the Done button is centred on the same column, and the edit screen's fields share one left edge and one
- * width. When {@value #DIRECTORY_ENV} names a directory, it also writes each screen's geometry and a screenshot
- * there, so a guide-line overlay can be drawn from the layout the game computed.
+ * Checks the waypoint screens' rows: the four action buttons share one width, one row and one gap, and the row is
+ * centred on the Done button; the edit screen's fields share one left edge and one width, and its Save and Cancel
+ * pair spans the same edges with one width and one gap. Both screens are checked at the default size, at the
+ * 320-unit floor and at a large size. When {@value #DIRECTORY_ENV} names a directory, it also writes each screen's
+ * geometry and a screenshot there, so a guide-line overlay can be drawn from the layout the game computed.
  */
 @SuppressWarnings("UnstableApiUsage")
 public final class GridlinesClientGameTest implements FabricClientGameTest {
@@ -46,16 +47,37 @@ public final class GridlinesClientGameTest implements FabricClientGameTest {
                 server -> {
                     ClientGameTestServers.assertClientWorldAndPlayerAvailable(context);
                     context.waitTicks(20);
-                    context.runOnClient(client -> client.gui.setScreen(new WaypointsScreen(null)));
-                    context.waitForScreen(WaypointsScreen.class);
-                    context.waitTicks(10);
-                    capture(context, output, "waypoints-screen");
-                    assertWaypointsColumn(context);
-                    context.runOnClient(client -> client.gui.setScreen(new WaypointEditScreen(null, null)));
-                    context.waitForScreen(WaypointEditScreen.class);
-                    context.waitTicks(10);
-                    capture(context, output, "waypoint-edit-screen");
-                    assertEditColumn(context);
+                    int[] original = context.computeOnClient(
+                            client -> new int[] {
+                                client.getWindow().getWidth(), client.getWindow().getHeight()
+                            });
+                    int originalScale = context.computeOnClient(
+                            client -> client.options.guiScale().get());
+                    // The GUI width never falls below 320 (Window.MIN_WINDOW_WIDTH), so that is the floor to check.
+                    for (int[] size : new int[][] {{original[0], original[1]}, {320, 240}, {1280, 720}}) {
+                        context.getInput().resizeWindow(size[0], size[1]);
+                        context.waitTicks(5);
+                        context.runOnClient(client -> client.gui.setScreen(new WaypointsScreen(null)));
+                        context.waitForScreen(WaypointsScreen.class);
+                        context.waitTicks(10);
+                        if (size[0] == original[0]) {
+                            capture(context, output, "waypoints-screen");
+                        }
+                        assertWaypointsColumn(context);
+                        context.runOnClient(client -> client.gui.setScreen(new WaypointEditScreen(null, null)));
+                        context.waitForScreen(WaypointEditScreen.class);
+                        context.waitTicks(10);
+                        if (size[0] == original[0]) {
+                            capture(context, output, "waypoint-edit-screen");
+                        }
+                        assertEditColumn(context);
+                    }
+                    context.getInput().resizeWindow(original[0], original[1]);
+                    context.runOnClient(client -> {
+                        client.options.guiScale().set(originalScale);
+                        client.resizeGui();
+                    });
+                    context.waitTicks(5);
                 });
     }
 
@@ -121,6 +143,14 @@ public final class GridlinesClientGameTest implements FabricClientGameTest {
                         throw new AssertionError("The action row is centred at " + rowCentre
                                 + " px and Done at " + doneCentre);
                     }
+                    for (Button button : buttons) {
+                        if (button.getX() < 0
+                                || button.getX() + button.getWidth() > client.gui.screen().width) {
+                            throw new AssertionError("'" + button.getMessage().getString() + "' spans "
+                                    + button.getX() + " to " + (button.getX() + button.getWidth())
+                                    + " px, the screen is " + client.gui.screen().width + " wide");
+                        }
+                    }
                 });
     }
 
@@ -163,6 +193,15 @@ public final class GridlinesClientGameTest implements FabricClientGameTest {
                     }
                     Button save = buttons.getFirst();
                     Button cancel = buttons.getLast();
+                    if (save.getWidth() != cancel.getWidth()) {
+                        throw new AssertionError("Save is " + save.getWidth() + " px wide, Cancel "
+                                + cancel.getWidth());
+                    }
+                    int buttonGap = cancel.getX() - (save.getX() + save.getWidth());
+                    if (buttonGap != BUTTON_GAP) {
+                        throw new AssertionError("The gap between Save and Cancel is " + buttonGap
+                                + " px, expected " + BUTTON_GAP);
+                    }
                     if (save.getX() != nameLeft) {
                         throw new AssertionError("Save starts at " + save.getX() + " px, the fields at "
                                 + nameLeft);
@@ -171,6 +210,14 @@ public final class GridlinesClientGameTest implements FabricClientGameTest {
                     if (cancelRight != nameRight) {
                         throw new AssertionError("Cancel ends at " + cancelRight + " px, the fields at "
                                 + nameRight);
+                    }
+                    for (Button button : buttons) {
+                        if (button.getX() < 0
+                                || button.getX() + button.getWidth() > client.gui.screen().width) {
+                            throw new AssertionError("'" + button.getMessage().getString() + "' spans "
+                                    + button.getX() + " to " + (button.getX() + button.getWidth())
+                                    + " px, the screen is " + client.gui.screen().width + " wide");
+                        }
                     }
                 });
     }
