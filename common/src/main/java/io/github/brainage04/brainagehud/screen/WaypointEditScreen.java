@@ -19,6 +19,7 @@ public class WaypointEditScreen extends Screen {
     private static final int RED = 0xFFFF5555;
     private static final int FIELD_WIDTH = 200;
     private static final int COORDINATE_WIDTH = 64;
+    private static final int BUTTON_GAP = 4;
 
     private final Screen parent;
     @Nullable private final Waypoint waypoint;
@@ -77,13 +78,18 @@ public class WaypointEditScreen extends Screen {
             zBox.setValue(z);
         }
 
+        int buttonWidth = (FIELD_WIDTH - BUTTON_GAP) / 2;
         addRenderableWidget(
                 Button.builder(Component.literal("Save"), button -> save())
-                        .bounds(width / 2 - 102, height - 28, 100, 20)
+                        .bounds(left, height - 28, buttonWidth, Button.DEFAULT_HEIGHT)
                         .build());
         addRenderableWidget(
                 Button.builder(Component.literal("Cancel"), button -> onClose())
-                        .bounds(width / 2 + 2, height - 28, 100, 20)
+                        .bounds(
+                                left + buttonWidth + BUTTON_GAP,
+                                height - 28,
+                                buttonWidth,
+                                Button.DEFAULT_HEIGHT)
                         .build());
 
         setInitialFocus(nameBox);
