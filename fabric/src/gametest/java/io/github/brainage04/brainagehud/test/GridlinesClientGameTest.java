@@ -92,8 +92,9 @@ public final class GridlinesClientGameTest implements FabricClientGameTest {
 
     private static void openBothScreens(ClientGameTestContext context, Path output, boolean capture) {
         int[] size = context.computeOnClient(
-                client -> new int[] {client.gui.screen() == null ? 0 : client.gui.screen().width,
-                        client.gui.screen() == null ? 0 : client.gui.screen().height});
+                client -> new int[] {
+                    client.getWindow().getGuiScaledWidth(), client.getWindow().getGuiScaledHeight()
+                });
         System.out.println("[STDOUT]: Waypoint screens checked at GUI " + size[0] + "x" + size[1]);
         context.runOnClient(client -> client.gui.setScreen(new WaypointsScreen(null)));
         context.waitForScreen(WaypointsScreen.class);
