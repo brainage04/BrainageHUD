@@ -27,6 +27,9 @@ public class KeystrokesHud implements CoreHudElement<KeystrokesHudConfig> {
      */
     private static final float HELD_SHADOW_OFF_PROGRESS = 0.5F;
 
+    /** A lit key's text starts this many pixels further right, so its shadowless ink is centred. */
+    private static final int HELD_TEXT_OFFSET = 1;
+
     private record KeyStrokesItem(
             @Nullable KeyMapping key, String name, int x, int y, int width, int height) {}
 
@@ -194,6 +197,7 @@ public class KeystrokesHud implements CoreHudElement<KeystrokesHudConfig> {
             int backdropColour = ARGB.color(keyBackdropAlpha, 0, 0, 0);
             int textColour = configuredTextColour;
             boolean textShadow = textShadows;
+            int textOffset = 0;
             if (keyStrokesItem.key != null) {
                 boolean down = keyStrokesItem.key.isDown();
                 KeyTransition transition = keyTransitions.get(keyStrokesItem.key);
@@ -216,6 +220,9 @@ public class KeystrokesHud implements CoreHudElement<KeystrokesHudConfig> {
                 textColour =
                         ARGB.srgbLerp(transition.progress, configuredTextColour, ARGB.opaque(0));
                 textShadow = textShadows && transition.progress < HELD_SHADOW_OFF_PROGRESS;
+                if (transition.progress >= HELD_SHADOW_OFF_PROGRESS) {
+                    textOffset = HELD_TEXT_OFFSET;
+                }
             }
 
             drawContext.fill(
@@ -230,7 +237,8 @@ public class KeystrokesHud implements CoreHudElement<KeystrokesHudConfig> {
                     posX
                             + keyStrokesItem.x
                             + (keyStrokesItem.width / 2)
-                            - (renderer.width(keyStrokesItem.name) / 2),
+                            - (renderer.width(keyStrokesItem.name) / 2)
+                            + textOffset,
                     posY
                             + keyStrokesItem.y
                             + (keyStrokesItem.height / 2)
