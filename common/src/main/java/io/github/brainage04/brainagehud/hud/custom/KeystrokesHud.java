@@ -21,6 +21,12 @@ import org.jetbrains.annotations.Nullable;
 public class KeystrokesHud implements CoreHudElement<KeystrokesHudConfig> {
     private static final long KEY_TRANSITION_DURATION_NANOS = 100_000_000L;
 
+    /**
+     * The progress from which a lit key's text draws no drop shadow: the text fades to black, and
+     * the shadow of black text is black too, which doubles every stroke.
+     */
+    private static final float HELD_SHADOW_OFF_PROGRESS = 0.5F;
+
     private record KeyStrokesItem(
             @Nullable KeyMapping key, String name, int x, int y, int width, int height) {}
 
@@ -187,6 +193,7 @@ public class KeystrokesHud implements CoreHudElement<KeystrokesHudConfig> {
         for (KeyStrokesItem keyStrokesItem : keystrokesList) {
             int backdropColour = ARGB.color(keyBackdropAlpha, 0, 0, 0);
             int textColour = configuredTextColour;
+            boolean textShadow = textShadows;
             if (keyStrokesItem.key != null) {
                 boolean down = keyStrokesItem.key.isDown();
                 KeyTransition transition = keyTransitions.get(keyStrokesItem.key);
@@ -208,6 +215,7 @@ public class KeystrokesHud implements CoreHudElement<KeystrokesHudConfig> {
                         ARGB.srgbLerp(transition.progress, backdropColour, pressedBackdropColour);
                 textColour =
                         ARGB.srgbLerp(transition.progress, configuredTextColour, ARGB.opaque(0));
+                textShadow = textShadows && transition.progress < HELD_SHADOW_OFF_PROGRESS;
             }
 
             drawContext.fill(
@@ -228,7 +236,7 @@ public class KeystrokesHud implements CoreHudElement<KeystrokesHudConfig> {
                             + (keyStrokesItem.height / 2)
                             - (renderer.lineHeight / 2),
                     textColour,
-                    textShadows);
+                    textShadow);
         }
         keyTransitions.entrySet().removeIf(entry -> entry.getValue().lastSeenFrame != frame);
     }
